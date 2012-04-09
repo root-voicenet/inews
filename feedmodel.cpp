@@ -1,4 +1,6 @@
 #include "feedmodel.h"
+#include "resourcemanager.h"
+#include "newsapplication.h"
 
 FeedModel::FeedModel(QObject *parent) :
     QStandardItemModel(parent)
@@ -23,7 +25,7 @@ bool FeedModel::initFromRPC(QVariant *resp)
        QStandardItem *item = new QStandardItem(rssTitle);
        item->setCheckable( true );
        if(!imageUrl.isEmpty()) {
-
+           ResourceManager *rm = static_cast<NewsApplication*>->getRM();
        }
 
        item->setData(rssId);

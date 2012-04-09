@@ -53,8 +53,12 @@ void ResourceManager::finished(QNetworkReply *reply)
     {
         // read data from QNetworkReply here
         QImageReader imageReader(reply);
-        QImage pic = imageReader.read();
+        QPixmap pic = QPixmap();
 
+       DownloadRequest d = requestQueue.first();
+       if(d.icon &&  pic.convertFromImage(imageReader.read())) {
+           d.icon->addPixmap(pic);
+       }
     }
     // Some http error received
     else
