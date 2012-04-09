@@ -1,4 +1,6 @@
 #include "resourcemanager.h"
+#include "node.h"
+#include "file.h"
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkRequest>
@@ -19,12 +21,12 @@ ResourceManager::~ResourceManager()
 
 }
 
-void ResourceManager::DownloadIcon(const QString &url, QIcon *target)
+void ResourceManager::DownloadIcon(const QString &url, QStandardItem *target)
 {
     QUrl durl(url);
     QNetworkReply* reply = m_nam->get(QNetworkRequest(durl));
     DownloadRequest d;
-    d.icon = target;
+    d.item = target;
     requestQueue.push_back(d);
 }
 
@@ -56,8 +58,8 @@ void ResourceManager::finished(QNetworkReply *reply)
         QPixmap pic = QPixmap();
 
        DownloadRequest d = requestQueue.first();
-       if(d.icon &&  pic.convertFromImage(imageReader.read())) {
-           d.icon->addPixmap(pic);
+       if(d.item &&  pic.convertFromImage(imageReader.read())) {
+           d.item->setIcon(pic);
        }
     }
     // Some http error received
@@ -71,4 +73,86 @@ void ResourceManager::finished(QNetworkReply *reply)
     // We receive ownership of the reply object
     // and therefore need to handle deletion.
     delete reply;
+}
+
+bool ResourceManager::parseFeed(QVariant *resp)
+{
+   QList<QVariant> elements(resp->toList());
+   m_feed.clear();
+
+
+   for (int i = 0; i < elements.size(); ++i) {
+       // parse element
+       QMap<QString, QVariant> tags = elements[i].toMap();
+       QString rssTitle;
+       QString imageUrl;
+       int rssId;
+
+       rssTitle = tags.value("title").toString();
+       rssId = tags.value("iid").toInt();
+       imageUrl = tags.value("image").toString();
+
+       if(rssTitle.isEmpty()) {
+           qDebug() << "Title is empty";
+           m_feed.clear();
+           return false;
+       }
+
+       QStandardItem *item = new QStandardItem(rssTitle);
+       item->setCheckable( true );
+       if(!imageUrl.isEmpty()) {
+           DownloadIcon(imageUrl, item);
+
+       }
+
+       item->setData(rssId);
+       m_feed.appendRow(item);
+   }
+    return true;
+}
+
+void ResourceManager::cleanup()
+{
+    // cleanup nodes
+    qDeleteAll(m_nodes);
+
+    // cleanup files
+    qDeleteAll(m_files);
+}
+
+File *ResourceManager::lookupFile(const File& file)
+{
+    for(int i = 0; i < m_files.size(); ++i) {
+        if(*(m_files[i]) == file)
+            return m_files[i];
+    }
+
+    return NULL;
+}
+
+void ResourceManager::addFile(const File& file)
+{
+    m_files.append(new File(file));
+}
+
+void ResourceManager::removeFile(File *file)
+{
+    int pos = m_files.indexOf(file);
+    if(pos != -1)
+        m_files.removeAt(pos);
+}
+
+void ResourceManager::addNode(Node *node)
+{
+    m_nodes.append(node);
+
+    QStandardItem *newItem = new QStandardItem(node->getTitle());
+    m_themes.appendRow(newItem);
+}
+
+void ResourceManager::removeNode(Node *node)
+{
+    int pos = m_nodes.indexOf(node);
+    if(pos != -1)
+        m_nodes.removeAt(pos);
 }

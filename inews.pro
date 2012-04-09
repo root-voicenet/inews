@@ -22,7 +22,10 @@ SOURCES += main.cpp\
     taxonomymodel.cpp \
     newsapplication.cpp \
     resourcemanager.cpp \
-    feedmodel.cpp
+    feedmodel.cpp \
+    textedit.cpp \
+    node.cpp \
+    file.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -37,7 +40,11 @@ HEADERS  += mainwindow.h \
     taxonomymodel.h \
     newsapplication.h \
     resourcemanager.h \
-    feedmodel.h
+    feedmodel.h \
+    textedit.h \
+    node.h \
+    file.h
 
-FORMS    += mainwindow.ui
+FORMS    += \
+    mainwindow.ui
 QT += core gui network xml

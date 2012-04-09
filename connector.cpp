@@ -106,7 +106,7 @@ void Connector::processResponse(int id, QVariant responce)
         }else if(method == METHOD_FILE_UPLOAD) {
             signal = &Connector::fileUploadFinished;
         }else if(method == METHOD_SYNC) {
-           if(rm->m_feed.initFromRPC(&responce)) {
+           if(rm->parseFeed(&responce)) {
                 signal = &Connector::syncComplete;
            }
         }

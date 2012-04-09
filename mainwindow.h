@@ -25,6 +25,7 @@ private:
 
 private slots:
     void taxonomyLoaded();
+    void createNode();
 };
 
 #endif // MAINWINDOW_H

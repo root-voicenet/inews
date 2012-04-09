@@ -25,7 +25,7 @@ bool FeedModel::initFromRPC(QVariant *resp)
        QStandardItem *item = new QStandardItem(rssTitle);
        item->setCheckable( true );
        if(!imageUrl.isEmpty()) {
-           ResourceManager *rm = static_cast<NewsApplication*>->getRM();
+           ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
        }
 
        item->setData(rssId);
