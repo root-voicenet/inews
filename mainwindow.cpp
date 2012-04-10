@@ -6,7 +6,6 @@
 #include "resourcemanager.h"
 #include "newsapplication.h"
 #include "textedit.h"
-#include "flowlayout.h"
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -34,16 +33,16 @@ void MainWindow::setupUI()
     titleEdit = new QLineEdit(centralwidget);
 
     QGridLayout *gridLayout = new QGridLayout();
-    gridLayout->addWidget(new QLabel(centralwidget), 0, 0, 1, 1);
-    gridLayout->addWidget(titleEdit, 1, 1, 1, 1);
-    gridLayout->addWidget(textEdit, 2, 0, 1, 2);
-    gridLayout->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
+    gridLayout->addWidget(new QLabel(tr("Theme"), centralwidget), 0, 0, 1, 3);
+    gridLayout->addWidget(titleEdit, 1, 1, 1, 2);
+    gridLayout->addWidget(textEdit, 2, 0, 1, 3);
+    gridLayout->addWidget(new QLabel(centralwidget), 3, 0, 1, 2);
 
-    QPushButton *btnSave = new QPushButton(centralwidget);
-    gridLayout->addWidget(btnSave, 3, 1, 1, 1);
-    gridLayout->addWidget(new QPushButton(centralwidget), 4, 1, 1, 1);
-    gridLayout->addWidget(new QPushButton(centralwidget), 1, 0, 1, 1);
-    gridLayout->setColumnStretch(0, 1);
+    QPushButton *btnSave = new QPushButton(tr("Save"), centralwidget);
+    gridLayout->addWidget(btnSave, 3, 2, 1, 1);
+    gridLayout->addWidget(new QPushButton(centralwidget), 4, 2, 1, 1);
+    gridLayout->addWidget(new QPushButton(tr("New"), centralwidget), 1, 0, 1, 1);
+    gridLayout->setColumnStretch(1, 1);
     hbox->addLayout(gridLayout);
 
     QGridLayout *gridRught = new QGridLayout();
@@ -63,7 +62,7 @@ void MainWindow::setupUI()
     gridRught->addWidget(new QPushButton(centralwidget), 2, 0, 1, 2);
     hbox->addLayout(gridRught);
 
-    hbox->setStretch(1, 1);
+    hbox->setStretch(1, 0);
     setCentralWidget(centralwidget);
 
     connect(btnSave, SIGNAL(clicked()), this, SLOT(createNode()));
@@ -72,25 +71,31 @@ void MainWindow::setupUI()
 
 void MainWindow::setupDockablePanels()
 {
-    QDockWidget *dock = new QDockWidget(tr("Recent News"), this);
+    dock = new QDockWidget(tr("Recent News"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::TopDockWidgetArea);
+    dock->setFeatures(QDockWidget::DockWidgetMovable);
     QWidget *central = new QWidget(dock);
 
-    FlowLayout *flow = new FlowLayout;
+    QBoxLayout *box = new QBoxLayout(QBoxLayout::TopToBottom);
     rssList = new QListView(central);
 
-    flow->addWidget(rssList);
+    box->addWidget(rssList);
     taxThemeList = new QListWidget(central);
-    flow->addWidget(taxThemeList);
+
+    QHBoxLayout *hbox = new QHBoxLayout;
+
+    hbox->addWidget(taxThemeList);
     taxThemeList->setMaximumSize(100, 200);
     taxThemeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     taxGeoList = new QListWidget(central);
     taxGeoList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     taxGeoList->setMaximumSize(100, 200);
-    flow->addWidget(taxGeoList);
-    central->setLayout(flow);
+    hbox->addWidget(taxGeoList);
+    box->addLayout(hbox);
+    central->setLayout(box);
     dock->setWidget(central);
+    connect(dock, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(dockLocationChanged(Qt::DockWidgetArea)));
 
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 }
@@ -236,4 +241,18 @@ QList<int> MainWindow::getSelectedTids(QListWidget *widget)
     }
 
     return res;
+}
+
+void MainWindow::dockLocationChanged(Qt::DockWidgetArea area)
+{
+    QWidget *central = dock->widget();
+    QBoxLayout *box = static_cast<QBoxLayout*>(central->layout());
+    if(area == Qt::TopDockWidgetArea) {
+        box->setDirection(QBoxLayout::LeftToRight);
+    }else{
+        box->setDirection(QBoxLayout::TopToBottom);
+    }
+
+    central->adjustSize();
+    adjustSize();
 }

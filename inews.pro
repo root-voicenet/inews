@@ -28,8 +28,7 @@ SOURCES += main.cpp\
     node.cpp \
     file.cpp \
     rssitem.cpp \
-    taxonomyterm.cpp \
-    flowlayout.cpp
+    taxonomyterm.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -49,9 +48,11 @@ HEADERS  += mainwindow.h \
     node.h \
     file.h \
     rssitem.h \
-    taxonomyterm.h \
-    flowlayout.h
+    taxonomyterm.h
 
 FORMS    += \
     mainwindow.ui
 QT += core gui network xml
+
+RESOURCES += \
+    resource.qrc
