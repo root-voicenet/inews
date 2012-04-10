@@ -2,6 +2,7 @@
 #include <QUrl>
 #include "newsapplication.h"
 #include "resourcemanager.h"
+#include "rssitem.h"
 
 
 
@@ -11,7 +12,7 @@
  const QString Connector::METHOD_USER_CREATE = "user.create";
  const QString Connector::METHOD_TAXONOMY_GETTREE = "taxonomy_vocabulary.getTree";
  const QString Connector::METHOD_FILE_UPLOAD = "media.upload";
- const QString Connector::METHOD_SYNC = "sync";
+ const QString Connector::METHOD_SYNC_RSS = "sync.rss";
 
 
 Connector::Connector(const QString& url, QObject *parent):
@@ -39,10 +40,26 @@ void Connector::Login(const QString& username, const QString& password) {
     //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
 }
 
-void Connector::Sync() {
+void Connector::SyncRss(QList<RssItem*> rss) {
 
-   // int requestID = m_client.request(METHOD_SYNC, fitems, nodes);
-   // addRequest(requestID, METHOD_USER_LOGIN);
+    QList<xmlrpc::Variant> res;
+    for(int i = 0; i < rss.size(); ++i) {
+        QMap<QString, xmlrpc::Variant> resItem;
+        resItem.insert("id", rss[i]->getId());
+
+        QList<int> tids = rss[i]->getTids();
+        QList<xmlrpc::Variant> resTids;
+
+        for(int j = 0; j < tids.size(); ++j)
+            resTids.append(tids[j]);
+
+        resItem.insert("tids", resTids);
+
+        res.append(resItem);
+    }
+
+    int requestID = m_client.request(METHOD_SYNC_RSS, res);
+    addRequest(requestID, METHOD_SYNC_RSS);
 
     //int requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 6);
     //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
@@ -51,6 +68,7 @@ void Connector::Sync() {
 void Connector::UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids) {
     QByteArray buffer = postData->toBase64();
     QList<xmlrpc::Variant> tids;
+
     for(int i = 0; i < pointer_tids.size(); ++i)
         tids.append(pointer_tids[i]);
 
@@ -98,14 +116,13 @@ void Connector::processResponse(int id, QVariant responce)
         }else if(method == METHOD_TAXONOMY_GETTREE) {
             TaxonomyModel* m = new TaxonomyModel();
             int voc_id = (it.value().param) ? it.value().param->toInt() : 0;
-            if(m->initFromRPC(&responce)) {
-                m_taxonomys.insert(voc_id, m);
+            if(rm->parseTaxonomy(voc_id, &responce)) {
                 signal = &Connector::taxonomyLoaded;
             }else
                 delete m;
         }else if(method == METHOD_FILE_UPLOAD) {
             signal = &Connector::fileUploadFinished;
-        }else if(method == METHOD_SYNC) {
+        }else if(method == METHOD_SYNC_RSS) {
            if(rm->parseFeed(&responce)) {
                 signal = &Connector::syncComplete;
            }
@@ -132,10 +149,10 @@ void Connector::sendPostRequest(const QString& method)
 
     if(method == METHOD_USER_LOGIN) {
         requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 13);
-        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(1));
+        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(ResourceManager::TAXONOMY_THEME));
 
         requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 14);
-        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(2));
+        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(ResourceManager::TAXONOMY_GEO));
     }
 }
 

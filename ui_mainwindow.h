@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Tue Apr 10 01:15:08 2012
+** Created: Tue 10. Apr 19:36:11 2012
 **      by: Qt User Interface Compiler version 4.7.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -20,6 +20,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QListView>
+#include <QtGui/QListWidget>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenuBar>
 #include <QtGui/QPushButton>
@@ -37,12 +38,12 @@ public:
     QHBoxLayout *horizontalLayout_2;
     QVBoxLayout *verticalLayout;
     QLabel *label;
-    QListView *listView;
+    QListView *rssList;
     QPushButton *pushButton;
     QLabel *label_2;
     QHBoxLayout *horizontalLayout;
-    QListView *listView_2;
-    QListView *listView_3;
+    QListWidget *taxThemeList;
+    QListWidget *taxGeoList;
     QGridLayout *gridLayout;
     QLabel *label_3;
     QLineEdit *titleEdit;
@@ -55,7 +56,7 @@ public:
     QLabel *label_5;
     QListView *themesList;
     QPushButton *pushButton_5;
-    QPushButton *pushButton_6;
+    QPushButton *btnSync;
     QLabel *label_6;
     QListView *listView_5;
     QPushButton *pushButton_7;
@@ -79,11 +80,11 @@ public:
 
         verticalLayout->addWidget(label);
 
-        listView = new QListView(centralwidget);
-        listView->setObjectName(QString::fromUtf8("listView"));
-        listView->setMaximumSize(QSize(210, 16777215));
+        rssList = new QListView(centralwidget);
+        rssList->setObjectName(QString::fromUtf8("rssList"));
+        rssList->setMaximumSize(QSize(210, 16777215));
 
-        verticalLayout->addWidget(listView);
+        verticalLayout->addWidget(rssList);
 
         pushButton = new QPushButton(centralwidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
@@ -97,17 +98,17 @@ public:
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        listView_2 = new QListView(centralwidget);
-        listView_2->setObjectName(QString::fromUtf8("listView_2"));
-        listView_2->setMaximumSize(QSize(100, 16777215));
+        taxThemeList = new QListWidget(centralwidget);
+        taxThemeList->setObjectName(QString::fromUtf8("taxThemeList"));
+        taxThemeList->setMaximumSize(QSize(100, 16777215));
 
-        horizontalLayout->addWidget(listView_2);
+        horizontalLayout->addWidget(taxThemeList);
 
-        listView_3 = new QListView(centralwidget);
-        listView_3->setObjectName(QString::fromUtf8("listView_3"));
-        listView_3->setMaximumSize(QSize(100, 16777215));
+        taxGeoList = new QListWidget(centralwidget);
+        taxGeoList->setObjectName(QString::fromUtf8("taxGeoList"));
+        taxGeoList->setMaximumSize(QSize(100, 16777215));
 
-        horizontalLayout->addWidget(listView_3);
+        horizontalLayout->addWidget(taxGeoList);
 
 
         verticalLayout->addLayout(horizontalLayout);
@@ -174,11 +175,11 @@ public:
 
         gridLayout_2->addWidget(pushButton_5, 5, 1, 1, 1);
 
-        pushButton_6 = new QPushButton(centralwidget);
-        pushButton_6->setObjectName(QString::fromUtf8("pushButton_6"));
-        pushButton_6->setMaximumSize(QSize(16777215, 50));
+        btnSync = new QPushButton(centralwidget);
+        btnSync->setObjectName(QString::fromUtf8("btnSync"));
+        btnSync->setMaximumSize(QSize(16777215, 50));
 
-        gridLayout_2->addWidget(pushButton_6, 6, 0, 1, 2);
+        gridLayout_2->addWidget(btnSync, 6, 0, 1, 2);
 
         label_6 = new QLabel(centralwidget);
         label_6->setObjectName(QString::fromUtf8("label_6"));
@@ -202,7 +203,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 25));
+        menubar->setGeometry(QRect(0, 0, 800, 21));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -226,7 +227,7 @@ public:
         pushButton_4->setText(QApplication::translate("MainWindow", "New Theme", 0, QApplication::UnicodeUTF8));
         label_5->setText(QApplication::translate("MainWindow", "Themes", 0, QApplication::UnicodeUTF8));
         pushButton_5->setText(QApplication::translate("MainWindow", "Del news", 0, QApplication::UnicodeUTF8));
-        pushButton_6->setText(QApplication::translate("MainWindow", "Sync", 0, QApplication::UnicodeUTF8));
+        btnSync->setText(QApplication::translate("MainWindow", "Sync", 0, QApplication::UnicodeUTF8));
         label_6->setText(QApplication::translate("MainWindow", "Atached News", 0, QApplication::UnicodeUTF8));
         pushButton_7->setText(QApplication::translate("MainWindow", "Del Theme", 0, QApplication::UnicodeUTF8));
     } // retranslateUi

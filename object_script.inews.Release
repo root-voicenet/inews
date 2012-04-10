@@ -12,6 +12,11 @@ INPUT(
 ./release\newsapplication.o
 ./release\resourcemanager.o
 ./release\feedmodel.o
+./release\textedit.o
+./release\node.o
+./release\file.o
+./release\rssitem.o
+./release\taxonomyterm.o
 ./release\moc_mainwindow.o
 ./release\moc_server_private.o
 ./release\moc_server.o
@@ -21,4 +26,5 @@ INPUT(
 ./release\moc_newsapplication.o
 ./release\moc_resourcemanager.o
 ./release\moc_feedmodel.o
+./release\moc_textedit.o
 );

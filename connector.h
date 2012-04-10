@@ -7,6 +7,7 @@
 #include <QMap>
 #include "taxonomymodel.h"
 
+class RssItem;
 class Connector : public QObject
 {
     Q_OBJECT
@@ -16,9 +17,7 @@ public:
 
     void Login(const QString& username, const QString& password);
     void UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids);
-    void Sync();
-
-    TaxonomyModel* getTaxonomy(int id) { return m_taxonomys[id]; }
+    void SyncRss(QList<RssItem*> rss);
 private:
     //To allow to return pointers to signals
     typedef void (Connector::*Signal)();
@@ -35,7 +34,6 @@ private:
     bool m_isLogged;
     bool m_isConnected;
     QMap<int, Request> m_requests;
-    QMap<int, TaxonomyModel*> m_taxonomys;
     QMutex requestListMutex;
 
     // methods
@@ -45,8 +43,7 @@ private:
     static const QString METHOD_USER_CREATE;
     static const QString METHOD_TAXONOMY_GETTREE;
     static const QString METHOD_FILE_UPLOAD;
-    static const QString METHOD_SYNC;
-
+    static const QString METHOD_SYNC_RSS;
 
 signals:
     /* Indicates user logged in and a session was received - ie successful log in */

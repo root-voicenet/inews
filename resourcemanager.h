@@ -9,6 +9,8 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class Node;
 class File;
+class RssItem;
+class TaxonomyTerm;
 
 class ResourceManager : public QObject
 {
@@ -17,6 +19,11 @@ class ResourceManager : public QObject
 
     Q_OBJECT
 public:
+    enum {
+        TAXONOMY_THEME,
+        TAXONOMY_GEO
+    };
+
     ResourceManager(QObject *parent = NULL);
     ~ResourceManager();
     QStandardItemModel &getFeed() { return m_feed; }
@@ -25,6 +32,13 @@ public:
     void DownloadIcon(const QString& url, QStandardItem *target);
     void addNode(Node *node);
     void removeNode(Node *node);
+
+    QList<TaxonomyTerm*> getTaxonomy(int id);
+
+    void addRssItem(RssItem *item);
+    void removeRssItem(RssItem *item);
+    void clearRssItems();
+    QList<RssItem*> getUpdatedRss();
 private:
     typedef struct DownloadRequest {
         QStandardItem* item;
@@ -43,12 +57,23 @@ private:
     // and attached files
     QList<File*> m_files;
 
+    // rss items
+    QList<RssItem*> m_rssitems;
+
+    // taxonomys
+    QList<TaxonomyTerm*> m_themeTerms;
+    QList<TaxonomyTerm*> m_geoTerms;
+
     bool parseFeed(QVariant *resp);
+    bool parseTaxonomy(int id, QVariant *resp);
+
+
     File *lookupFile(const File& file);
     void addFile(const File& file);
     void removeFile(File* file);
 
     void cleanup();
+    void clearTaxonomy(int id);
 private slots:
     void finished(QNetworkReply* reply);
 };

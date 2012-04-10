@@ -12,6 +12,11 @@ INPUT(
 ./debug\newsapplication.o
 ./debug\resourcemanager.o
 ./debug\feedmodel.o
+./debug\textedit.o
+./debug\node.o
+./debug\file.o
+./debug\rssitem.o
+./debug\taxonomyterm.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -21,4 +26,5 @@ INPUT(
 ./debug\moc_newsapplication.o
 ./debug\moc_resourcemanager.o
 ./debug\moc_feedmodel.o
+./debug\moc_textedit.o
 );

@@ -175,6 +175,7 @@ int Client::request( QList<Variant> params, QString methodName )
     QBuffer *outBuffer = new QBuffer;
 
     QByteArray data = Request(methodName,params).composeRequest();
+    qDebug() << "data" << data;
 
     QHttpRequestHeader header("POST",d->path);
     header.setContentLength( data.size() );
@@ -282,6 +283,7 @@ void Client::requestFinished(int id, bool error)
 #ifdef XMLRPC_DEBUG
     qDebug() << "request" <<  d->methodNames[id] <<  "finished, id=" << id << ", isError:" << error;
 #endif
+
 
     if ( error ) {
         //if ( d->serverResponses.count(id) )

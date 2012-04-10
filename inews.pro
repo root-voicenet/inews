@@ -9,6 +9,8 @@ QT       += core gui
 TARGET = inews
 TEMPLATE = app
 INCLUDEPATH += "qxmlrpc"
+DEFINES += "XMLRPC_DEBUG=1"
+DEFINES += "DEBUG=1"
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -25,7 +27,9 @@ SOURCES += main.cpp\
     feedmodel.cpp \
     textedit.cpp \
     node.cpp \
-    file.cpp
+    file.cpp \
+    rssitem.cpp \
+    taxonomyterm.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -43,7 +47,9 @@ HEADERS  += mainwindow.h \
     feedmodel.h \
     textedit.h \
     node.h \
-    file.h
+    file.h \
+    rssitem.h \
+    taxonomyterm.h
 
 FORMS    += \
     mainwindow.ui
