@@ -43,9 +43,6 @@ void ResourceManager::finished(QNetworkReply *reply)
      if (requestQueue.size()<1){
         requestListMutex.unlock();
                 qDebug()<<"network request has been deleted from queue before reply was received";
-                QByteArray response(reply->readAll());
-                QString resultString(response);
-                qDebug()<<resultString;
                 return;
     }
     // Reading attributes of the reply
@@ -59,29 +56,31 @@ void ResourceManager::finished(QNetworkReply *reply)
 
     // no error received?
 
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        // read data from QNetworkReply here
-        QImageReader imageReader(reply);
-        QPixmap pic;
+    if(statusCodeV.toInt() == 200  && redirectionTargetUrl.toString().isEmpty()) {
 
-       DownloadRequest d = requestQueue.first();
-       QImage readedImage = imageReader.read();
-       //if(d.item &&  pic.convertFromImage(imageReader.read())) {
-        //   d.item->setIcon(pic);
-      // }
-    }
-    // Some http error received
-    else
-    {
-        // handle errors here
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            // read data from QNetworkReply here
+            QImageReader imageReader(reply);
+            QPixmap pic;
+
+           DownloadRequest d = requestQueue.first();
+           if(d.item &&  pic.convertFromImage(imageReader.read())) {
+               d.item->setIcon(pic);
+           }
+        }
+        // Some http error received
+        else
+        {
+            // handle errors here
+        }
     }
 
     requestQueue.remove(0);
     requestListMutex.unlock();
     // We receive ownership of the reply object
     // and therefore need to handle deletion.
-    delete reply;
+    //delete reply;
 }
 
 void ResourceManager::clearTaxonomy(int id)
@@ -137,7 +136,10 @@ bool ResourceManager::parseFeed(QVariant *resp)
 
        rssTitle = tags.value("title").toString();
        rssId = tags.value("iid").toInt();
-       imageUrl = tags.value("image").toString();
+       QList<QVariant> images = tags.value("image").toList();
+       if(!images.isEmpty()) {
+           imageUrl = images.first().toString();
+       }
 
        if(rssTitle.isEmpty()) {
            qDebug() << "Title is empty";
@@ -205,11 +207,10 @@ void ResourceManager::removeNode(Node *node)
 void ResourceManager::addRssItem(RssItem *item)
 {
     QStandardItem *listitem = new QStandardItem(item->getTitle());
-
-    //if(!item->getImageUrl().isEmpty()) {
-    //QString url = "http://t.irkipedia.ru/sites/default/files/styles/media_browser_teaser_view_style/public/Media_Root/1.jpg";
-    //DownloadIcon(url, listitem);
-    //}
+    QString imageUrl = item->getImageUrl();
+    if(!imageUrl.isEmpty()) {
+       DownloadIcon(imageUrl, listitem);
+    }
     QVariant data((int)item);
     listitem->setData(data);
     m_feed.appendRow(listitem);

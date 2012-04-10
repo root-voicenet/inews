@@ -8,6 +8,9 @@
 #include "taxonomymodel.h"
 
 class RssItem;
+
+QT_FORWARD_DECLARE_CLASS(QProgressBar)
+
 class Connector : public QObject
 {
     Q_OBJECT

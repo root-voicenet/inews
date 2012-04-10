@@ -1,5 +1,6 @@
 #include "connector.h"
 #include <QUrl>
+#include <QProgressBar>
 #include "newsapplication.h"
 #include "resourcemanager.h"
 #include "rssitem.h"
@@ -20,7 +21,7 @@ Connector::Connector(const QString& url, QObject *parent):
 {
     QUrl weburl(url);
     m_client.setHost(weburl.host(), 80, weburl.path());
-    m_client.setUserAgent("Qt"); // Если нужен
+    m_client.setUserAgent("Qt");
 
     connect(&m_client, SIGNAL(done(int, QVariant)), this, SLOT(processResponse(int, QVariant)));
     connect(&m_client, SIGNAL(failed(int, int, QString)), this, SLOT(failed(int, int, QString)));

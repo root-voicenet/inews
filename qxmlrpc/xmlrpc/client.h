@@ -54,7 +54,6 @@ public:
     void setCookie( const QString & cookie );
 
     void setUserAgent( const QString & userAgent );
-
 	virtual ~Client();
 
     int request( QList<Variant> params, QString methodName );

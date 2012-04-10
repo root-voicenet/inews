@@ -5,13 +5,13 @@
 #include <QModelIndex>
 
 
-namespace Ui {
-class MainWindow;
-}
-
 class Connector;
+class TextEdit;
 
 QT_FORWARD_DECLARE_CLASS(QListWidget)
+QT_FORWARD_DECLARE_CLASS(QListView)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -21,14 +21,21 @@ public:
     ~MainWindow();
     
 private:
-    Ui::MainWindow *ui;
     Connector* m_connector;
 
     // initialize widgets
     void initWidgets();
+    void setupUI();
+    void setupDockablePanels();
 
     void selectTids(QListWidget *widget, const QList<int> &tids);
     QList<int> getSelectedTids(QListWidget *widget);
+
+private: //widgets
+    QListView *rssList, *themesList, *attachedRssList;
+    QListWidget *taxThemeList, *taxGeoList;
+    TextEdit *textEdit;
+    QLineEdit *titleEdit;
 private slots:
     void taxonomyLoaded();
     void createNode();

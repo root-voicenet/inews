@@ -1,22 +1,19 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "connector.h"
 #include "node.h"
 #include "rssitem.h"
 #include "taxonomyterm.h"
 #include "resourcemanager.h"
 #include "newsapplication.h"
-#include <QMessageBox>
+#include "textedit.h"
+#include "flowlayout.h"
+#include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
 {
-    ui->setupUi(this);
-    connect(ui->btnSave, SIGNAL(clicked()), this, SLOT(createNode()));
-    connect(ui->btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
-    connect(ui->rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
-
+    setupUI();
+    setupDockablePanels();
     initWidgets();
 }
 
@@ -24,15 +21,88 @@ MainWindow::~MainWindow()
 {
     if(m_connector)
         delete m_connector;
-    delete ui;
+}
+
+void MainWindow::setupUI()
+{
+
+    resize(800, 612);
+    QWidget *centralwidget = new QWidget(this);
+    QHBoxLayout*  hbox = new QHBoxLayout(centralwidget);
+
+    textEdit = new TextEdit(centralwidget);
+    titleEdit = new QLineEdit(centralwidget);
+
+    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout->addWidget(new QLabel(centralwidget), 0, 0, 1, 1);
+    gridLayout->addWidget(titleEdit, 1, 1, 1, 1);
+    gridLayout->addWidget(textEdit, 2, 0, 1, 2);
+    gridLayout->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
+
+    QPushButton *btnSave = new QPushButton(centralwidget);
+    gridLayout->addWidget(btnSave, 3, 1, 1, 1);
+    gridLayout->addWidget(new QPushButton(centralwidget), 4, 1, 1, 1);
+    gridLayout->addWidget(new QPushButton(centralwidget), 1, 0, 1, 1);
+    gridLayout->setColumnStretch(0, 1);
+    hbox->addLayout(gridLayout);
+
+    QGridLayout *gridRught = new QGridLayout();
+    gridRught->addWidget(new QLabel(centralwidget), 0, 0, 1, 1);
+
+    themesList = new QListView(centralwidget);
+    gridRught->addWidget(themesList, 1, 0, 1, 2);
+    gridRught->addWidget(new QPushButton(centralwidget), 5, 1, 1, 1);
+
+    QPushButton* btnSync = new QPushButton(centralwidget);
+    btnSync->setMaximumSize(QSize(16777215, 50));
+    gridRught->addWidget(btnSync, 6, 0, 1, 2);
+    gridRught->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
+
+    attachedRssList = new QListView(centralwidget);
+    gridRught->addWidget(attachedRssList, 4, 0, 1, 2);
+    gridRught->addWidget(new QPushButton(centralwidget), 2, 0, 1, 2);
+    hbox->addLayout(gridRught);
+
+    hbox->setStretch(1, 1);
+    setCentralWidget(centralwidget);
+
+    connect(btnSave, SIGNAL(clicked()), this, SLOT(createNode()));
+    connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
+}
+
+void MainWindow::setupDockablePanels()
+{
+    QDockWidget *dock = new QDockWidget(tr("Recent News"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::TopDockWidgetArea);
+    QWidget *central = new QWidget(dock);
+
+    FlowLayout *flow = new FlowLayout;
+    rssList = new QListView(central);
+
+    flow->addWidget(rssList);
+    taxThemeList = new QListWidget(central);
+    flow->addWidget(taxThemeList);
+    taxThemeList->setMaximumSize(100, 200);
+    taxThemeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+    taxGeoList = new QListWidget(central);
+    taxGeoList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    taxGeoList->setMaximumSize(100, 200);
+    flow->addWidget(taxGeoList);
+    central->setLayout(flow);
+    dock->setWidget(central);
+
+    addDockWidget(Qt::LeftDockWidgetArea, dock);
 }
 
 void MainWindow::initWidgets()
 {
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
 
-    ui->themesList->setModel(&rm->getThemes());
-    ui->rssList->setModel(&rm->getFeed());
+    connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
+
+    themesList->setModel(&rm->getThemes());
+    rssList->setModel(&rm->getFeed());
 
     m_connector = new Connector("http://test.irkipedia.ru/api");
     m_connector->Login("admin", "alcd7c9");
@@ -45,34 +115,34 @@ void MainWindow::taxonomyLoaded()
 
     QList<TaxonomyTerm*> themeList = rm->getTaxonomy(ResourceManager::TAXONOMY_THEME);
     if(themeList.size() > 0) {
-        ui->taxThemeList->clear();
+        taxThemeList->clear();
         for(int i = 0; i < themeList.size(); ++i) {
             QListWidgetItem *item = new QListWidgetItem(themeList[i]->getTitle());
             QVariant data((int)themeList[i]);
             item->setData(Qt::UserRole + 1, data);
             item->setCheckState(Qt::Unchecked);
 
-            ui->taxThemeList->addItem(item);
+            taxThemeList->addItem(item);
         }
     }
 
     QList<TaxonomyTerm*> geoList = rm->getTaxonomy(ResourceManager::TAXONOMY_GEO);
     if(geoList.size() > 0) {
-        ui->taxGeoList->clear();
+        taxGeoList->clear();
         for(int i = 0; i < themeList.size(); ++i) {
             QListWidgetItem *item = new QListWidgetItem(geoList[i]->getTitle());
             QVariant data((int)geoList[i]);
             item->setData(Qt::UserRole + 1, data);
             item->setCheckState(Qt::Unchecked);
 
-            ui->taxGeoList->addItem(item);
+            taxGeoList->addItem(item);
         }
     }
 }
 
 void MainWindow::createNode()
 {
-    QString title = ui->titleEdit->text();
+    QString title = titleEdit->text();
     if(title.isEmpty()) {
         QMessageBox msg(QMessageBox::Information, "Error", "You must enter title of the theme",
                         QMessageBox::Ok, this);
@@ -80,20 +150,20 @@ void MainWindow::createNode()
         return;
     }
 
-   if(!ui->textEdit->maybeSave()) {
+   if(!textEdit->maybeSave()) {
         QMessageBox msg(QMessageBox::Information, "Error", "You must enter content of the theme",
                         QMessageBox::Ok, this);
          msg.exec();
         return;
     }
 
-    QString body = ui->textEdit->getContent();
+    QString body = textEdit->getContent();
     Node *n = new Node(title, body);
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
     rm->addNode(n);
 
-    ui->titleEdit->clear();
-    ui->textEdit->clearContent();
+    titleEdit->clear();
+    textEdit->clearContent();
 }
 
 void MainWindow::syncClicked()
@@ -107,7 +177,7 @@ void MainWindow::rssItemSelected(QModelIndex index)
     static QStandardItem *lastItem = NULL;
     RssItem *rss;
 
-    QStandardItemModel *model = static_cast<QStandardItemModel*>(ui->rssList->model());
+    QStandardItemModel *model = static_cast<QStandardItemModel*>(rssList->model());
 
     QStandardItem *item = model->itemFromIndex(index);
 
@@ -123,16 +193,16 @@ void MainWindow::rssItemSelected(QModelIndex index)
         if(lastItem != NULL) {
             RssItem *rss1 = reinterpret_cast<RssItem*>(lastItem->data().toInt());
             if(rss1) {
-                tids = getSelectedTids(ui->taxThemeList);
-                tids.append(getSelectedTids(ui->taxGeoList));
+                tids = getSelectedTids(taxThemeList);
+                tids.append(getSelectedTids(taxGeoList));
                 rss1->setTids(tids);
             }
         }
         lastItem = item;
     }
 
-   selectTids(ui->taxThemeList, rss->getTids());
-   selectTids(ui->taxGeoList, rss->getTids());
+   selectTids(taxThemeList, rss->getTids());
+   selectTids(taxGeoList, rss->getTids());
 }
 
 

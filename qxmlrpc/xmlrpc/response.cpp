@@ -156,8 +156,6 @@ bool Response::setContent( const QByteArray& responseData, QString *errorMessage
         return false;
     }
 
-    qDebug() << "doc:" << doc.toString();
-
     QString errorString;
 
 

@@ -9,6 +9,7 @@
 #include <qbuffer.h>
 #include <QtNetwork>
 #include <QAuthenticator>
+#include <QProgressBar>
 
 //#define XMLRPC_DEBUG
 
@@ -40,7 +41,7 @@ public:
  * Constructs a XmlRPC client.
  */
 Client::Client(QObject * parent)
-: QObject( parent )
+    : QObject( parent )
 {
     d = new Private;
     d->port = 0;
@@ -175,7 +176,6 @@ int Client::request( QList<Variant> params, QString methodName )
     QBuffer *outBuffer = new QBuffer;
 
     QByteArray data = Request(methodName,params).composeRequest();
-    qDebug() << "data" << data;
 
     QHttpRequestHeader header("POST",d->path);
     header.setContentLength( data.size() );
@@ -329,7 +329,6 @@ void Client::requestFinished(int id, bool error)
     }
 	
 }
-
 
 } 
 
