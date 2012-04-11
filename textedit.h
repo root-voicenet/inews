@@ -23,11 +23,12 @@ public:
     QString getContent();
     void clearContent();
     bool maybeSave();
+    bool load(const QString &data);
 private:
     void setupFileActions();
     void setupEditActions();
     void setupTextActions();
-    bool load(const QString &f);
+
 
     void setCurrentFileName(const QString &fileName);
 

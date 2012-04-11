@@ -27,4 +27,5 @@ INPUT(
 ./release\moc_resourcemanager.o
 ./release\moc_feedmodel.o
 ./release\moc_textedit.o
+./release\qrc_resource.o
 );

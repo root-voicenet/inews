@@ -32,13 +32,17 @@ public:
     void DownloadIcon(const QString& url, QStandardItem *target);
     void addNode(Node *node);
     void removeNode(Node *node);
+    void clearNodes();
+    Node* searchNode(int id);
 
     QList<TaxonomyTerm*> getTaxonomy(int id);
 
     void addRssItem(RssItem *item);
     void removeRssItem(RssItem *item);
     void clearRssItems();
+
     QList<RssItem*> getUpdatedRss();
+    QList<Node*> getUpdatedNodes();
 private:
     typedef struct DownloadRequest {
         QStandardItem* item;
@@ -65,8 +69,9 @@ private:
     QList<TaxonomyTerm*> m_geoTerms;
 
     bool parseFeed(QVariant *resp);
+    bool parseNodes(QVariant *resp);
+    Node *parseNode(QVariant *resp);
     bool parseTaxonomy(int id, QVariant *resp);
-
 
     File *lookupFile(const File& file);
     void addFile(const File& file);

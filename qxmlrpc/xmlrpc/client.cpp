@@ -183,7 +183,6 @@ int Client::request( QList<Variant> params, QString methodName )
     header.setValue( "User-Agent", d->userAgent );
     //header.setValue( "Connection", "Keep-Alive");
 
-
     if ( !d->userName.isEmpty() ) {
         QByteArray authData = QString(d->userName + ":" + d->password).toUtf8();
         authData = authData.toBase64();
@@ -301,6 +300,7 @@ void Client::requestFinished(int id, bool error)
         QByteArray buf = buffer->buffer();
 
         Response response;
+        qDebug() << "buffer:" << buf;
 
         QString errorMessage;
         if ( response.setContent( buf, &errorMessage ) ) {

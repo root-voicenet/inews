@@ -157,7 +157,7 @@ void ResourceManager::cleanup()
     // clear rss items
     clearRssItems();
     // cleanup nodes
-    qDeleteAll(m_nodes);
+    clearNodes();
 
     // cleanup files
     qDeleteAll(m_files);
@@ -194,6 +194,8 @@ void ResourceManager::addNode(Node *node)
     m_nodes.append(node);
 
     QStandardItem *newItem = new QStandardItem(node->getTitle());
+    newItem->setEditable(false);
+    newItem->setData((int)node);
     m_themes.appendRow(newItem);
 }
 
@@ -208,11 +210,17 @@ void ResourceManager::addRssItem(RssItem *item)
 {
     QStandardItem *listitem = new QStandardItem(item->getTitle());
     QString imageUrl = item->getImageUrl();
+
+
+    listitem->setDragEnabled(true);
+    listitem->setDropEnabled(true);
     if(!imageUrl.isEmpty()) {
-       DownloadIcon(imageUrl, listitem);
+       // Temporary disabled DownloadIcon(imageUrl, listitem);
     }
+
     QVariant data((int)item);
     listitem->setData(data);
+    listitem->setEditable(false);
     m_feed.appendRow(listitem);
     m_rssitems.append(item);
 }
@@ -228,6 +236,14 @@ void ResourceManager::clearRssItems()
 {
     m_feed.clear();
     qDeleteAll(m_rssitems);
+    m_rssitems.clear();
+}
+
+void ResourceManager::clearNodes()
+{
+    m_themes.clear();
+    qDeleteAll(m_nodes);
+    m_nodes.clear();
 }
 
 QList<TaxonomyTerm*> ResourceManager::getTaxonomy(int id)
@@ -244,6 +260,75 @@ QList<RssItem*> ResourceManager::getUpdatedRss()
     for(int i = 0; i < m_rssitems.size(); ++i) {
         if(!m_rssitems[i]->getTids().isEmpty())
             res.append(m_rssitems[i]);
+    }
+
+    return res;
+}
+
+bool ResourceManager::parseNodes(QVariant *resp)
+{
+    QList<QVariant> elements(resp->toList());
+    clearNodes();
+
+
+    for (int i = 0; i < elements.size(); ++i) {
+        // parse element
+        QMap<QString, QVariant> tags = elements[i].toMap();
+        QString nodeTitle;
+        int nid = 0;
+
+        nodeTitle = tags.value("title").toString();
+        nid = tags.value("nid").toInt();
+        if(!nid) {
+            qDebug() << "Node Id is empty";
+            clearNodes();
+            return false;
+        }
+
+        if(nodeTitle.isEmpty()) {
+            qDebug() << "Node Title is empty";
+            clearNodes();
+            return false;
+        }
+
+        addNode(new Node(nid, nodeTitle, true));
+    }
+
+    return true;
+}
+
+Node *ResourceManager::searchNode(int id)
+{
+    QListIterator<Node*> i(m_nodes);
+    while(i.hasNext()) {
+        Node *n = i.next();
+
+        if(n->getId() == id)
+            return n;
+    }
+
+    return NULL;
+}
+
+Node *ResourceManager::parseNode(QVariant *resp)
+{
+    QMap<QString, QVariant> elements(resp->toMap());
+    int nid = elements.value("node").toInt();
+    Node *n = NULL;
+    if(nid > 0 && (n = searchNode(nid)) != NULL) {
+        n->setBody(elements.value("body").toString());
+        return n;
+    }
+
+    return NULL;
+}
+
+QList<Node*> ResourceManager::getUpdatedNodes()
+{
+    QList<Node*> res;
+    for(int i = 0; i < m_nodes.size(); ++i) {
+        if(m_nodes[i]->isUpdated())
+            res.append(m_nodes[i]);
     }
 
     return res;

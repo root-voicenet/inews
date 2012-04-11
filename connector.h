@@ -8,6 +8,7 @@
 #include "taxonomymodel.h"
 
 class RssItem;
+class Node;
 
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
@@ -21,6 +22,11 @@ public:
     void Login(const QString& username, const QString& password);
     void UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids);
     void SyncRss(QList<RssItem*> rss);
+    void SyncNodes(QList<Node*> nodes);
+    void GetNode(int id);
+
+    // Remove later
+    void CreateNode(Node *n);
 private:
     //To allow to return pointers to signals
     typedef void (Connector::*Signal)();
@@ -47,6 +53,11 @@ private:
     static const QString METHOD_TAXONOMY_GETTREE;
     static const QString METHOD_FILE_UPLOAD;
     static const QString METHOD_SYNC_RSS;
+    static const QString METHOD_SYNC_NODES;
+    static const QString METHOD_NODE_GET;
+
+    //TODO: Remove later
+    static const QString METHOD_NODE_CREATE;
 
 signals:
     /* Indicates user logged in and a session was received - ie successful log in */
@@ -62,8 +73,10 @@ signals:
 
     void loginNeeded();
 
-    void syncComplete();
+    void syncRssComplete();
+    void syncNodesComplete();
 
+    void nodeGetComplete(Node *node);
 public slots:
 
     void processResponse(int id, QVariant responce);

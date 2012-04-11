@@ -9,7 +9,7 @@
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
+    QMainWindow(parent), currentNode(NULL)
 {
     setupUI();
     setupDockablePanels();
@@ -24,8 +24,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupUI()
 {
-
     resize(800, 612);
+
     QWidget *centralwidget = new QWidget(this);
     QHBoxLayout*  hbox = new QHBoxLayout(centralwidget);
 
@@ -49,6 +49,7 @@ void MainWindow::setupUI()
     gridRught->addWidget(new QLabel(centralwidget), 0, 0, 1, 1);
 
     themesList = new QListView(centralwidget);
+    themesList->setEnabled(false);
     gridRught->addWidget(themesList, 1, 0, 1, 2);
     gridRught->addWidget(new QPushButton(centralwidget), 5, 1, 1, 1);
 
@@ -57,7 +58,8 @@ void MainWindow::setupUI()
     gridRught->addWidget(btnSync, 6, 0, 1, 2);
     gridRught->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
 
-    attachedRssList = new QListView(centralwidget);
+    attachedRssList = new QListWidget(centralwidget);
+
     gridRught->addWidget(attachedRssList, 4, 0, 1, 2);
     gridRught->addWidget(new QPushButton(centralwidget), 2, 0, 1, 2);
     hbox->addLayout(gridRught);
@@ -65,8 +67,9 @@ void MainWindow::setupUI()
     hbox->setStretch(1, 0);
     setCentralWidget(centralwidget);
 
-    connect(btnSave, SIGNAL(clicked()), this, SLOT(createNode()));
+    connect(btnSave, SIGNAL(clicked()), this, SLOT(saveNode()));
     connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
+    connect(themesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
 }
 
 void MainWindow::setupDockablePanels()
@@ -84,15 +87,20 @@ void MainWindow::setupDockablePanels()
 
     QHBoxLayout *hbox = new QHBoxLayout;
 
+    QVBoxLayout *in = new QVBoxLayout;
+
+    QPushButton *btnAdd = new QPushButton(tr("Add New theme"), central);
+    in->addWidget(btnAdd);
+
     hbox->addWidget(taxThemeList);
     taxThemeList->setMaximumSize(100, 200);
     taxThemeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
     taxGeoList = new QListWidget(central);
     taxGeoList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     taxGeoList->setMaximumSize(100, 200);
     hbox->addWidget(taxGeoList);
-    box->addLayout(hbox);
+    in->addLayout(hbox);
+    box->addLayout(in);
     central->setLayout(box);
     dock->setWidget(central);
     connect(dock, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(dockLocationChanged(Qt::DockWidgetArea)));
@@ -108,10 +116,14 @@ void MainWindow::initWidgets()
 
     themesList->setModel(&rm->getThemes());
     rssList->setModel(&rm->getFeed());
+    connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(attachRss(QModelIndex)));
 
     m_connector = new Connector("http://test.irkipedia.ru/api");
     m_connector->Login("admin", "alcd7c9");
     connect(m_connector, SIGNAL(taxonomyLoaded()), this, SLOT(taxonomyLoaded()));
+    connect(m_connector, SIGNAL(syncNodesComplete()), this, SLOT(nodesLoaded()));
+    connect(m_connector, SIGNAL(syncRssComplete()), this, SLOT(rssLoaded()));
+    connect(m_connector, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
 }
 
 void MainWindow::taxonomyLoaded()
@@ -145,7 +157,7 @@ void MainWindow::taxonomyLoaded()
     }
 }
 
-void MainWindow::createNode()
+void MainWindow::saveNode()
 {
     QString title = titleEdit->text();
     if(title.isEmpty()) {
@@ -163,9 +175,19 @@ void MainWindow::createNode()
     }
 
     QString body = textEdit->getContent();
-    Node *n = new Node(title, body);
+    Node *node = NULL;
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
-    rm->addNode(n);
+
+    if(currentNode) {
+        node = currentNode;
+        node->setTitle(title);
+        node->setBody(body);
+    }else{
+        node = new Node(Node::NODEID_DEFAULT, title, false, body);
+        rm->addNode( node );
+    }
+    node->setUpdated(true);
+
 
     titleEdit->clear();
     textEdit->clearContent();
@@ -174,7 +196,12 @@ void MainWindow::createNode()
 void MainWindow::syncClicked()
 {
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    rssList->setEnabled(false);
     m_connector->SyncRss(rm->getUpdatedRss());
+    attachedRssList->clear();
+
+    themesList->setEnabled(false);
+    m_connector->SyncNodes(rm->getUpdatedNodes());
 }
 
 void MainWindow::rssItemSelected(QModelIndex index)
@@ -255,4 +282,76 @@ void MainWindow::dockLocationChanged(Qt::DockWidgetArea area)
 
     central->adjustSize();
     adjustSize();
+}
+
+void MainWindow::loadNode(QModelIndex index)
+{
+    QStandardItemModel *model = static_cast<QStandardItemModel*>(themesList->model());
+    QStandardItem *item = model->itemFromIndex(index);
+    if(item && !item->data().isNull()) {
+        Node* node = reinterpret_cast<Node*>(item->data().toInt());
+        if(node->isRemote() && node->getBody().isEmpty()) {
+            m_connector->GetNode(node->getId());
+        }else{
+           showNode(node);
+        }
+    }
+}
+
+void MainWindow::showNode(Node *node)
+{
+   currentNode = node;
+   attachedRssList->clear();
+
+   titleEdit->setText(node->getTitle());
+   textEdit->load(node->getBody());
+
+   QList<RssItem*> items = node->attachedRss();
+   if(!items.isEmpty()) {
+       for(int i = 0; i < items.size(); ++i) {
+           QListWidgetItem *listItem = new QListWidgetItem(items[i]->getTitle());
+           listItem->setData(Qt::UserRole + 1, (int)items[i]);
+           attachedRssList->addItem(listItem);
+       }
+   }
+}
+
+void MainWindow::nodesLoaded()
+{
+    themesList->setEnabled(true);
+}
+
+void MainWindow::rssLoaded()
+{
+    rssList->setEnabled(true);
+}
+
+void MainWindow::nodeLoaded(Node *node)
+{
+    if(node) {
+        showNode(node);
+    }
+}
+
+
+void MainWindow::attachRss(QModelIndex index)
+{
+    QStandardItemModel *model = static_cast<QStandardItemModel*>(rssList->model());
+    QStandardItem *item = model->itemFromIndex(index);
+
+    if(item && !item->data().isNull()) {
+        RssItem* rss = reinterpret_cast<RssItem*>(item->data().toInt());
+        if(rss && currentNode) {
+            if(!currentNode->findAttachedRss(rss->getId())) {
+                currentNode->attachRss(rss);
+                QListWidgetItem *listItem = new QListWidgetItem(rss->getTitle());
+                listItem->setData(Qt::UserRole + 1, (int)rss);
+                attachedRssList->addItem(listItem);
+            }else{
+                QMessageBox msg(QMessageBox::Information, "Error", tr("This rss is already attached"),
+                                QMessageBox::Ok, this);
+                msg.exec();
+            }
+        }
+    }
 }

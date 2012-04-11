@@ -4,7 +4,8 @@
 #include "newsapplication.h"
 #include "resourcemanager.h"
 #include "rssitem.h"
-
+#include "node.h"
+#include <qtextdocument.h>
 
 
  const QString Connector::METHOD_SYSTEM_CONNECT = "system.connect";
@@ -14,7 +15,9 @@
  const QString Connector::METHOD_TAXONOMY_GETTREE = "taxonomy_vocabulary.getTree";
  const QString Connector::METHOD_FILE_UPLOAD = "media.upload";
  const QString Connector::METHOD_SYNC_RSS = "sync.rss";
-
+ const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
+ const QString Connector::METHOD_NODE_GET = "node.full";
+ const QString Connector::METHOD_NODE_CREATE = "node.create";
 
 Connector::Connector(const QString& url, QObject *parent):
     QObject(parent), m_isLogged(false)
@@ -39,6 +42,16 @@ void Connector::Login(const QString& username, const QString& password) {
 
     //int requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 6);
     //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
+}
+
+void Connector::CreateNode(Node *n)
+{
+    QMap<QString, xmlrpc::Variant> res;
+    res.insert("title", n->getTitle());
+    res.insert("body", n->getBody());
+
+    int requestID = m_client.request(METHOD_NODE_CREATE, res);
+    addRequest(requestID, METHOD_NODE_CREATE);
 }
 
 void Connector::SyncRss(QList<RssItem*> rss) {
@@ -66,6 +79,33 @@ void Connector::SyncRss(QList<RssItem*> rss) {
     //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
 }
 
+void Connector::SyncNodes(QList<Node *> nodes)
+{
+    QList<xmlrpc::Variant> res;
+    for(int i = 0; i < nodes.size(); ++i) {
+        QMap<QString, xmlrpc::Variant> nodeItem;
+        QString action = "update";
+        if(nodes[i]->getId() == Node::NODEID_DEFAULT) {
+            action = "create";
+        }
+        nodeItem.insert("action", action);
+        nodeItem.insert("id", nodes[i]->getId());
+        nodeItem.insert("title", nodes[i]->getTitle());
+        nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
+
+        res.append(nodeItem);
+    }
+
+    int requestID = m_client.request(METHOD_SYNC_NODES, res);
+    addRequest(requestID, METHOD_SYNC_NODES);
+}
+
+void Connector::GetNode(int id)
+{
+    int requestID = m_client.request(METHOD_NODE_GET, id);
+    addRequest(requestID, METHOD_NODE_GET);
+}
+
 void Connector::UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids) {
     QByteArray buffer = postData->toBase64();
     QList<xmlrpc::Variant> tids;
@@ -90,6 +130,7 @@ void Connector::processResponse(int id, QVariant responce)
     QMap<int, Request>::Iterator it;
     Connector::Signal signal = 0;
     QString method = "";
+    QVariant param;
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
 
     requestListMutex.lock();
@@ -100,9 +141,17 @@ void Connector::processResponse(int id, QVariant responce)
     }
 
     it = m_requests.find(id);
-
     if(it != m_requests.end()) {
         method = it.value().method;
+        if(it.value().param)
+            param.setValue(*it.value().param);
+
+        m_requests.remove(id);
+    }
+
+    requestListMutex.unlock();
+
+    if(!method.isEmpty()) {
 
         if(method == METHOD_USER_LOGIN) {
             QMap<QString , QVariant> elements(responce.toMap());
@@ -116,7 +165,7 @@ void Connector::processResponse(int id, QVariant responce)
             signal = &Connector::logInFinished;
         }else if(method == METHOD_TAXONOMY_GETTREE) {
             TaxonomyModel* m = new TaxonomyModel();
-            int voc_id = (it.value().param) ? it.value().param->toInt() : 0;
+            int voc_id = !param.isNull() ? param.toInt() : 0;
             if(rm->parseTaxonomy(voc_id, &responce)) {
                 signal = &Connector::taxonomyLoaded;
             }else
@@ -125,15 +174,19 @@ void Connector::processResponse(int id, QVariant responce)
             signal = &Connector::fileUploadFinished;
         }else if(method == METHOD_SYNC_RSS) {
            if(rm->parseFeed(&responce)) {
-                signal = &Connector::syncComplete;
+                signal = &Connector::syncRssComplete;
            }
+        }else if(method == METHOD_SYNC_NODES) {
+            if(rm->parseNodes(&responce)) {
+                signal = &Connector::syncNodesComplete;
+            }
+        }else if(method == METHOD_NODE_GET) {
+            Node *node = rm->parseNode(&responce);
+            if(node) {
+                emit Connector::nodeGetComplete( node );
+            }
         }
-
-
-        m_requests.remove(id);
     }
-
-    requestListMutex.unlock();
 
     // Process send post requests
     if(!method.isEmpty() && signal)

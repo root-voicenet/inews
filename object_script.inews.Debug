@@ -27,4 +27,5 @@ INPUT(
 ./debug\moc_resourcemanager.o
 ./debug\moc_feedmodel.o
 ./debug\moc_textedit.o
+./debug\qrc_resource.o
 );

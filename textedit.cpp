@@ -248,22 +248,13 @@ void TextEdit::setupTextActions()
     vbox->addWidget(tb);
 }
 
-bool TextEdit::load(const QString &f)
+bool TextEdit::load(const QString &data)
 {
-    if (!QFile::exists(f))
-        return false;
-    QFile file(f);
-    if (!file.open(QFile::ReadOnly))
-        return false;
 
-    QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
-    QString str = codec->toUnicode(data);
-    if (Qt::mightBeRichText(str)) {
-        textEdit->setHtml(str);
+    if (Qt::mightBeRichText(data)) {
+        textEdit->setHtml(data);
     } else {
-        str = QString::fromLocal8Bit(data);
-        textEdit->setPlainText(str);
+        textEdit->setPlainText(data);
     }
 
     return true;
