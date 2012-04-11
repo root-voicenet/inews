@@ -20,7 +20,6 @@ SOURCES += main.cpp\
     qxmlrpc/xmlrpc/request.cpp \
     qxmlrpc/xmlrpc/client.cpp \
     connector.cpp \
-    taxonomymodel.cpp \
     newsapplication.cpp \
     resourcemanager.cpp \
     feedmodel.cpp \
@@ -28,7 +27,11 @@ SOURCES += main.cpp\
     node.cpp \
     file.cpp \
     rssitem.cpp \
-    taxonomyterm.cpp
+    taxonomyterm.cpp \
+    centerlawidget.cpp \
+    rssviewwidget.cpp \
+    nodeeditorwidget.cpp \
+    taxonomywidget.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -40,7 +43,6 @@ HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/request.h \
     qxmlrpc/xmlrpc/client.h \
     connector.h \
-    taxonomymodel.h \
     newsapplication.h \
     resourcemanager.h \
     feedmodel.h \
@@ -48,7 +50,11 @@ HEADERS  += mainwindow.h \
     node.h \
     file.h \
     rssitem.h \
-    taxonomyterm.h
+    taxonomyterm.h \
+    centerlawidget.h \
+    rssviewwidget.h \
+    nodeeditorwidget.h \
+    taxonomywidget.h
 
 FORMS    += \
     mainwindow.ui

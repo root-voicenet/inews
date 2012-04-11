@@ -6,13 +6,14 @@
 
 
 class Connector;
-class TextEdit;
 class Node;
+class CenterlaWidget;
 
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 QT_FORWARD_DECLARE_CLASS(QListView)
-QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QDockWidget)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 class MainWindow : public QMainWindow
 {
@@ -22,6 +23,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     
+    void showError(const QString& str);
 private:
     Connector* m_connector;
 
@@ -35,17 +37,13 @@ private:
 
     void arrangeItems(QWidget *parent, int t);
     void showNode(Node *node);
-
-    Node* currentNode;
 private: //widgets
     QListView *rssList, *themesList;
-    QListWidget *taxThemeList, *taxGeoList, *attachedRssList;
-    TextEdit *textEdit;
-    QLineEdit *titleEdit;
+    QLabel *messageLabel;
+    QPushButton *btnSync;
     QDockWidget *dock;
+    CenterlaWidget *view;
 private slots:
-    void taxonomyLoaded();
-    void saveNode();
     void nodesLoaded();
     void rssLoaded();
     void syncClicked();
@@ -54,6 +52,7 @@ private slots:
     void loadNode(QModelIndex index);
     void nodeLoaded(Node *n);
     void attachRss(QModelIndex index);
+    void networkError(QString msg);
 };
 
 #endif // MAINWINDOW_H

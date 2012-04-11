@@ -5,7 +5,6 @@
 #include <xmlrpc/client.h>
 #include <QString>
 #include <QMap>
-#include "taxonomymodel.h"
 
 class RssItem;
 class Node;
@@ -71,7 +70,7 @@ signals:
     void fileUploadFinished();
 
 
-    void loginNeeded();
+    void networkError(QString);
 
     void syncRssComplete();
     void syncNodesComplete();

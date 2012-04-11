@@ -5,6 +5,7 @@
 #include "resourcemanager.h"
 #include "rssitem.h"
 #include "node.h"
+#include "taxonomyterm.h"
 #include <qtextdocument.h>
 
 
@@ -61,11 +62,11 @@ void Connector::SyncRss(QList<RssItem*> rss) {
         QMap<QString, xmlrpc::Variant> resItem;
         resItem.insert("id", rss[i]->getId());
 
-        QList<int> tids = rss[i]->getTids();
+        QList<TaxonomyTerm*> tids = rss[i]->getTids();
         QList<xmlrpc::Variant> resTids;
 
         for(int j = 0; j < tids.size(); ++j)
-            resTids.append(tids[j]);
+            resTids.append(tids[j]->getId());
 
         resItem.insert("tids", resTids);
 
@@ -164,12 +165,10 @@ void Connector::processResponse(int id, QVariant responce)
 
             signal = &Connector::logInFinished;
         }else if(method == METHOD_TAXONOMY_GETTREE) {
-            TaxonomyModel* m = new TaxonomyModel();
             int voc_id = !param.isNull() ? param.toInt() : 0;
             if(rm->parseTaxonomy(voc_id, &responce)) {
                 signal = &Connector::taxonomyLoaded;
-            }else
-                delete m;
+            }
         }else if(method == METHOD_FILE_UPLOAD) {
             signal = &Connector::fileUploadFinished;
         }else if(method == METHOD_SYNC_RSS) {
@@ -220,5 +219,5 @@ void Connector::failed(int requestId, int faultCode, QString faultString)
     }
 
     // need relogin
-    emit loginNeeded();
+    emit networkError(faultString);
 }
