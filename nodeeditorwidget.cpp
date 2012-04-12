@@ -30,9 +30,10 @@ void NodeEditorWidget::setupUI()
     gridLayout->addWidget(new QLabel(tr("Dummy"), this), 4, 1, 2, 2);
 
     QPushButton *btnSave = new QPushButton(tr("Save"), this);
+    connect(btnSave, SIGNAL(clicked()), this, SLOT(saveClicked()));
     gridLayout->addWidget(btnSave, 4, 2, 1, 1);
     gridLayout->addWidget(new QPushButton(this), 5, 2, 1, 1);
-    gridLayout->addWidget(new QPushButton(tr("New"), this), 1, 0, 1, 1);
+    gridLayout->addWidget(new QLabel(tr("Title"), this), 1, 0, 1, 1);
     gridLayout->setColumnStretch(1, 1);
 
     setLayout(gridLayout);
@@ -45,19 +46,21 @@ void NodeEditorWidget::clear()
 
 void NodeEditorWidget::loadNode(Node *node)
 {
-    if(m_current == node)
+    if(node && m_current == node)
             return;
 
-    titleEdit->setText(node->getTitle());
-    textEdit->load(node->getBody());
-    attachedRssList->clear();
+    if(node != NULL) {
+        titleEdit->setText(node->getTitle());
+        textEdit->load(node->getBody());
+        attachedRssList->clear();
 
-    QList<RssItem*> items = node->attachedRss();
-    if(!items.isEmpty()) {
-        for(int i = 0; i < items.size(); ++i) {
-            QListWidgetItem *listItem = new QListWidgetItem(items[i]->getTitle());
-            listItem->setData(Qt::UserRole + 1, (int)items[i]);
-            attachedRssList->addItem(listItem);
+        QList<RssItem*> items = node->attachedRss();
+        if(!items.isEmpty()) {
+            for(int i = 0; i < items.size(); ++i) {
+                QListWidgetItem *listItem = new QListWidgetItem(items[i]->getTitle());
+                listItem->setData(Qt::UserRole + 1, (int)items[i]);
+                attachedRssList->addItem(listItem);
+            }
         }
     }
 
@@ -66,10 +69,6 @@ void NodeEditorWidget::loadNode(Node *node)
 
 void NodeEditorWidget::attachRss(RssItem *rss)
 {
-    if(!m_current) {
-        return;
-    }
-
     // check if rss already in list
     for(int i = 0; i < attachedRssList->count(); ++i) {
         QVariant data = attachedRssList->item(i)->data(Qt::UserRole + 1);

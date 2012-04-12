@@ -86,6 +86,7 @@ void Connector::SyncNodes(QList<Node *> nodes)
     for(int i = 0; i < nodes.size(); ++i) {
         QMap<QString, xmlrpc::Variant> nodeItem;
         QString action = "update";
+        QList<xmlrpc::Variant> rss;
         if(nodes[i]->getId() == Node::NODEID_DEFAULT) {
             action = "create";
         }
@@ -93,6 +94,14 @@ void Connector::SyncNodes(QList<Node *> nodes)
         nodeItem.insert("id", nodes[i]->getId());
         nodeItem.insert("title", nodes[i]->getTitle());
         nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
+
+        QList<RssItem*> attached = nodes[i]->attachedRss();
+        for(int j = 0; j < attached.size(); ++j)
+            rss << attached[j]->getId();
+
+        if(rss.size() > 0) {
+            nodeItem.insert("rss", rss);
+        }
 
         res.append(nodeItem);
     }

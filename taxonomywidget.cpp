@@ -12,6 +12,7 @@ void TaxonomyWidget::setupUI()
 {
     themeList = new QListWidget(this);
     geoList = new QListWidget(this);
+    setMaximumSize(220, 1000000);
 
     QHBoxLayout *hbox = new QHBoxLayout;
     hbox->addWidget(themeList);

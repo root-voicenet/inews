@@ -300,7 +300,6 @@ void Client::requestFinished(int id, bool error)
         QByteArray buf = buffer->buffer();
 
         Response response;
-        qDebug() << "buffer:" << buf;
 
         QString errorMessage;
         if ( response.setContent( buf, &errorMessage ) ) {

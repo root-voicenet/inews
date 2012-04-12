@@ -40,6 +40,7 @@ public:
     void addRssItem(RssItem *item);
     void removeRssItem(RssItem *item);
     void clearRssItems();
+    RssItem *searchRss(int id);
 
     QList<RssItem*> getUpdatedRss();
     QList<Node*> getUpdatedNodes();

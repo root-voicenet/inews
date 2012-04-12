@@ -58,7 +58,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += \
     mainwindow.ui
-QT += core gui network xml
+QT += core gui network xml webkit
 
 RESOURCES += \
     resource.qrc

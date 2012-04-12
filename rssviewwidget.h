@@ -7,6 +7,7 @@ class RssItem;
 class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QWebView)
 class RssViewWidget : public QWidget
 {
     Q_OBJECT
@@ -20,6 +21,8 @@ public:
 private: // widgets
     QLabel *titleLabel;
     QLabel *textLabel;
+    QWebView *m_browser;
+
     TaxonomyWidget* taxonomy;
 private:
     void setupUI();

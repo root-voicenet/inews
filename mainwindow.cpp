@@ -42,14 +42,19 @@ void MainWindow::setupUI()
     themesList = new QListView(centralwidget);
     themesList->setEnabled(false);
     gridRught->addWidget(themesList, 1, 0, 1, 2);
+    btnNew = new QPushButton(tr("New Theme"), this);
+    btnNew->setEnabled(false);
+    gridRught->addWidget(btnNew, 2, 0, 1, 2);
+    connect(btnNew, SIGNAL(clicked()), this, SLOT(createNode()));
+
     gridRught->addWidget(new QPushButton(centralwidget), 5, 1, 1, 1);
 
-    btnSync = new QPushButton(centralwidget);
+    btnSync = new QPushButton(tr("Sync"), centralwidget);
     btnSync->setMaximumSize(QSize(16777215, 50));
     gridRught->addWidget(btnSync, 6, 0, 1, 2);
     gridRught->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
 
-    gridRught->addWidget(new QPushButton(centralwidget), 2, 0, 1, 2);
+
     hbox->addLayout(gridRught);
 
     hbox->setStretch(1, 0);
@@ -62,6 +67,11 @@ void MainWindow::showError(const QString& str)
     messageLabel->setMinimumHeight(50);
     messageLabel->setStyleSheet("QLabel { background-color : pink; border-radius: 10px; border-color: red; padding: 6px;}");
 
+}
+
+void MainWindow::createNode()
+{
+    view->showNode(NULL);
 }
 
 void MainWindow::setupDockablePanels()
@@ -92,17 +102,18 @@ void MainWindow::initWidgets()
     rssList->setModel(&rm->getFeed());
     connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(attachRss(QModelIndex)));
 
-    m_connector = new Connector("http://test.irkipedia.ru/api");
-    m_connector->Login("admin", "alcd7c9");
+    m_connector = new Connector("http://test.irkipedia.ru/news/api");
+
     connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
     connect(themesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
+    connect(view, SIGNAL(actionLogin(QString, QString)), this, SLOT(actionLogin(QString, QString)));
     connect(m_connector, SIGNAL(taxonomyLoaded()), view, SLOT(updateTaxonomy()));
     connect(m_connector, SIGNAL(syncNodesComplete()), this, SLOT(nodesLoaded()));
     connect(m_connector, SIGNAL(syncRssComplete()), this, SLOT(rssLoaded()));
     connect(m_connector, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
     connect(m_connector, SIGNAL(networkError(QString)), this, SLOT(networkError(QString)));
 
-    view->showDummy();
+    view->showLogin();
 }
 
 
@@ -115,6 +126,7 @@ void MainWindow::syncClicked()
     m_connector->SyncRss(rm->getUpdatedRss());
 
     themesList->setEnabled(false);
+    btnNew->setEnabled(false);
     m_connector->SyncNodes(rm->getUpdatedNodes());
 }
 
@@ -165,6 +177,7 @@ void MainWindow::loadNode(QModelIndex index)
 void MainWindow::nodesLoaded()
 {
     themesList->setEnabled(true);
+    btnNew->setEnabled(true);
 }
 
 void MainWindow::rssLoaded()
@@ -196,4 +209,19 @@ void MainWindow::attachRss(QModelIndex index)
 void MainWindow::networkError(QString msg)
 {
     showError(msg);
+
+
+    view->showLogin();
+    rssList->setEnabled(false);
+    themesList->setEnabled(false);
+    btnNew->setEnabled(false);
+    btnSync->setEnabled(false);
 }
+
+void MainWindow::actionLogin(QString userLogin, QString userPassword)
+{
+    m_connector->Login(userLogin, userPassword);
+    btnSync->setEnabled(true);
+    view->showDummy();
+}
+

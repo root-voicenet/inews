@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QDebug>
 #include <QImageReader>
+#include <QDate>
 
 ResourceManager::ResourceManager(QObject *parent)
     : QObject(parent)
@@ -132,14 +133,21 @@ bool ResourceManager::parseFeed(QVariant *resp)
        QMap<QString, QVariant> tags = elements[i].toMap();
        QString rssTitle;
        QString imageUrl;
+
+       // create view
        int rssId;
+       int cdate;
 
        rssTitle = tags.value("title").toString();
        rssId = tags.value("iid").toInt();
+       cdate = tags.value("date").toInt();
+
        QList<QVariant> images = tags.value("image").toList();
        if(!images.isEmpty()) {
            imageUrl = images.first().toString();
        }
+
+
 
        if(rssTitle.isEmpty()) {
            qDebug() << "Title is empty";
@@ -147,7 +155,7 @@ bool ResourceManager::parseFeed(QVariant *resp)
            return false;
        }
 
-       addRssItem(new RssItem(rssId, rssTitle, imageUrl));
+       addRssItem(new RssItem(rssId, rssTitle, cdate, imageUrl));
    }
     return true;
 }
@@ -208,9 +216,9 @@ void ResourceManager::removeNode(Node *node)
 
 void ResourceManager::addRssItem(RssItem *item)
 {
-    QStandardItem *listitem = new QStandardItem(item->getTitle());
+    QStandardItem *listitem = new QStandardItem();
     QString imageUrl = item->getImageUrl();
-
+    QString prefix;
 
     listitem->setDragEnabled(true);
     listitem->setDropEnabled(true);
@@ -221,7 +229,19 @@ void ResourceManager::addRssItem(RssItem *item)
     QVariant data((int)item);
     listitem->setData(data);
     listitem->setEditable(false);
-    m_feed.appendRow(listitem);
+
+    int row = m_feed.rowCount();
+
+
+    if(item->getCreated() > 0) {
+        QDateTime date;
+        date.setTime_t(item->getCreated());
+        prefix = date.toString(Qt::SystemLocaleShortDate) + " ";
+    }
+
+    listitem->setText(prefix + item->getTitle());
+    m_feed.setItem(row, 0, listitem);
+
     m_rssitems.append(item);
 }
 
@@ -291,7 +311,22 @@ bool ResourceManager::parseNodes(QVariant *resp)
             return false;
         }
 
-        addNode(new Node(nid, nodeTitle, true));
+        Node *node = new Node(nid, nodeTitle, true);
+
+        if(!tags.value("rss").isNull()) {
+            QList<QVariant> rss = tags.value("rss").toList();
+            QListIterator<QVariant> i(rss);
+            while(i.hasNext()) {
+                int rss_id = i.next().toInt();
+                RssItem *rssItem;
+
+                if(rss_id && (rssItem = searchRss(rss_id)) != NULL) {
+                    node->attachRss(rssItem);
+                }
+            }
+        }
+
+        addNode(node);
     }
 
     return true;
@@ -302,6 +337,19 @@ Node *ResourceManager::searchNode(int id)
     QListIterator<Node*> i(m_nodes);
     while(i.hasNext()) {
         Node *n = i.next();
+
+        if(n->getId() == id)
+            return n;
+    }
+
+    return NULL;
+}
+
+RssItem *ResourceManager::searchRss(int id)
+{
+    QListIterator<RssItem*> i(m_rssitems);
+    while(i.hasNext()) {
+        RssItem *n = i.next();
 
         if(n->getId() == id)
             return n;

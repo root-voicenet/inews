@@ -40,12 +40,14 @@ private:
 private: //widgets
     QListView *rssList, *themesList;
     QLabel *messageLabel;
-    QPushButton *btnSync;
+    QPushButton *btnSync, *btnNew;
     QDockWidget *dock;
     CenterlaWidget *view;
+
 private slots:
     void nodesLoaded();
     void rssLoaded();
+    void createNode();
     void syncClicked();
     void rssItemSelected(QModelIndex index);
     void dockLocationChanged(Qt::DockWidgetArea area);
@@ -53,6 +55,8 @@ private slots:
     void nodeLoaded(Node *n);
     void attachRss(QModelIndex index);
     void networkError(QString msg);
+    void actionLogin(QString userLogin, QString userPassword);
+
 };
 
 #endif // MAINWINDOW_H
