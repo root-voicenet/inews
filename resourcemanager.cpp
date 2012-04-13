@@ -3,6 +3,7 @@
 #include "file.h"
 #include "rssitem.h"
 #include "taxonomyterm.h"
+#include "rsslistitemdelegate.h"
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkRequest>
@@ -17,6 +18,7 @@ ResourceManager::ResourceManager(QObject *parent)
     m_nam = new QNetworkAccessManager(this);
     connect(m_nam, SIGNAL(finished(QNetworkReply*)),
              this, SLOT(finished(QNetworkReply*)));
+
 }
 
 ResourceManager::~ResourceManager()
@@ -220,11 +222,14 @@ void ResourceManager::addRssItem(RssItem *item)
     QString imageUrl = item->getImageUrl();
     QString prefix;
 
-    listitem->setDragEnabled(true);
-    listitem->setDropEnabled(true);
     if(!imageUrl.isEmpty()) {
        // Temporary disabled DownloadIcon(imageUrl, listitem);
     }
+
+    QIcon icon(":/images/baloon.png");
+    listitem->setData(item->getTitle(), RssListItemDelegate::HeaderTextRole);
+    listitem->setData("Dummy", RssListItemDelegate::DescriptionRole);
+    listitem->setData(icon, RssListItemDelegate::IconRole);
 
     QVariant data((int)item);
     listitem->setData(data);
@@ -236,10 +241,10 @@ void ResourceManager::addRssItem(RssItem *item)
     if(item->getCreated() > 0) {
         QDateTime date;
         date.setTime_t(item->getCreated());
-        prefix = date.toString(Qt::SystemLocaleShortDate) + " ";
+        listitem->setData(date.toString(Qt::SystemLocaleShortDate), RssListItemDelegate::DateRole);
     }
 
-    listitem->setText(prefix + item->getTitle());
+    listitem->setEditable(false);
     m_feed.setItem(row, 0, listitem);
 
     m_rssitems.append(item);

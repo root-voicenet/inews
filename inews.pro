@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     centerlawidget.cpp \
     rssviewwidget.cpp \
     nodeeditorwidget.cpp \
-    taxonomywidget.cpp
+    taxonomywidget.cpp \
+    rsslistitemdelegate.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -54,7 +55,8 @@ HEADERS  += mainwindow.h \
     centerlawidget.h \
     rssviewwidget.h \
     nodeeditorwidget.h \
-    taxonomywidget.h
+    taxonomywidget.h \
+    rsslistitemdelegate.h
 
 FORMS    += \
     mainwindow.ui

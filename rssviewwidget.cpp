@@ -46,6 +46,7 @@ void RssViewWidget::setupUI()
     vbox = new QVBoxLayout;
     vbox->addWidget(m_browser);
     pageBrowser->setLayout(vbox);
+    setMaximumWidth(400);
 }
 
 void RssViewWidget::loadRss(RssItem *rss)

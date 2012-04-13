@@ -6,6 +6,7 @@
 #include "resourcemanager.h"
 #include "newsapplication.h"
 #include "centerlawidget.h"
+#include "rsslistitemdelegate.h"
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -83,6 +84,7 @@ void MainWindow::setupDockablePanels()
 
     QBoxLayout *box = new QBoxLayout(QBoxLayout::TopToBottom);
     rssList = new QListView(central);
+    rssList->setItemDelegate(new RssListItemDelegate());
 
     box->addWidget(rssList);
     central->setLayout(box);
