@@ -20,6 +20,12 @@ INPUT(
 ./debug\rssviewwidget.o
 ./debug\nodeeditorwidget.o
 ./debug\taxonomywidget.o
+./debug\rsslistitemdelegate.o
+./debug\nvbaseobject.o
+./debug\htmlexporter.o
+./debug\cssparser.o
+./debug\htmlparser.o
+./debug\texthtmlimporter.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o

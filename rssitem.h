@@ -1,29 +1,22 @@
 #ifndef RSSITEM_H
 #define RSSITEM_H
 
-#include <QList>
-#include <QString>
+#include "nvbaseobject.h"
 
-class TaxonomyTerm;
-class RssItem
+class RssItem : public NvBaseObject
 {
 public:
-    RssItem(int id, const QString &title, int created, const QString &imageUrl = "");
-    void setTids(const QList<TaxonomyTerm*> &tids);
+    RssItem(int id, const QString &title, int created = 0, const QString &imageUrl = "");
+    void setDescription(const QString& desc);
+    void setLink(const QString& link);
 
-    int getId() const { return m_id; }
-    int getCreated() const { return m_created; }
-
-    QList<TaxonomyTerm*> &getTids() { return m_tids; }
-    QString getTitle() const { return m_title; }
     QString getImageUrl() const { return m_imageUrl; }
-private:
-    int m_id;
-    int m_created;
-
-    QList<TaxonomyTerm*> m_tids;
-    QString m_title;
+    QString getDescription() const { return m_description; }
+    QString getLink() const { return m_link; }
+protected:
     QString m_imageUrl;
+    QString m_description;
+    QString m_link;
 };
 
 #endif // RSSITEM_H

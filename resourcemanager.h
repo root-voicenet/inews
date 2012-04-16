@@ -3,6 +3,7 @@
 
 #include "feedmodel.h"
 #include <QMutex>
+#include <QStandardItemModel>
 
 
 class QNetworkAccessManager;
@@ -11,6 +12,8 @@ class Node;
 class File;
 class RssItem;
 class TaxonomyTerm;
+
+QT_FORWARD_DECLARE_CLASS(QTreeWidgetItem)
 
 class ResourceManager : public QObject
 {
@@ -34,8 +37,9 @@ public:
     void removeNode(Node *node);
     void clearNodes();
     Node* searchNode(int id);
+    TaxonomyTerm *searchTaxonomy(int id);
 
-    QList<TaxonomyTerm*> getTaxonomy(int id);
+    QTreeWidgetItem *getTaxonomy();
 
     void addRssItem(RssItem *item);
     void removeRssItem(RssItem *item);
@@ -66,20 +70,19 @@ private:
     QList<RssItem*> m_rssitems;
 
     // taxonomys
-    QList<TaxonomyTerm*> m_themeTerms;
-    QList<TaxonomyTerm*> m_geoTerms;
+    QTreeWidgetItem* m_taxonomy;
 
     bool parseFeed(QVariant *resp);
     bool parseNodes(QVariant *resp);
     Node *parseNode(QVariant *resp);
-    bool parseTaxonomy(int id, QVariant *resp);
+    bool parseTaxonomy(QVariant *resp);
 
     File *lookupFile(const File& file);
     void addFile(const File& file);
     void removeFile(File* file);
 
     void cleanup();
-    void clearTaxonomy(int id);
+    void clearTaxonomy();
 private slots:
     void finished(QNetworkReply* reply);
 };

@@ -32,7 +32,12 @@ SOURCES += main.cpp\
     rssviewwidget.cpp \
     nodeeditorwidget.cpp \
     taxonomywidget.cpp \
-    rsslistitemdelegate.cpp
+    rsslistitemdelegate.cpp \
+    nvbaseobject.cpp \
+    text/htmlexporter.cpp \
+    text/cssparser.cpp \
+    text/htmlparser.cpp \
+    text/texthtmlimporter.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -56,10 +61,15 @@ HEADERS  += mainwindow.h \
     rssviewwidget.h \
     nodeeditorwidget.h \
     taxonomywidget.h \
-    rsslistitemdelegate.h
+    rsslistitemdelegate.h \
+    nvbaseobject.h \
+    text/htmlexporter.h \
+    text/cssparser.h \
+    text/textformat.h \
+    text/texthtmlimporter.h \
+    text/htmlparser.h
 
-FORMS    += \
-    mainwindow.ui
+FORMS    +=
 QT += core gui network xml webkit
 
 RESOURCES += \

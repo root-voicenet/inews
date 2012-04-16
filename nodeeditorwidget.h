@@ -6,6 +6,7 @@
 class TextEdit;
 class Node;
 class RssItem;
+class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QListWidget)
@@ -18,10 +19,12 @@ public:
     void loadNode(Node *node);
     void attachRss(RssItem *node);
     void clear();
+    void updateTaxonomy();
 private: //widgets
     TextEdit *textEdit;
     QLineEdit *titleEdit;
     QListWidget *attachedRssList;
+    TaxonomyWidget *m_taxonomy;
 private:
     Node *m_current;
 

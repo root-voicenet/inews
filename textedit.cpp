@@ -1,5 +1,8 @@
 #include "textedit.h"
 
+#include "text/texthtmlimporter.h"
+#include "text/htmlexporter.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -20,6 +23,8 @@
 #include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
+
+
 
 #ifdef Q_WS_MAC
 const QString rsrcPath = ":/images/mac";
@@ -251,18 +256,17 @@ void TextEdit::setupTextActions()
 bool TextEdit::load(const QString &data)
 {
 
-    if (Qt::mightBeRichText(data)) {
-        textEdit->setHtml(data);
-    } else {
-        textEdit->setPlainText(data);
-    }
+    QTextDocument *doc = textEdit->document();
+    NvTextHtmlImporter i(doc, data);
+    i.import();
 
-    return true;
+    return i.containsCompleteDocument();
 }
 
 QString TextEdit::getContent()
 {
-    return textEdit->toHtml();
+    HtmlExporter ex;
+    return ex.toHtml(textEdit->document());
 }
 
 void TextEdit::clearContent()

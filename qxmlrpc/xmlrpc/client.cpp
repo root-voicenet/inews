@@ -177,6 +177,8 @@ int Client::request( QList<Variant> params, QString methodName )
 
     QByteArray data = Request(methodName,params).composeRequest();
 
+    //qDebug() << "data: " << data;
+
     QHttpRequestHeader header("POST",d->path);
     header.setContentLength( data.size() );
     header.setContentType("text/xml");
@@ -283,7 +285,6 @@ void Client::requestFinished(int id, bool error)
     qDebug() << "request" <<  d->methodNames[id] <<  "finished, id=" << id << ", isError:" << error;
 #endif
 
-
     if ( error ) {
         //if ( d->serverResponses.count(id) )
 
@@ -300,6 +301,8 @@ void Client::requestFinished(int id, bool error)
         QByteArray buf = buffer->buffer();
 
         Response response;
+
+        qDebug() << "data: " << buf;
 
         QString errorMessage;
         if ( response.setContent( buf, &errorMessage ) ) {

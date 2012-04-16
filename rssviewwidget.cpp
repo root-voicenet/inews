@@ -26,7 +26,9 @@ void RssViewWidget::setupUI()
 
     // set overwiev page layout
     titleLabel = new QLabel(pageOverwiev);
+    titleLabel->setWordWrap(true);
     textLabel = new QLabel(pageOverwiev);
+    textLabel->setWordWrap(true);
     taxonomy = new TaxonomyWidget(pageOverwiev);
 
 
@@ -56,20 +58,24 @@ void RssViewWidget::loadRss(RssItem *rss)
         taxonomy->selectTaxonomy(rss->getTids());
     }
     titleLabel->setText(rss->getTitle());
-    textLabel->setText(tr("Dummy"));
+    textLabel->setText(rss->getDescription());
+
+    QUrl url(rss->getLink());
+    if(url.isValid()) {
+        m_browser->setUrl(url);
+    }
+
+
+
+
 }
 
 void RssViewWidget::updateTaxonomy()
 {
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
-    QList<TaxonomyTerm*> themeList = rm->getTaxonomy(ResourceManager::TAXONOMY_THEME);
-    if(themeList.size() > 0) {
-        taxonomy->loadThemeTaxonomy(themeList);
-    }
-
-    QList<TaxonomyTerm*> geoList = rm->getTaxonomy(ResourceManager::TAXONOMY_GEO);
-    if(geoList.size() > 0) {
-        taxonomy->loadGeoTaxonomy(geoList);
+    QTreeWidgetItem* tax = rm->getTaxonomy();
+    if(tax->childCount() > 0) {
+        taxonomy->loadTaxonomy(tax);
     }
 }
 

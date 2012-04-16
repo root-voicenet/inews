@@ -1,5 +1,6 @@
 #include "taxonomywidget.h"
 #include "taxonomyterm.h"
+#include <QStandardItem>
 #include <QtGui>
 
 TaxonomyWidget::TaxonomyWidget(QWidget *parent) :
@@ -10,92 +11,80 @@ TaxonomyWidget::TaxonomyWidget(QWidget *parent) :
 
 void TaxonomyWidget::setupUI()
 {
-    themeList = new QListWidget(this);
-    geoList = new QListWidget(this);
-    setMaximumSize(220, 1000000);
+    taxonomyList = new QTreeWidget(this);
+    taxonomyList->setMinimumSize(150, 200);
 
-    QHBoxLayout *hbox = new QHBoxLayout;
-    hbox->addWidget(themeList);
-    themeList->setMaximumSize(100, 200);
-    themeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    geoList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    geoList->setMaximumSize(100, 200);
-    hbox->addWidget(geoList);
-
-    setLayout(hbox);
+    QVBoxLayout *vbox = new QVBoxLayout;
+    vbox->addWidget(taxonomyList);
+    setLayout(vbox);
 }
 
-void TaxonomyWidget::loadTaxonomy(QListWidget *widget, const QList<TaxonomyTerm *> &terms)
+void TaxonomyWidget::loadTaxonomy(QTreeWidgetItem *root)
 {
-    widget->clear();
-    for(int i = 0; i < terms.size(); ++i) {
-        QListWidgetItem *item = new QListWidgetItem(terms[i]->getTitle());
-        QVariant data((int)terms[i]);
-        item->setData(Qt::UserRole + 1, data);
-        item->setCheckState(Qt::Unchecked);
+    if(root) {
+        taxonomyList->clear();
+        QTreeWidgetItem* treeRoot = taxonomyList->invisibleRootItem();
 
-        widget->addItem(item);
+        for(int i = 0; i < root->childCount(); ++i ) {
+            treeRoot->addChild( root->child(i)->clone() );
+        }
     }
 }
 
-void TaxonomyWidget::loadThemeTaxonomy(const QList<TaxonomyTerm *> &terms)
-{
-    loadTaxonomy(themeList, terms);
-}
-
-void TaxonomyWidget::loadGeoTaxonomy(const QList<TaxonomyTerm *> &terms)
-{
-    loadTaxonomy(geoList, terms);
-}
 
 void TaxonomyWidget::clearSelection()
 {
-    clearSelection(themeList);
-    clearSelection(geoList);
+    QList<int> tids;
+    selectItem(&tids);
 }
 
-void TaxonomyWidget::clearSelection(QListWidget *widget)
+void TaxonomyWidget::selectItem(QList<int> *tids, QTreeWidgetItem *parent)
 {
-    for(int i = 0; i < widget->count(); ++i) {
-        widget->item(i)->setCheckState(Qt::Unchecked);
+    QTreeWidgetItem *item = parent ? parent : taxonomyList->invisibleRootItem();
+    if(item) {
+        TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(0, Qt::UserRole + 1).toInt());
+        if(term) {
+            if(tids->indexOf(term->getId()) != -1) {
+                item->setCheckState(0, Qt::Checked);
+            }else
+                item->setCheckState(0, Qt::Unchecked);
+        }
+
+        if(item->childCount() > 0 ) {
+            for(int j = 0; j < item->childCount(); ++j) {
+                QTreeWidgetItem *subitem = item->child(j);
+                selectItem(tids, subitem);
+            }
+        }
     }
 }
 
-void TaxonomyWidget::selectTaxonomy(const QList<TaxonomyTerm *> &selected)
-{
-    selectTaxonomy(themeList, selected);
-    selectTaxonomy(geoList, selected);
-}
-
-void TaxonomyWidget::selectTaxonomy(QListWidget *widget, const QList<TaxonomyTerm *> &terms)
+void TaxonomyWidget::selectTaxonomy(const QList<TaxonomyTerm *> &terms)
 {
     QList<int> tids;
 
     for(int i = 0; i < terms.size(); ++i)
         tids << terms[i]->getId();
 
-    for(int i = 0; i < widget->count(); ++i) {
-        QListWidgetItem *item = widget->item(i);
-        TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(Qt::UserRole + 1).toInt());
-        if(tids.indexOf(term->getId()) != -1) {
-            item->setCheckState(Qt::Checked);
-        }else
-            item->setCheckState(Qt::Unchecked);
-    }
+    selectItem(&tids);
 }
 
-QList<TaxonomyTerm*> TaxonomyWidget::selectedTaxonomy(QListWidget *widget)
+QList<TaxonomyTerm*> TaxonomyWidget::selectedItem(QTreeWidgetItem *parent)
 {
     QList<TaxonomyTerm*> res;
-    for(int i = 0; i < widget->count(); ++i) {
-        QListWidgetItem *item = widget->item(i);
 
-        if(item && item->checkState() == Qt::Checked) {
-            TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(Qt::UserRole + 1).toInt());
-            if(term) {
-                 res.append(term);
+    QTreeWidgetItem *item = parent ? parent : taxonomyList->invisibleRootItem();
+    if(item) {
+        TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(0, Qt::UserRole + 1).toInt());
+        if(term && item->checkState(0) == Qt::Checked) {
+            res << term;
+        }
+
+        if(item->childCount() > 0) {
+            for(int j = 0; j < item->childCount(); ++j) {
+                QTreeWidgetItem *subitem = item->child(j);
+                res << selectedItem(subitem);
             }
-
         }
     }
 
@@ -104,12 +93,7 @@ QList<TaxonomyTerm*> TaxonomyWidget::selectedTaxonomy(QListWidget *widget)
 
 QList<TaxonomyTerm*> TaxonomyWidget::selectedTaxonomy()
 {
-    QList<TaxonomyTerm*> res;
-    res << selectedTaxonomy(themeList);
-    res << selectedTaxonomy(geoList);
-
-    return res;
+    return selectedItem();
 }
-
 
 

@@ -3,9 +3,10 @@
 
 #include <QWidget>
 #include <QList>
+#include <QStandardItemModel>
 
-QT_FORWARD_DECLARE_CLASS(QListWidget)
-QT_FORWARD_DECLARE_CLASS(QListWidget)
+QT_FORWARD_DECLARE_CLASS(QTreeWidget)
+QT_FORWARD_DECLARE_CLASS(QTreeWidgetItem)
 
 class TaxonomyTerm;
 class TaxonomyWidget : public QWidget
@@ -14,21 +15,17 @@ class TaxonomyWidget : public QWidget
 public:
     explicit TaxonomyWidget(QWidget *parent = 0);
 
-    void loadThemeTaxonomy(const QList<TaxonomyTerm*> &terms);
-    void loadGeoTaxonomy(const QList<TaxonomyTerm*> &terms);
+    void loadTaxonomy(QTreeWidgetItem *root);
     void clearSelection();
     void selectTaxonomy(const QList<TaxonomyTerm*> &selected);
     QList<TaxonomyTerm*> selectedTaxonomy();
 private:
-    QListWidget *themeList;
-    QListWidget *geoList;
+    QTreeWidget *taxonomyList;
 
 private:
-    void loadTaxonomy(QListWidget *widget, const QList<TaxonomyTerm*> &terms);
-    void clearSelection(QListWidget *widget);
-    void selectTaxonomy(QListWidget *widget, const QList<TaxonomyTerm*> &terms);
-    QList<TaxonomyTerm*> selectedTaxonomy(QListWidget *widget);
     void setupUI();
+    void selectItem(QList<int> *tids, QTreeWidgetItem *parent = 0);
+    QList<TaxonomyTerm*> selectedItem(QTreeWidgetItem *parent = 0);
 
 signals:
 

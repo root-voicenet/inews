@@ -60,12 +60,12 @@ void RssListItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     if(!dateText.isEmpty()) {
         dateWidth = dfm.width(dateText) + 5;
         dateRect.setLeft(iconRect.right());
-        dateRect.setTop(headerRect.bottom()+19);
+        dateRect.setTop(headerRect.bottom()+17);
     }
 
 
     subheaderRect.setLeft(iconRect.right() + dateWidth);
-    subheaderRect.setTop(headerRect.bottom()+19);
+    subheaderRect.setTop(headerRect.bottom()+17);
 
 
     //painter->drawPixmap(QPoint(iconRect.right()/2,iconRect.top()/2),icon.pixmap(iconsize.width(),iconsize.height()));

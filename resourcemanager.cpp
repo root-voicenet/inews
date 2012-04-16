@@ -11,6 +11,18 @@
 #include <QDebug>
 #include <QImageReader>
 #include <QDate>
+#include <QTreeWidgetItem>
+
+
+class TermInternal {
+public:
+    int tid;
+    int depth;
+    QList<int> parents;
+    QString name;
+    QList<TermInternal> children;
+    QTreeWidgetItem* treeItem;
+};
 
 ResourceManager::ResourceManager(QObject *parent)
     : QObject(parent)
@@ -19,6 +31,8 @@ ResourceManager::ResourceManager(QObject *parent)
     connect(m_nam, SIGNAL(finished(QNetworkReply*)),
              this, SLOT(finished(QNetworkReply*)));
 
+    m_taxonomy = new QTreeWidgetItem();
+    m_taxonomy->setText(0, "Root");
 }
 
 ResourceManager::~ResourceManager()
@@ -86,48 +100,88 @@ void ResourceManager::finished(QNetworkReply *reply)
     //delete reply;
 }
 
-void ResourceManager::clearTaxonomy(int id)
+void ResourceManager::clearTaxonomy()
 {
-    if(id == TAXONOMY_THEME)
-        qDeleteAll(m_themeTerms);
-    else if(id == TAXONOMY_GEO)
-        qDeleteAll(m_geoTerms);
+    for(int i = 0; i < m_taxonomy->childCount(); ++i) {
+
+    }
 }
 
-bool ResourceManager::parseTaxonomy(int id, QVariant *resp)
+bool ResourceManager::parseTaxonomy(QVariant *resp)
 {
     QList<QVariant> elements(resp->toList());
-
-    clearTaxonomy(id);
+    QList<TermInternal> items;
+    QMap<int, TermInternal*> refs;
 
     for (int i = 0; i < elements.size(); ++i) {
        // parse element
        QMap<QString, QVariant> tags = elements[i].toMap();
-       QString name, depth;
-       int tid;
+       TermInternal ts;
 
-       name = tags.value("name").toString();
-       depth = tags.value("depth").toInt();
-       tid = tags.value("tid").toInt();
+       ts.name = tags.value("name").toString();
+       ts.depth = tags.value("depth").toInt();
+       ts.tid = tags.value("tid").toInt();
 
        // build a parents
        QList<QVariant> parents = tags.value("parents").toList();
        for(int j = 0; j < parents.size(); ++j) {
-
+           ts.parents << parents[j].toInt();
        }
 
-       TaxonomyTerm *term = new TaxonomyTerm(tid, name);
-       if(id == TAXONOMY_THEME)
-           m_themeTerms.append(term);
-       else if(id == TAXONOMY_GEO)
-           m_geoTerms.append(term);
+       TaxonomyTerm *tx = new TaxonomyTerm(ts.tid, ts.name);
+
+       QTreeWidgetItem *treeItem = new QTreeWidgetItem();
+       treeItem->setData(0, Qt::UserRole + 1, (int)tx);
+       treeItem->setText(0, ts.name);
+       if(!ts.parents.isEmpty()) {
+           treeItem->setCheckState(0, Qt::Unchecked);
+       }
+       ts.treeItem = treeItem;
+       items << ts;
+       refs[ts.tid] = &items.last();
    }
+
+    QTreeWidgetItem *root = m_taxonomy;
+    for(int i = 0; i < items.size(); ++i) {
+        QTreeWidgetItem *croot = root;
+        if(!items[i].parents.isEmpty() && refs.contains(items[i].parents.first())) {
+            croot = refs[ items[i].parents.first() ]->treeItem;
+        }
+
+        croot->addChild( items[i].treeItem );
+    }
+}
+
+TaxonomyTerm *ResourceManager::searchTaxonomy(int id)
+{
+    QVariant data;
+    for(int i = 0; i < m_taxonomy->childCount(); ++i) {
+        QTreeWidgetItem *item = m_taxonomy->child(i);
+
+        if(item && !(data = item->data(0, Qt::UserRole + 1)).isNull()) {
+            TaxonomyTerm* tax = reinterpret_cast<TaxonomyTerm*>(data.toInt());
+            if(tax->getId() == id)
+                return tax;
+        }else if(item->childCount() > 0) {
+            for(int j = 0; j < item->childCount(); ++j) {
+                QTreeWidgetItem *subitem = item->child(j);
+                if(subitem && !(data = subitem->data(0, Qt::UserRole + 1)).isNull()) {
+                    TaxonomyTerm* tax = reinterpret_cast<TaxonomyTerm*>(data.toInt());
+                    if(tax->getId() == id)
+                        return tax;
+                }
+            }
+        }
+    }
+
+  return NULL;
 }
 
 bool ResourceManager::parseFeed(QVariant *resp)
 {
    QList<QVariant> elements(resp->toList());
    clearRssItems();
+
 
 
    for (int i = 0; i < elements.size(); ++i) {
@@ -140,6 +194,8 @@ bool ResourceManager::parseFeed(QVariant *resp)
        int rssId;
        int cdate;
 
+        qDebug() << 'tags: ' << tags;
+
        rssTitle = tags.value("title").toString();
        rssId = tags.value("iid").toInt();
        cdate = tags.value("date").toInt();
@@ -149,15 +205,34 @@ bool ResourceManager::parseFeed(QVariant *resp)
            imageUrl = images.first().toString();
        }
 
+       RssItem *rss = new RssItem(rssId, rssTitle, cdate, imageUrl);
+       if(!tags.value("sourse").isNull()) {
+           rss->setDescription(tags.value("sourse").toString());
+       }
 
+
+       if(!tags.value("tids").isNull()) {
+           QList<TaxonomyTerm*> taxons;
+           QList<QVariant> tids = tags.value("tids").toList();
+
+           for(int j = 0; j < tids.size(); ++j) {
+               TaxonomyTerm* t = searchTaxonomy(tids[i].toInt());
+               if(t) taxons << t;
+           }
+           rss->setTids(taxons);
+       }
+
+       if(!tags.value("link").isNull()) {
+           rss->setLink(tags.value("link").toString());
+       }
 
        if(rssTitle.isEmpty()) {
            qDebug() << "Title is empty";
+           delete rss;
            m_feed.clear();
            return false;
        }
-
-       addRssItem(new RssItem(rssId, rssTitle, cdate, imageUrl));
+       addRssItem(rss);
    }
     return true;
 }
@@ -173,8 +248,7 @@ void ResourceManager::cleanup()
     qDeleteAll(m_files);
 
     // claer taxonomy
-    clearTaxonomy(TAXONOMY_THEME);
-    clearTaxonomy(TAXONOMY_GEO);
+    clearTaxonomy();
 }
 
 File *ResourceManager::lookupFile(const File& file)
@@ -228,7 +302,7 @@ void ResourceManager::addRssItem(RssItem *item)
 
     QIcon icon(":/images/baloon.png");
     listitem->setData(item->getTitle(), RssListItemDelegate::HeaderTextRole);
-    listitem->setData("Dummy", RssListItemDelegate::DescriptionRole);
+    listitem->setData(item->getDescription(), RssListItemDelegate::DescriptionRole);
     listitem->setData(icon, RssListItemDelegate::IconRole);
 
     QVariant data((int)item);
@@ -271,12 +345,9 @@ void ResourceManager::clearNodes()
     m_nodes.clear();
 }
 
-QList<TaxonomyTerm*> ResourceManager::getTaxonomy(int id)
+QTreeWidgetItem* ResourceManager::getTaxonomy()
 {
-    if(id == TAXONOMY_THEME)
-        return m_themeTerms;
-    else if(id == TAXONOMY_GEO)
-        return m_geoTerms;
+    return m_taxonomy;
 }
 
 QList<RssItem*> ResourceManager::getUpdatedRss()
@@ -301,6 +372,7 @@ bool ResourceManager::parseNodes(QVariant *resp)
         QMap<QString, QVariant> tags = elements[i].toMap();
         QString nodeTitle;
         int nid = 0;
+
 
         nodeTitle = tags.value("title").toString();
         nid = tags.value("nid").toInt();

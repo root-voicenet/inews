@@ -4,8 +4,8 @@
 #include "resourcemanager.h"
 #include "newsapplication.h"
 
-Node::Node(int id, const QString& title, bool remote, const QString &body)
-    : m_title(title), m_body(body), m_id(id), m_updated(false), m_isremote(remote)
+Node::Node(int id, const QString& title, bool remote, bool created, const QString &body)
+    : NvBaseObject(id, title, created), m_body(body),  m_updated(false), m_isremote(remote)
 {
 
 }
@@ -15,11 +15,6 @@ Node::~Node() {
     for(int i = 0; i < m_attached.size(); ++i) {
         rm->removeFile(m_attached[i]);
     }
-}
-
-void Node::setTitle(const QString &title)
-{
-    m_title = title;
 }
 
 void Node::setBody(const QString &body)

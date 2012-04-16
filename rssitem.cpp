@@ -2,13 +2,17 @@
 #include "taxonomyterm.h"
 
 RssItem::RssItem(int id, const QString &title, int created, const QString &imageUrl)
-    : m_id(id), m_title(title), m_created(created), m_imageUrl(imageUrl), m_tids()
+    : NvBaseObject(id, title, created), m_imageUrl(imageUrl)
 {
 
 }
 
-void RssItem::setTids(const QList<TaxonomyTerm*> &tids)
+void RssItem::setDescription(const QString &desc)
 {
-    m_tids = tids;
+    m_description = desc;
 }
 
+void RssItem::setLink(const QString &link)
+{
+    m_link = link;
+}

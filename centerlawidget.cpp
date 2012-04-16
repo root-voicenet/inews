@@ -107,6 +107,7 @@ void CenterlaWidget::showLogin()
 void CenterlaWidget::updateTaxonomy()
 {
     m_rssView->updateTaxonomy();
+    m_nodeView->updateTaxonomy();
 }
 
 void CenterlaWidget::nodeAttachRss(RssItem *rss)

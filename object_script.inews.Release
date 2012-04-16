@@ -20,6 +20,12 @@ INPUT(
 ./release\rssviewwidget.o
 ./release\nodeeditorwidget.o
 ./release\taxonomywidget.o
+./release\rsslistitemdelegate.o
+./release\nvbaseobject.o
+./release\htmlexporter.o
+./release\cssparser.o
+./release\htmlparser.o
+./release\texthtmlimporter.o
 ./release\moc_mainwindow.o
 ./release\moc_server_private.o
 ./release\moc_server.o

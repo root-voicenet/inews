@@ -13,7 +13,7 @@
  const QString Connector::METHOD_USER_LOGOUT = "user.logout";
  const QString Connector::METHOD_USER_LOGIN = "user.login";
  const QString Connector::METHOD_USER_CREATE = "user.create";
- const QString Connector::METHOD_TAXONOMY_GETTREE = "taxonomy_vocabulary.getTree";
+ const QString Connector::METHOD_TAXONOMY_GETTREE = "node.taxonomy";
  const QString Connector::METHOD_FILE_UPLOAD = "media.upload";
  const QString Connector::METHOD_SYNC_RSS = "sync.rss";
  const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
@@ -93,8 +93,21 @@ void Connector::SyncNodes(QList<Node *> nodes)
         nodeItem.insert("action", action);
         nodeItem.insert("id", nodes[i]->getId());
         nodeItem.insert("title", nodes[i]->getTitle());
-        nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
 
+        if(!nodes[i]->getBody().isEmpty()) {
+            nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
+        }
+
+        // attach tids
+        QList<TaxonomyTerm*> tids = nodes[i]->getTids();
+        QList<xmlrpc::Variant> nodeTids;
+
+        for(int j = 0; j < tids.size(); ++j)
+            nodeTids.append(tids[j]->getId());
+
+        nodeItem.insert("tids", nodeTids);
+
+        // attach rss ids
         QList<RssItem*> attached = nodes[i]->attachedRss();
         for(int j = 0; j < attached.size(); ++j)
             rss << attached[j]->getId();
@@ -174,8 +187,7 @@ void Connector::processResponse(int id, QVariant responce)
 
             signal = &Connector::logInFinished;
         }else if(method == METHOD_TAXONOMY_GETTREE) {
-            int voc_id = !param.isNull() ? param.toInt() : 0;
-            if(rm->parseTaxonomy(voc_id, &responce)) {
+            if(rm->parseTaxonomy(&responce)) {
                 signal = &Connector::taxonomyLoaded;
             }
         }else if(method == METHOD_FILE_UPLOAD) {
@@ -210,11 +222,8 @@ void Connector::sendPostRequest(const QString& method)
     int requestID;
 
     if(method == METHOD_USER_LOGIN) {
-        requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 13);
-        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(ResourceManager::TAXONOMY_THEME));
-
-        requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 14);
-        addRequest(requestID, METHOD_TAXONOMY_GETTREE, new QVariant(ResourceManager::TAXONOMY_GEO));
+        requestID = m_client.request(METHOD_TAXONOMY_GETTREE);
+        addRequest(requestID, METHOD_TAXONOMY_GETTREE);
     }
 }
 

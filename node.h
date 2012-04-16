@@ -1,13 +1,12 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <QString>
-#include <QList>
+#include "nvbaseobject.h"
 
 class File;
 class RssItem;
 
-class Node
+class Node : public NvBaseObject
 {
     friend class Connector;
 public:
@@ -15,31 +14,28 @@ public:
         NODEID_DEFAULT = 0
     };
 
-    Node(int id, const QString& title, bool remote = false, const QString& body = "");
+    Node(int id, const QString& title, bool remote = false, bool created = 0, const QString& body = "");
+
     virtual ~Node();
-    QString getTitle() const { return m_title; }
     QString &getBody() { return m_body; }
-    int getId() const { return m_id; }
+
     bool isRemote() const { return m_isremote; }
     bool isUpdated() const { return m_updated; }
 
     void attachFile(File* file);
     void removeFile(File* file);
-    void setTitle(const QString& title);
     void setBody(const QString& body);
     void setUpdated(bool updated);
-
 
     RssItem *findAttachedRss(int id);
     void attachRss(RssItem* item);
     void removeAttachedRss(RssItem *item);
     QList<RssItem*> attachedRss();
 protected:
-    int m_id;
     bool m_isremote;
     bool m_updated;
-    QString m_title;
     QString m_body;
+
     QList<File*> m_attached;
     QList<RssItem*> m_attachedRss;
 

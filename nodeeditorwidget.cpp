@@ -4,6 +4,7 @@
 #include "rssitem.h"
 #include "resourcemanager.h"
 #include "newsapplication.h"
+#include "taxonomywidget.h"
 #include <QtGui>
 
 
@@ -19,21 +20,21 @@ void NodeEditorWidget::setupUI()
     titleEdit = new QLineEdit(this);
     attachedRssList = new QListWidget(this);
     attachedRssList->setMaximumHeight(50);
+    m_taxonomy = new TaxonomyWidget(this);
 
     QGridLayout *gridLayout = new QGridLayout();
-    gridLayout->addWidget(new QLabel(tr("Theme"), this), 0, 0, 1, 3);
-    gridLayout->addWidget(titleEdit, 1, 1, 1, 2);
-    gridLayout->addWidget(textEdit, 2, 0, 1, 3);
+    gridLayout->addWidget(new QLabel(tr("Theme"), this), 0, 0, 1, 6);
+    gridLayout->addWidget(new QLabel(tr("Title"), this), 1, 0, 1, 1);
+    gridLayout->addWidget(titleEdit, 1, 1, 1, 5);
+    gridLayout->addWidget(textEdit, 2, 0, 1, 6);
     gridLayout->addWidget(new QLabel(tr("Attached RSS"), this), 3, 0, 1, 1);
-    gridLayout->addWidget(attachedRssList,  3, 1, 1, 2);
-    gridLayout->addWidget(new QLabel(tr("Files"), this), 4, 0, 1, 1);
-    gridLayout->addWidget(new QLabel(tr("Dummy"), this), 4, 1, 2, 2);
+    gridLayout->addWidget(attachedRssList,  3, 1, 1, 5);
+    gridLayout->addWidget(m_taxonomy, 4, 0, 2, 2);
 
     QPushButton *btnSave = new QPushButton(tr("Save"), this);
     connect(btnSave, SIGNAL(clicked()), this, SLOT(saveClicked()));
-    gridLayout->addWidget(btnSave, 4, 2, 1, 1);
-    gridLayout->addWidget(new QPushButton(this), 5, 2, 1, 1);
-    gridLayout->addWidget(new QLabel(tr("Title"), this), 1, 0, 1, 1);
+    gridLayout->addWidget(btnSave, 5, 5, 1, 1);
+
     gridLayout->setColumnStretch(1, 1);
 
     setLayout(gridLayout);
@@ -49,10 +50,19 @@ void NodeEditorWidget::loadNode(Node *node)
     if(node && m_current == node)
             return;
 
+    m_taxonomy->clearSelection();
+    textEdit->clearContent();
+    titleEdit->clear();
+
     if(node != NULL) {
         titleEdit->setText(node->getTitle());
         textEdit->load(node->getBody());
         attachedRssList->clear();
+
+        // select taxonomy
+        if(!node->getTids().isEmpty()) {
+            m_taxonomy->selectTaxonomy(node->getTids());
+        }
 
         QList<RssItem*> items = node->attachedRss();
         if(!items.isEmpty()) {
@@ -94,26 +104,28 @@ void NodeEditorWidget::saveClicked()
         return;
     }
 
-   if(!textEdit->maybeSave()) {
-        QMessageBox msg(QMessageBox::Information, "Error", "You must enter content of the theme",
-                        QMessageBox::Ok, this);
-         msg.exec();
-        return;
-    }
-
-    QString body = textEdit->getContent();
     Node *node = NULL;
     ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
 
     if(m_current) {
         node = m_current;
         node->setTitle(title);
-        node->setBody(body);
+
+        if(textEdit->maybeSave()) {
+            QString body = textEdit->getContent();
+            node->setBody(body);
+        }
     }else{
-        node = new Node(Node::NODEID_DEFAULT, title, false, body);
+        QString body = textEdit->getContent();
+        node = new Node(Node::NODEID_DEFAULT, title, false, 0);
+        node->setBody(body);
         rm->addNode( node );
         m_current = node;
     }
+
+    // save taxonomy
+    QList<TaxonomyTerm*> tids = m_taxonomy->selectedTaxonomy();
+    node->setTids(tids);
 
     // check attached rss
     if(attachedRssList->count() > 0) {
@@ -126,4 +138,13 @@ void NodeEditorWidget::saveClicked()
         }
     }
     node->setUpdated(true);
+}
+
+void NodeEditorWidget::updateTaxonomy()
+{
+    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    QTreeWidgetItem* tax = rm->getTaxonomy();
+    if(tax->childCount() > 0) {
+        m_taxonomy->loadTaxonomy(tax);
+    }
 }
