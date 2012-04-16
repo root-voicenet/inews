@@ -26,6 +26,10 @@ INPUT(
 ./debug\cssparser.o
 ./debug\htmlparser.o
 ./debug\texthtmlimporter.o
+./debug\NvSortFilterModel.o
+./debug\NvRssItem.o
+./debug\NvObjectModel.o
+./debug\dbmanager.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -39,5 +43,8 @@ INPUT(
 ./debug\moc_rssviewwidget.o
 ./debug\moc_nodeeditorwidget.o
 ./debug\moc_taxonomywidget.o
+./debug\moc_NvSortFilterModel.o
+./debug\moc_NvAbstractListItem.o
+./debug\moc_NvObjectModel.o
 ./debug\qrc_resource.o
 );

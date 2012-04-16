@@ -37,7 +37,11 @@ SOURCES += main.cpp\
     text/htmlexporter.cpp \
     text/cssparser.cpp \
     text/htmlparser.cpp \
-    text/texthtmlimporter.cpp
+    text/texthtmlimporter.cpp \
+    model/NvSortFilterModel.cpp \
+    model/NvRssItem.cpp \
+    model/NvObjectModel.cpp \
+    dbmanager.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -67,10 +71,15 @@ HEADERS  += mainwindow.h \
     text/cssparser.h \
     text/textformat.h \
     text/texthtmlimporter.h \
-    text/htmlparser.h
+    text/htmlparser.h \
+    model/NvSortFilterModel.h \
+    model/NvAbstractListItem.h \
+    model/NvRssItem.h \
+    model/NvObjectModel.h \
+    dbmanager.h
 
 FORMS    +=
-QT += core gui network xml webkit
+QT += core gui network xml webkit sql
 
 RESOURCES += \
     resource.qrc
