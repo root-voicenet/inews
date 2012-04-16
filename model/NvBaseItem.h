@@ -1,21 +1,21 @@
-#ifndef NVRSSITEM_H
-#define NVRSSITEM_H
+#ifndef NVBASEITEM_H
+#define NVBASEITEM_H
 
 #include "NvAbstractListItem.h"
 #include <QString>
 #include <QImage>
 
-class NvRssItem : public NvAbstractListItem
+class NvBaseItem : public NvAbstractListItem
 {
     QString name_, description_, source_;
-	QImage icon_;
+    QImage icon_;
     quint32 id_;
-	QDate date_;
+    QDate date_;
 protected:
 	bool updated_;
 public:
-    NvRssItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
-    virtual ~NvRssItem(){}
+    NvBaseItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
+    virtual ~NvBaseItem(){}
 
 	QString name() const;
 	void setName(const QString &v);
@@ -38,4 +38,4 @@ public:
 	void setHasUpdate(bool v);
 
 };
-#endif // NVRSSITEM_H
+#endif // NVBASEITEM_H

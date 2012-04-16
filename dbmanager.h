@@ -1,7 +1,7 @@
 #ifndef DBMANAGER_H
 #define DBMANAGER_H
 
-#include "model/NvRssItem.h"
+#include "model/nvrssitem.h"
 #include <QSqlDatabase>
 
 class DBManager
@@ -13,14 +13,15 @@ public:
     static DBManager* instance();
     bool init(const QString& databasePath = "");
 
-    QList<NvRssItem*> listRss();
+    QList<NvLocalRssItem*> listRss(int start, int count);
 
     // manage functions
 
     // return local rss id if sucess, 0 if false
-    int addRss( const NvRssItem& rss );
+    int addRss( const NvBaseItem& rss );
+    int rssCount();
     void clearRss();
-    bool editRss( const NvRssItem &newRss, int rssId );
+    bool editRss( const NvBaseItem &newRss, int rssId );
     bool removeRss( int rssId );
 
 private:

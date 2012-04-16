@@ -50,9 +50,9 @@ QVariant NvObjectModel::data( const QModelIndex & index, int role /*= Qt::Displa
 	if (index.isValid())
 	{
 		if(index.parent().isValid())
-		{
-			// Элементы списка
-			return itemData( index.internalId() & mask(), index.row(), role);
+                {
+                    NvObjectModel *pthis = const_cast<NvObjectModel*>(this);
+                        return pthis->itemData( index.internalId() & mask(), index.row(), role);
 		} else {
 			// Заголовок разделов
 			switch(role)
@@ -61,12 +61,12 @@ QVariant NvObjectModel::data( const QModelIndex & index, int role /*= Qt::Displa
 				return headers_[index.row()];
 			case DetailRole:
 				{
-					int itemsCount_ = rowCount(index),
-						itemsUCount_ = rowWUpdateCount(index);
+                                        int itemsCount_ = rowCount(index);//,
+                                        //	itemsUCount_ = rowWUpdateCount(index);
 					QStringList items_;
 					items_ << QCoreApplication::translate("update", "%1 items", "total count of items", QCoreApplication::CodecForTr, itemsCount_ ).arg(itemsCount_);
-					if(itemsUCount_ > 0)
-						items_ << QCoreApplication::translate("update", "(need update %1)", "total count of items", QCoreApplication::CodecForTr, itemsUCount_ ).arg(itemsUCount_);
+                                        //if(itemsUCount_ > 0)
+                                        //	items_ << QCoreApplication::translate("update", "(need update %1)", "total count of items", QCoreApplication::CodecForTr, itemsUCount_ ).arg(itemsUCount_);
 					return items_.join(" ");
 				}
 			}
@@ -75,7 +75,7 @@ QVariant NvObjectModel::data( const QModelIndex & index, int role /*= Qt::Displa
 	return QVariant();
 }
 
-QVariant NvObjectModel::itemData(int section, int row, int role ) const
+QVariant NvObjectModel::itemData(int section, int row, int role )
 {
     const NvAbstractListItem * item = items[section][row];
 
@@ -245,13 +245,13 @@ void NvObjectModel::detail( const QModelIndex & index )
 NvAbstractListItem *NvObjectModel::getItem( const QModelIndex & index ) const
 {
     NvAbstractListItem * item = 0;
-	if(index.isValid() && index.parent().isValid())
-	{
+    if(index.isValid() && index.parent().isValid()) {
 		int section = index.parent().internalId();
 		int row = index.row();
+
 		item = items[section][row];
-	}
-	return item;
+    }
+    return item;
 }
 
 void NvObjectModel::itemNeedUpdate()

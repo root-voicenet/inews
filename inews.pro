@@ -39,9 +39,13 @@ SOURCES += main.cpp\
     text/htmlparser.cpp \
     text/texthtmlimporter.cpp \
     model/NvSortFilterModel.cpp \
-    model/NvRssItem.cpp \
     model/NvObjectModel.cpp \
-    dbmanager.cpp
+    dbmanager.cpp \
+    model/NvBaseItem.cpp \
+    model/NvBaseItemDelegate.cpp \
+    view/NvBaseListView.cpp \
+    model/nvrssitem.cpp \
+    model/NvRssCachedModel.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -74,9 +78,13 @@ HEADERS  += mainwindow.h \
     text/htmlparser.h \
     model/NvSortFilterModel.h \
     model/NvAbstractListItem.h \
-    model/NvRssItem.h \
     model/NvObjectModel.h \
-    dbmanager.h
+    dbmanager.h \
+    model/NvBaseItem.h \
+    model/NvBaseItemDelegate.h \
+    view/NvBaseListView.h \
+    model/nvrssitem.h \
+    model/NvRssCachedModel.h
 
 FORMS    +=
 QT += core gui network xml webkit sql

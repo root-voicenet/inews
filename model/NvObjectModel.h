@@ -65,13 +65,13 @@ private slots:
 	void itemNeedUpdate();
 	void itemDeleted(QObject * item);
 
-private:
+protected:
     typedef QList< NvAbstractListItemPtr > ItemVector;
 	
 	QVector< ItemVector > items;
 	QStringList headers_;
 
-    NvAbstractListItem* getItem( const QModelIndex & index ) const;
+        virtual NvAbstractListItem* getItem( const QModelIndex & index ) const;
 
 	inline int magickNum() const
 	{
@@ -89,7 +89,7 @@ private:
 		return m;
     }
 
-	QVariant itemData(int section, int row, int role) const;
+    QVariant itemData(int section, int row, int role);
 };
 
 #endif // NVOBJECTMODEL_H
