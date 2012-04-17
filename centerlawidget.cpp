@@ -71,7 +71,7 @@ void CenterlaWidget::showNode(Node *node)
     }
 }
 
-void CenterlaWidget::showRss(RssItem *rss)
+void CenterlaWidget::showRss(NvRssItem *rss)
 {
     if(m_currentRss) {
         if(!m_rssView->storeRss(m_currentRss))
@@ -110,7 +110,7 @@ void CenterlaWidget::updateTaxonomy()
     m_nodeView->updateTaxonomy();
 }
 
-void CenterlaWidget::nodeAttachRss(RssItem *rss)
+void CenterlaWidget::nodeAttachRss(NvRssItem *rss)
 {
     m_nodeView->attachRss(rss);
 }

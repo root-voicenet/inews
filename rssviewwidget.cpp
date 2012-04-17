@@ -1,8 +1,7 @@
 #include "rssviewwidget.h"
-#include "rssitem.h"
+#include "model/nvrssitem.h"
 #include "taxonomywidget.h"
 #include "resourcemanager.h"
-#include "newsapplication.h"
 #include <QtGui>
 #include <QWebView>
 
@@ -51,38 +50,36 @@ void RssViewWidget::setupUI()
     setMaximumWidth(400);
 }
 
-void RssViewWidget::loadRss(RssItem *rss)
+void RssViewWidget::loadRss(NvRssItem *rss)
 {
     taxonomy->clearSelection();
-    if(!rss->getTids().isEmpty()) {
-        taxonomy->selectTaxonomy(rss->getTids());
+    if(!rss->terms().isEmpty()) {
+        taxonomy->selectTaxonomy(rss->terms());
     }
-    titleLabel->setText(rss->getTitle());
-    textLabel->setText(rss->getDescription());
 
+    titleLabel->setText(rss->name());
+    textLabel->setText(rss->description());
+
+    /*
     QUrl url(rss->getLink());
     if(url.isValid()) {
         m_browser->setUrl(url);
     }
-
-
-
-
+    */
 }
 
 void RssViewWidget::updateTaxonomy()
 {
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
     QTreeWidgetItem* tax = rm->getTaxonomy();
     if(tax->childCount() > 0) {
         taxonomy->loadTaxonomy(tax);
     }
 }
 
-bool RssViewWidget::storeRss(RssItem *rss)
+bool RssViewWidget::storeRss(NvRssItem *rss)
 {
-    QList<TaxonomyTerm*> tids = taxonomy->selectedTaxonomy();
-    rss->setTids(tids);
+    rss->setTerms( taxonomy->selectedTaxonomy() );
 
     return true;
 }

@@ -1,10 +1,9 @@
 #include "nodeeditorwidget.h"
 #include "textedit.h"
 #include "node.h"
-#include "rssitem.h"
 #include "resourcemanager.h"
-#include "newsapplication.h"
 #include "taxonomywidget.h"
+#include "model/nvrssitem.h"
 #include <QtGui>
 
 
@@ -60,10 +59,12 @@ void NodeEditorWidget::loadNode(Node *node)
         attachedRssList->clear();
 
         // select taxonomy
+        /*
         if(!node->getTids().isEmpty()) {
             m_taxonomy->selectTaxonomy(node->getTids());
-        }
+        }*/
 
+        /*
         QList<RssItem*> items = node->attachedRss();
         if(!items.isEmpty()) {
             for(int i = 0; i < items.size(); ++i) {
@@ -72,14 +73,16 @@ void NodeEditorWidget::loadNode(Node *node)
                 attachedRssList->addItem(listItem);
             }
         }
+        */
     }
 
     m_current = node;
 }
 
-void NodeEditorWidget::attachRss(RssItem *rss)
+void NodeEditorWidget::attachRss(NvRssItem *rss)
 {
     // check if rss already in list
+    /*
     for(int i = 0; i < attachedRssList->count(); ++i) {
         QVariant data = attachedRssList->item(i)->data(Qt::UserRole + 1);
         if(!data.isNull()) {
@@ -92,6 +95,7 @@ void NodeEditorWidget::attachRss(RssItem *rss)
     QListWidgetItem *listItem = new QListWidgetItem(rss->getTitle());
     listItem->setData(Qt::UserRole + 1, (int)rss);
     attachedRssList->addItem(listItem);
+    */
 }
 
 void NodeEditorWidget::saveClicked()
@@ -105,7 +109,7 @@ void NodeEditorWidget::saveClicked()
     }
 
     Node *node = NULL;
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
 
     if(m_current) {
         node = m_current;
@@ -124,8 +128,10 @@ void NodeEditorWidget::saveClicked()
     }
 
     // save taxonomy
+    /*
     QList<TaxonomyTerm*> tids = m_taxonomy->selectedTaxonomy();
     node->setTids(tids);
+    */
 
     // check attached rss
     if(attachedRssList->count() > 0) {
@@ -142,7 +148,7 @@ void NodeEditorWidget::saveClicked()
 
 void NodeEditorWidget::updateTaxonomy()
 {
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
     QTreeWidgetItem* tax = rm->getTaxonomy();
     if(tax->childCount() > 0) {
         m_taxonomy->loadTaxonomy(tax);

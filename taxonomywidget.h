@@ -17,15 +17,15 @@ public:
 
     void loadTaxonomy(QTreeWidgetItem *root);
     void clearSelection();
-    void selectTaxonomy(const QList<TaxonomyTerm*> &selected);
-    QList<TaxonomyTerm*> selectedTaxonomy();
+    void selectTaxonomy(const QList<int> &selected);
+    QList<int> selectedTaxonomy();
 private:
     QTreeWidget *taxonomyList;
 
 private:
     void setupUI();
-    void selectItem(QList<int> *tids, QTreeWidgetItem *parent = 0);
-    QList<TaxonomyTerm*> selectedItem(QTreeWidgetItem *parent = 0);
+    void selectItem(const QList<int> &tids, QTreeWidgetItem *parent = 0);
+    QList<int> selectedItem(QTreeWidgetItem *parent = 0);
 
 signals:
 

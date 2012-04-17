@@ -1,9 +1,9 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "feedmodel.h"
 #include <QMutex>
 #include <QStandardItemModel>
+#include "model/NvRssCachedModel.h"
 
 
 class QNetworkAccessManager;
@@ -27,12 +27,14 @@ public:
         TAXONOMY_GEO
     };
 
-    ResourceManager(QObject *parent = NULL);
     ~ResourceManager();
-    QStandardItemModel &getFeed() { return m_feed; }
+    static ResourceManager* instance();
+    void storeData();
+
+    // manage rss items
+    NvRssCachedModel *rssModel() { return &m_rssModel; }
     QStandardItemModel &getThemes() { return m_themes; }
 
-    void DownloadIcon(const QString& url, QStandardItem *target);
     void addNode(Node *node);
     void removeNode(Node *node);
     void clearNodes();
@@ -41,24 +43,16 @@ public:
 
     QTreeWidgetItem *getTaxonomy();
 
-    void addRssItem(RssItem *item);
-    void removeRssItem(RssItem *item);
-    void clearRssItems();
     RssItem *searchRss(int id);
 
-    QList<RssItem*> getUpdatedRss();
     QList<Node*> getUpdatedNodes();
+
+    QNetworkAccessManager *getNAM() { return m_nam; }
 private:
-    typedef struct DownloadRequest {
-        QStandardItem* item;
-    } DownloadRequest;
-
-    QStandardItemModel m_feed, m_themes;
-    QNetworkAccessManager* m_nam;
-
-    //all requests go in this queue to be sent
-    QVector<DownloadRequest> requestQueue;
-    QMutex requestListMutex;
+    ResourceManager(QObject *parent = NULL);
+    static ResourceManager* m_instance;
+    QStandardItemModel m_themes;
+    QNetworkAccessManager *m_nam;
 
     // author content aka node
     QList<Node*> m_nodes;
@@ -66,8 +60,7 @@ private:
     // and attached files
     QList<File*> m_files;
 
-    // rss items
-    QList<RssItem*> m_rssitems;
+    NvRssCachedModel m_rssModel;
 
     // taxonomys
     QTreeWidgetItem* m_taxonomy;
@@ -83,8 +76,6 @@ private:
 
     void cleanup();
     void clearTaxonomy();
-private slots:
-    void finished(QNetworkReply* reply);
 };
 
 #endif // RESOURCEMANAGER_H

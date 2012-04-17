@@ -20,7 +20,7 @@ public:
 
     void Login(const QString& username, const QString& password);
     void UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids);
-    void SyncRss(QList<RssItem*> rss);
+    void SyncRss();
     void SyncNodes(QList<Node*> nodes);
     void GetNode(int id);
 

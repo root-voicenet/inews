@@ -1,5 +1,5 @@
 #include "NvBaseListView.h"
-#include "model/NvBaseItemDelegate.h"
+#include "../model/NvBaseItemDelegate.h"
 
 NvBaseListView::NvBaseListView(QWidget *parent) :
     QTreeView(parent)

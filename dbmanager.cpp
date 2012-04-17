@@ -140,3 +140,20 @@ QList<NvLocalRssItem*> DBManager::listRss(int start, int count)
 
     return res;
 }
+
+bool DBManager::storeRss(const NvRemoteRssItem *item)
+{
+    QSqlQuery q;
+    q.prepare("INSERT INTO rss_item (remote_id, title) VALUES(?, ?)") ;
+    q.addBindValue( item->id() );
+    q.addBindValue( item->name() );
+
+     if( !q.exec() ) {
+         m_lastError = q.lastError().text();
+         qDebug() << "Cannot store remote rss id: " << item->id();
+
+         return false;
+     }
+
+     return true;
+}

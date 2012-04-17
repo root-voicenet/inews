@@ -2,7 +2,6 @@
 #include "file.h"
 #include "rssitem.h"
 #include "resourcemanager.h"
-#include "newsapplication.h"
 
 Node::Node(int id, const QString& title, bool remote, bool created, const QString &body)
     : NvBaseObject(id, title, created), m_body(body),  m_updated(false), m_isremote(remote)
@@ -11,7 +10,7 @@ Node::Node(int id, const QString& title, bool remote, bool created, const QStrin
 }
 
 Node::~Node() {
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
     for(int i = 0; i < m_attached.size(); ++i) {
         rm->removeFile(m_attached[i]);
     }
@@ -32,7 +31,7 @@ void Node::attachFile(File *file)
     if(m_attached.indexOf(file) != -1)
         return;
 
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
     if(!rm->lookupFile(*file)) {
         rm->addFile(*file);
     }
@@ -45,7 +44,7 @@ void Node::removeFile(File *file)
     if(pos != -1) {
         m_attached.removeAt(pos);
 
-        ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+        ResourceManager *rm = ResourceManager::instance();
         rm->removeFile(file);
     }
 }

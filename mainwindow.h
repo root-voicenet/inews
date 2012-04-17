@@ -8,6 +8,7 @@
 class Connector;
 class Node;
 class CenterlaWidget;
+class NvBaseListView;
 
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 QT_FORWARD_DECLARE_CLASS(QListView)
@@ -38,11 +39,12 @@ private:
     void arrangeItems(QWidget *parent, int t);
     void showNode(Node *node);
 private: //widgets
-    QListView *rssList, *themesList;
+    QListView *themesList;
     QLabel *messageLabel;
     QPushButton *btnSync, *btnNew;
     QDockWidget *dock;
     CenterlaWidget *view;
+    NvBaseListView *rssList;
 
 private slots:
     void nodesLoaded();

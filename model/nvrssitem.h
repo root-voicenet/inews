@@ -4,6 +4,7 @@
 #include "NvBaseItem.h"
 #include <QPointer>
 #include <QUrl>
+#include <QList>
 
 class QNetworkAccessManager;
 
@@ -11,6 +12,11 @@ class NvRssItem : public NvBaseItem
 {
 public:
     NvRssItem(quint32 id, const QString& title);
+
+    QList<int> terms() const;
+    void setTerms(const QList<int>& tids);
+protected:
+    QList<int> tids_;
 };
 
 class NvRemoteRssItem : public NvRssItem

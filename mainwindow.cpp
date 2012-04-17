@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include "connector.h"
 #include "node.h"
-#include "rssitem.h"
 #include "taxonomyterm.h"
 #include "resourcemanager.h"
-#include "newsapplication.h"
 #include "centerlawidget.h"
-#include "rsslistitemdelegate.h"
+
+#include "model/nvrssitem.h"
+#include "view/NvBaseListView.h"
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -83,8 +83,9 @@ void MainWindow::setupDockablePanels()
     QWidget *central = new QWidget(dock);
 
     QBoxLayout *box = new QBoxLayout(QBoxLayout::TopToBottom);
-    rssList = new QListView(central);
-    rssList->setItemDelegate(new RssListItemDelegate());
+    rssList = new NvBaseListView(central);
+    rssList->setModel( ResourceManager::instance()->rssModel() );
+    rssList->expandAll();
 
     box->addWidget(rssList);
     central->setLayout(box);
@@ -96,12 +97,12 @@ void MainWindow::setupDockablePanels()
 
 void MainWindow::initWidgets()
 {
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
 
-    connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
+    connect(rssList, SIGNAL(activated(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
 
     themesList->setModel(&rm->getThemes());
-    rssList->setModel(&rm->getFeed());
+    //rssList->setModel(&rm->getFeed());
     connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(attachRss(QModelIndex)));
 
     m_connector = new Connector("http://test.irkipedia.ru/news/api");
@@ -123,9 +124,9 @@ void MainWindow::syncClicked()
 {
     view->showDummy();
 
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
     rssList->setEnabled(false);
-    m_connector->SyncRss(rm->getUpdatedRss());
+    m_connector->SyncRss();
 
     themesList->setEnabled(false);
     btnNew->setEnabled(false);
@@ -134,15 +135,12 @@ void MainWindow::syncClicked()
 
 void MainWindow::rssItemSelected(QModelIndex index)
 {
-    RssItem *rss;
+    NvRssItem* item;
+    ResourceManager* rm = ResourceManager::instance();
 
-    QStandardItemModel *model = static_cast<QStandardItemModel*>(rssList->model());
-    QStandardItem *item = model->itemFromIndex(index);
-
+    item = dynamic_cast<NvRssItem*>(rm->rssModel()->item(index));
     if(item) {
-        // apply rss tids
-        rss = reinterpret_cast<RssItem*>(item->data().toInt());
-        view->showRss(rss);
+        view->showRss(item);
     }
 }
 
@@ -197,6 +195,7 @@ void MainWindow::nodeLoaded(Node *node)
 
 void MainWindow::attachRss(QModelIndex index)
 {
+    /*
     QStandardItemModel *model = static_cast<QStandardItemModel*>(rssList->model());
     QStandardItem *item = model->itemFromIndex(index);
 
@@ -206,6 +205,7 @@ void MainWindow::attachRss(QModelIndex index)
             view->nodeAttachRss(rss);
         }
     }
+    */
 }
 
 void MainWindow::networkError(QString msg)

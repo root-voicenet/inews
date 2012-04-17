@@ -20,9 +20,7 @@ SOURCES += main.cpp\
     qxmlrpc/xmlrpc/request.cpp \
     qxmlrpc/xmlrpc/client.cpp \
     connector.cpp \
-    newsapplication.cpp \
     resourcemanager.cpp \
-    feedmodel.cpp \
     textedit.cpp \
     node.cpp \
     file.cpp \
@@ -45,7 +43,8 @@ SOURCES += main.cpp\
     model/NvBaseItemDelegate.cpp \
     view/NvBaseListView.cpp \
     model/nvrssitem.cpp \
-    model/NvRssCachedModel.cpp
+    model/NvRssCachedModel.cpp \
+    loaders.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -57,9 +56,7 @@ HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/request.h \
     qxmlrpc/xmlrpc/client.h \
     connector.h \
-    newsapplication.h \
     resourcemanager.h \
-    feedmodel.h \
     textedit.h \
     node.h \
     file.h \
@@ -84,7 +81,9 @@ HEADERS  += mainwindow.h \
     model/NvBaseItemDelegate.h \
     view/NvBaseListView.h \
     model/nvrssitem.h \
-    model/NvRssCachedModel.h
+    model/NvRssCachedModel.h \
+    model/NvObjectImporter.h \
+    loaders.h
 
 FORMS    +=
 QT += core gui network xml webkit sql

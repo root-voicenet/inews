@@ -1,0 +1,75 @@
+#include "loaders.h"
+#include "resourcemanager.h"
+#include "model/NvRssCachedModel.h"
+#include "model/nvrssitem.h"
+#include <QDebug>
+
+RssImporter::RssImporter(NvObjectModel *target)
+    : NvObjectImporter(target)
+{
+
+}
+
+bool RssImporter::import(const QVariant &in)
+{
+    NvRssCachedModel *rssModel = dynamic_cast<NvRssCachedModel*>(m_target);
+    if(rssModel) {
+        rssModel->clearRemote();
+        QList<QVariant> elements(in.toList());
+
+        for (int i = 0; i < elements.size(); ++i) {
+            // parse element
+            QMap<QString, QVariant> tags = elements[i].toMap();
+            QString rssTitle;
+            QUrl imageUrl;
+
+            // create view
+            int rssId;
+            int cdate;
+
+            rssTitle = tags.value("title").toString();
+            rssId = tags.value("iid").toInt();
+            cdate = tags.value("date").toInt();
+
+            QList<QVariant> images = tags.value("image").toList();
+            if(!images.isEmpty()) {
+                imageUrl = images.first().toString();
+            }
+
+            NvRemoteRssItem *rss = new NvRemoteRssItem(rssId, rssTitle);
+
+            if(!tags.value("sourse").isNull()) {
+                rss->setSource(tags.value("sourse").toString());
+            }
+
+            if(!imageUrl.isEmpty()) {
+                rss->setNetworkAccessManager( ResourceManager::instance()->getNAM() );
+                rss->setIconUrl(imageUrl);
+            }
+
+            if(!tags.value("tids").isNull()) {
+                QList<QVariant> tids = tags.value("tids").toList();
+                QList<int> res;
+                foreach(const QVariant& i, tids) {
+                    res << qvariant_cast<int>(i);
+                }
+                rss->setTerms(res);
+            }
+
+            if(!tags.value("link").isNull()) {
+                //rss->set(tags.value("link").toString());
+            }
+
+            if(rssTitle.isEmpty()) {
+                qDebug() << "Title is empty";
+                delete rss;
+                return false;
+            }
+            rssModel->addRemote(rss);
+        }
+
+        return true;
+    }
+
+    return false;
+}

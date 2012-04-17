@@ -3,7 +3,9 @@
 #include "file.h"
 #include "rssitem.h"
 #include "taxonomyterm.h"
-#include "rsslistitemdelegate.h"
+#include "loaders.h"
+#include "model/NvRssCachedModel.h"
+
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkRequest>
@@ -12,6 +14,9 @@
 #include <QImageReader>
 #include <QDate>
 #include <QTreeWidgetItem>
+
+
+ResourceManager *ResourceManager::m_instance = NULL;
 
 
 class TermInternal {
@@ -27,12 +32,10 @@ public:
 ResourceManager::ResourceManager(QObject *parent)
     : QObject(parent)
 {
-    m_nam = new QNetworkAccessManager(this);
-    connect(m_nam, SIGNAL(finished(QNetworkReply*)),
-             this, SLOT(finished(QNetworkReply*)));
-
     m_taxonomy = new QTreeWidgetItem();
     m_taxonomy->setText(0, "Root");
+
+    m_nam = new QNetworkAccessManager(this);
 }
 
 ResourceManager::~ResourceManager()
@@ -40,65 +43,15 @@ ResourceManager::~ResourceManager()
 
 }
 
-void ResourceManager::DownloadIcon(const QString &url, QStandardItem *target)
+ResourceManager *ResourceManager::instance()
 {
-    QUrl durl(url);
-    QNetworkReply* reply = m_nam->get(QNetworkRequest(durl));
-    DownloadRequest d;
-    d.item = target;
-    requestQueue.push_back(d);
-
-#ifdef DEBUG
-    qDebug() << "new icon download request[" << url << "]";
-#endif
-}
-
-void ResourceManager::finished(QNetworkReply *reply)
-{
-
-     requestListMutex.lock();
-     if (requestQueue.size()<1){
-        requestListMutex.unlock();
-                qDebug()<<"network request has been deleted from queue before reply was received";
-                return;
-    }
-    // Reading attributes of the reply
-    // e.g. the HTTP status code
-    QVariant statusCodeV =
-    reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    // Or the target URL if it was a redirect:
-    QVariant redirectionTargetUrl =
-    reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-    // see CS001432 on how to handle this
-
-    // no error received?
-
-    if(statusCodeV.toInt() == 200  && redirectionTargetUrl.toString().isEmpty()) {
-
-        if (reply->error() == QNetworkReply::NoError)
-        {
-            // read data from QNetworkReply here
-            QImageReader imageReader(reply);
-            QPixmap pic;
-
-           DownloadRequest d = requestQueue.first();
-           if(d.item &&  pic.convertFromImage(imageReader.read())) {
-               d.item->setIcon(pic);
-           }
-        }
-        // Some http error received
-        else
-        {
-            // handle errors here
-        }
+    if(!m_instance) {
+        m_instance = new ResourceManager();
     }
 
-    requestQueue.remove(0);
-    requestListMutex.unlock();
-    // We receive ownership of the reply object
-    // and therefore need to handle deletion.
-    //delete reply;
+    return m_instance;
 }
+
 
 void ResourceManager::clearTaxonomy()
 {
@@ -179,68 +132,13 @@ TaxonomyTerm *ResourceManager::searchTaxonomy(int id)
 
 bool ResourceManager::parseFeed(QVariant *resp)
 {
-   QList<QVariant> elements(resp->toList());
-   clearRssItems();
-
-
-
-   for (int i = 0; i < elements.size(); ++i) {
-       // parse element
-       QMap<QString, QVariant> tags = elements[i].toMap();
-       QString rssTitle;
-       QString imageUrl;
-
-       // create view
-       int rssId;
-       int cdate;
-
-        qDebug() << 'tags: ' << tags;
-
-       rssTitle = tags.value("title").toString();
-       rssId = tags.value("iid").toInt();
-       cdate = tags.value("date").toInt();
-
-       QList<QVariant> images = tags.value("image").toList();
-       if(!images.isEmpty()) {
-           imageUrl = images.first().toString();
-       }
-
-       RssItem *rss = new RssItem(rssId, rssTitle, cdate, imageUrl);
-       if(!tags.value("sourse").isNull()) {
-           rss->setDescription(tags.value("sourse").toString());
-       }
-
-
-       if(!tags.value("tids").isNull()) {
-           QList<TaxonomyTerm*> taxons;
-           QList<QVariant> tids = tags.value("tids").toList();
-
-           for(int j = 0; j < tids.size(); ++j) {
-               TaxonomyTerm* t = searchTaxonomy(tids[i].toInt());
-               if(t) taxons << t;
-           }
-           rss->setTids(taxons);
-       }
-
-       if(!tags.value("link").isNull()) {
-           rss->setLink(tags.value("link").toString());
-       }
-
-       if(rssTitle.isEmpty()) {
-           qDebug() << "Title is empty";
-           delete rss;
-           m_feed.clear();
-           return false;
-       }
-       addRssItem(rss);
-   }
-    return true;
+    RssImporter importer(&m_rssModel);
+    return importer.import(*resp);
 }
 
 void ResourceManager::cleanup()
 {
     // clear rss items
-    clearRssItems();
     // cleanup nodes
     clearNodes();
 
@@ -290,54 +188,6 @@ void ResourceManager::removeNode(Node *node)
         m_nodes.removeAt(pos);
 }
 
-void ResourceManager::addRssItem(RssItem *item)
-{
-    QStandardItem *listitem = new QStandardItem();
-    QString imageUrl = item->getImageUrl();
-    QString prefix;
-
-    if(!imageUrl.isEmpty()) {
-       // Temporary disabled DownloadIcon(imageUrl, listitem);
-    }
-
-    QIcon icon(":/images/baloon.png");
-    listitem->setData(item->getTitle(), RssListItemDelegate::HeaderTextRole);
-    listitem->setData(item->getDescription(), RssListItemDelegate::DescriptionRole);
-    listitem->setData(icon, RssListItemDelegate::IconRole);
-
-    QVariant data((int)item);
-    listitem->setData(data);
-    listitem->setEditable(false);
-
-    int row = m_feed.rowCount();
-
-
-    if(item->getCreated() > 0) {
-        QDateTime date;
-        date.setTime_t(item->getCreated());
-        listitem->setData(date.toString(Qt::SystemLocaleShortDate), RssListItemDelegate::DateRole);
-    }
-
-    listitem->setEditable(false);
-    m_feed.setItem(row, 0, listitem);
-
-    m_rssitems.append(item);
-}
-
-void ResourceManager::removeRssItem(RssItem *item)
-{
-    int pos = m_rssitems.indexOf(item);
-    if(pos != -1)
-        m_rssitems.removeAt(pos);
-}
-
-void ResourceManager::clearRssItems()
-{
-    m_feed.clear();
-    qDeleteAll(m_rssitems);
-    m_rssitems.clear();
-}
-
 void ResourceManager::clearNodes()
 {
     m_themes.clear();
@@ -350,16 +200,6 @@ QTreeWidgetItem* ResourceManager::getTaxonomy()
     return m_taxonomy;
 }
 
-QList<RssItem*> ResourceManager::getUpdatedRss()
-{
-    QList<RssItem*> res;
-    for(int i = 0; i < m_rssitems.size(); ++i) {
-        if(!m_rssitems[i]->getTids().isEmpty())
-            res.append(m_rssitems[i]);
-    }
-
-    return res;
-}
 
 bool ResourceManager::parseNodes(QVariant *resp)
 {
@@ -424,6 +264,7 @@ Node *ResourceManager::searchNode(int id)
 
 RssItem *ResourceManager::searchRss(int id)
 {
+    /*
     QListIterator<RssItem*> i(m_rssitems);
     while(i.hasNext()) {
         RssItem *n = i.next();
@@ -431,6 +272,7 @@ RssItem *ResourceManager::searchRss(int id)
         if(n->getId() == id)
             return n;
     }
+    */
 
     return NULL;
 }
@@ -457,4 +299,9 @@ QList<Node*> ResourceManager::getUpdatedNodes()
     }
 
     return res;
+}
+
+void ResourceManager::storeData()
+{
+    m_rssModel.storeRemote();
 }

@@ -1,5 +1,6 @@
 #include "NvRssCachedModel.h"
-#include "dbmanager.h"
+#include "nvrssitem.h"
+#include "../dbmanager.h"
 #include <QDebug>
 
 NvRssCachedModel::NvRssCachedModel(QObject *parent)
@@ -10,16 +11,49 @@ NvRssCachedModel::NvRssCachedModel(QObject *parent)
 
     m_storage = DBManager::instance();
     m_buffersize = 100;
-    m_count = 0;
+
+    updateLocalCount();
 }
 
 
 
 int NvRssCachedModel::localRssCount() const
 {
-    static int count =  m_storage->rssCount();
+    return m_count;
+}
 
-    return count;
+void NvRssCachedModel::clearRemote()
+{
+    clearSection(m_remoteIdx);
+}
+
+bool NvRssCachedModel::storeRemote()
+{
+    if(items[m_remoteIdx].size() > 0) {
+        for(int row = 0; row < items[m_remoteIdx].size(); ++row) {
+            NvAbstractListItem *item = items[m_remoteIdx][row];
+
+            if(dynamic_cast<NvRemoteRssItem*>(item)) {
+                if(!m_storage->storeRss( dynamic_cast<NvRemoteRssItem*>(item) )) {
+                    qDebug() << "can store item " << item->id();
+                    continue;
+                }
+
+            }
+        }
+    }
+
+    return true;
+}
+
+void NvRssCachedModel::addRemote(NvRemoteRssItem *item)
+{
+    addInSection(m_remoteIdx, item);
+}
+
+void NvRssCachedModel::updateLocalCount()
+{
+    m_count = m_storage->rssCount();
 }
 
 
@@ -42,14 +76,15 @@ NvAbstractListItem *NvRssCachedModel::getItem( const QModelIndex & index ) const
 {
     NvAbstractListItem * item = 0;
     if(index.isValid() && index.parent().isValid()) {
-                int section = index.parent().internalId();
-                int row = index.row();
+        int section = index.parent().internalId();
+        int row = index.row();
 
-                if(section == m_loaclIdx && row >= items[section].size()) {
-                     NvRssCachedModel* pthis = const_cast<NvRssCachedModel*>(this);
-                     pthis->fetchMore(items[section].size(), row - items[section].size());
-                }
-                item = items[section][row];
+        if(section == m_loaclIdx && row >= items[section].size()) {
+             NvRssCachedModel* pthis = const_cast<NvRssCachedModel*>(this);
+             pthis->fetchMore(items[section].size(), row - items[section].size());
+        }
+
+        item = items[section][row];
     }
     return item;
 }
@@ -153,8 +188,6 @@ int NvRssCachedModel::rowCount(const QModelIndex &parent) const
                 }
                 return items[parent.internalId()].size();
             }
-
-
     } else {
             return items.size();
     }

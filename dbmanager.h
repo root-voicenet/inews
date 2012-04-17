@@ -18,7 +18,7 @@ public:
     // manage functions
 
     // return local rss id if sucess, 0 if false
-    int addRss( const NvBaseItem& rss );
+    bool storeRss( const NvRemoteRssItem *item );
     int rssCount();
     void clearRss();
     bool editRss( const NvBaseItem &newRss, int rssId );

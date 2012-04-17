@@ -3,6 +3,16 @@
 #include <QNetworkReply>
 #include <QDebug>
 
+QList<int> NvRssItem::terms() const
+{
+    return tids_;
+}
+
+void NvRssItem::setTerms(const QList<int> &tids)
+{
+    tids_ = tids;
+}
+
 NvRssItem::NvRssItem(quint32 id, const QString& title)
     : NvBaseItem(id, title)
 {
@@ -14,6 +24,7 @@ NvRemoteRssItem::NvRemoteRssItem(quint32 id, const QString& title)
 {
 
 }
+
 
 void NvRemoteRssItem::setIconUrl(const QUrl &url)
 {

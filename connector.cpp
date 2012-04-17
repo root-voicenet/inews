@@ -1,7 +1,6 @@
 #include "connector.h"
 #include <QUrl>
 #include <QProgressBar>
-#include "newsapplication.h"
 #include "resourcemanager.h"
 #include "rssitem.h"
 #include "node.h"
@@ -55,8 +54,11 @@ void Connector::CreateNode(Node *n)
     addRequest(requestID, METHOD_NODE_CREATE);
 }
 
-void Connector::SyncRss(QList<RssItem*> rss) {
+void Connector::SyncRss() {
 
+    ResourceManager *rm = ResourceManager::instance();
+    rm->storeData();
+    /*
     QList<xmlrpc::Variant> res;
     for(int i = 0; i < rss.size(); ++i) {
         QMap<QString, xmlrpc::Variant> resItem;
@@ -72,6 +74,8 @@ void Connector::SyncRss(QList<RssItem*> rss) {
 
         res.append(resItem);
     }
+    */
+    xmlrpc::Variant res = "hello";
 
     int requestID = m_client.request(METHOD_SYNC_RSS, res);
     addRequest(requestID, METHOD_SYNC_RSS);
@@ -154,7 +158,7 @@ void Connector::processResponse(int id, QVariant responce)
     Connector::Signal signal = 0;
     QString method = "";
     QVariant param;
-    ResourceManager *rm = static_cast<NewsApplication*>(qApp)->getRM();
+    ResourceManager *rm = ResourceManager::instance();
 
     requestListMutex.lock();
     if(m_requests.size() < 1) {

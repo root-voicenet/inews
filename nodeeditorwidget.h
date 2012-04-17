@@ -5,7 +5,7 @@
 
 class TextEdit;
 class Node;
-class RssItem;
+class NvRssItem;
 class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
@@ -17,7 +17,7 @@ class NodeEditorWidget : public QWidget
 public:
     explicit NodeEditorWidget(QWidget *parent = 0);
     void loadNode(Node *node);
-    void attachRss(RssItem *node);
+    void attachRss(NvRssItem *node);
     void clear();
     void updateTaxonomy();
 private: //widgets

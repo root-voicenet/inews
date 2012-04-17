@@ -6,7 +6,7 @@
 class RssViewWidget;
 class NodeEditorWidget;
 class Node;
-class RssItem;
+class NvRssItem;
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
@@ -36,13 +36,13 @@ public:
     explicit CenterlaWidget(QWidget *parent = 0);
 
     void showNode(Node *node);
-    void showRss(RssItem* rss);
-    void nodeAttachRss(RssItem *rss);
+    void showRss(NvRssItem* rss);
+    void nodeAttachRss(NvRssItem *rss);
     void showDummy();
     void showLogin();
 private:    // widgets
 
-    RssItem *m_currentRss;
+    NvRssItem *m_currentRss;
     RssViewWidget* m_rssView;
     NodeEditorWidget *m_nodeView;
     QWidget *m_dummyView, *m_loginView;

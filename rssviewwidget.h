@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-class RssItem;
+class NvRssItem;
 class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -14,9 +14,9 @@ class RssViewWidget : public QWidget
 public:
     explicit RssViewWidget(QWidget *parent = 0);
 
-    void loadRss(RssItem *rss);
+    void loadRss(NvRssItem *rss);
     void updateTaxonomy();
-    bool storeRss(RssItem *rss);
+    bool storeRss(NvRssItem *rss);
 
 private: // widgets
     QLabel *titleLabel;

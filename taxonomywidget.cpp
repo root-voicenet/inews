@@ -35,16 +35,16 @@ void TaxonomyWidget::loadTaxonomy(QTreeWidgetItem *root)
 void TaxonomyWidget::clearSelection()
 {
     QList<int> tids;
-    selectItem(&tids);
+    selectItem(tids);
 }
 
-void TaxonomyWidget::selectItem(QList<int> *tids, QTreeWidgetItem *parent)
+void TaxonomyWidget::selectItem(const QList<int> &tids, QTreeWidgetItem *parent)
 {
     QTreeWidgetItem *item = parent ? parent : taxonomyList->invisibleRootItem();
     if(item) {
         TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(0, Qt::UserRole + 1).toInt());
         if(term) {
-            if(tids->indexOf(term->getId()) != -1) {
+            if(tids.indexOf(term->getId()) != -1) {
                 item->setCheckState(0, Qt::Checked);
             }else
                 item->setCheckState(0, Qt::Unchecked);
@@ -59,25 +59,20 @@ void TaxonomyWidget::selectItem(QList<int> *tids, QTreeWidgetItem *parent)
     }
 }
 
-void TaxonomyWidget::selectTaxonomy(const QList<TaxonomyTerm *> &terms)
+void TaxonomyWidget::selectTaxonomy(const QList<int> &terms)
 {
-    QList<int> tids;
-
-    for(int i = 0; i < terms.size(); ++i)
-        tids << terms[i]->getId();
-
-    selectItem(&tids);
+     selectItem(terms);
 }
 
-QList<TaxonomyTerm*> TaxonomyWidget::selectedItem(QTreeWidgetItem *parent)
+QList<int> TaxonomyWidget::selectedItem(QTreeWidgetItem *parent)
 {
-    QList<TaxonomyTerm*> res;
+    QList<int> res;
 
     QTreeWidgetItem *item = parent ? parent : taxonomyList->invisibleRootItem();
     if(item) {
         TaxonomyTerm* term = reinterpret_cast<TaxonomyTerm*>(item->data(0, Qt::UserRole + 1).toInt());
         if(term && item->checkState(0) == Qt::Checked) {
-            res << term;
+            res << term->getId();
         }
 
         if(item->childCount() > 0) {
@@ -91,7 +86,7 @@ QList<TaxonomyTerm*> TaxonomyWidget::selectedItem(QTreeWidgetItem *parent)
     return res;
 }
 
-QList<TaxonomyTerm*> TaxonomyWidget::selectedTaxonomy()
+QList<int> TaxonomyWidget::selectedTaxonomy()
 {
     return selectedItem();
 }

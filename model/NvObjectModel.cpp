@@ -116,6 +116,11 @@ QVariant NvObjectModel::itemData(int section, int row, int role )
 	}
 }
 
+NvAbstractListItem *NvObjectModel::item(const QModelIndex &index) const
+{
+    return getItem( index );
+}
+
 QModelIndex NvObjectModel::index( int row, int column, const QModelIndex & parent /*= QModelIndex() */ ) const
 {
 	if (!hasIndex(row, column, parent))
@@ -169,12 +174,23 @@ void NvObjectModel::removeSection( int section )
 {
 	if(section < items.size())
 	{
+        clearSection( section );
+
 		beginRemoveRows(QModelIndex(), section, section);
-		qDeleteAll(items[section]);
-		items.remove(section);
+        items.remove(section);
 		headers_.removeAt(section);
 		endRemoveRows();
 	}
+}
+
+void NvObjectModel::clearSection(int section)
+{
+    if(section < items.size())
+    {
+        beginRemoveRows(QModelIndex(), section, section);
+        qDeleteAll(items[section]);
+        endRemoveRows();
+    }
 }
 
 Qt::ItemFlags NvObjectModel::flags( const QModelIndex & index ) const
@@ -291,7 +307,7 @@ void NvObjectModel::itemDeleted( QObject * obj )
 		{
 			beginRemoveRows(index(section, 0), row, row);
 			items[section].removeAll(item);
-			qDebug() << "Remove item: " << item->name();
+            //qDebug() << "Remove item: " << item->name();
 			endRemoveRows();
 		}		
 	}

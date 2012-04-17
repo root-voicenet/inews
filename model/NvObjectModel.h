@@ -39,11 +39,12 @@ public:
 	QModelIndex	parent ( const QModelIndex & index ) const;
 	int	rowCount ( const QModelIndex & parent = QModelIndex() ) const;
 	int	rowWUpdateCount ( const QModelIndex & parent = QModelIndex() ) const;
-
+    NvAbstractListItem *item ( const QModelIndex & index ) const;
 	bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
 
 	int addSection(const QString & text);
 	void removeSection(int section);
+    void clearSection(int section);
     bool addInSection(int section, NvAbstractListItem * item);
 
 	Qt::ItemFlags flags ( const QModelIndex & index ) const;
