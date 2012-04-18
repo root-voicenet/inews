@@ -33,6 +33,7 @@ INPUT(
 ./debug\nvrssitem.o
 ./debug\NvRssCachedModel.o
 ./debug\loaders.o
+./debug\NvLineItemDelegate.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -50,5 +51,6 @@ INPUT(
 ./debug\moc_NvBaseItemDelegate.o
 ./debug\moc_NvBaseListView.o
 ./debug\moc_nvrssitem.o
+./debug\moc_NvLineItemDelegate.o
 ./debug\qrc_resource.o
 );

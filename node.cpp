@@ -21,6 +21,11 @@ void Node::setBody(const QString &body)
     m_body = body;
 }
 
+void Node::setSummary(const QString &summary)
+{
+    m_summary = summary;
+}
+
 void Node::setUpdated(bool updated)
 {
     m_updated = updated;

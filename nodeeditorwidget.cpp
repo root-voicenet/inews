@@ -17,22 +17,27 @@ void NodeEditorWidget::setupUI()
 {
     textEdit = new TextEdit(this);
     titleEdit = new QLineEdit(this);
+    summaryEdit = new QTextEdit(this);
     attachedRssList = new QListWidget(this);
     attachedRssList->setMaximumHeight(50);
     m_taxonomy = new TaxonomyWidget(this);
+
+    summaryEdit->setMaximumHeight(100);
 
     QGridLayout *gridLayout = new QGridLayout();
     gridLayout->addWidget(new QLabel(tr("Theme"), this), 0, 0, 1, 6);
     gridLayout->addWidget(new QLabel(tr("Title"), this), 1, 0, 1, 1);
     gridLayout->addWidget(titleEdit, 1, 1, 1, 5);
-    gridLayout->addWidget(textEdit, 2, 0, 1, 6);
-    gridLayout->addWidget(new QLabel(tr("Attached RSS"), this), 3, 0, 1, 1);
-    gridLayout->addWidget(attachedRssList,  3, 1, 1, 5);
-    gridLayout->addWidget(m_taxonomy, 4, 0, 2, 2);
+    gridLayout->addWidget(new QLabel(tr("Summary"), this), 2, 0, 1, 1);
+    gridLayout->addWidget(summaryEdit, 2, 1, 1, 6);
+    gridLayout->addWidget(textEdit, 3, 0, 1, 6);
+    gridLayout->addWidget(new QLabel(tr("Attached RSS"), this), 4, 0, 1, 1);
+    gridLayout->addWidget(attachedRssList,  4, 1, 1, 5);
+    gridLayout->addWidget(m_taxonomy, 5, 0, 2, 2);
 
     QPushButton *btnSave = new QPushButton(tr("Save"), this);
     connect(btnSave, SIGNAL(clicked()), this, SLOT(saveClicked()));
-    gridLayout->addWidget(btnSave, 5, 5, 1, 1);
+    gridLayout->addWidget(btnSave, 6, 5, 1, 1);
 
     gridLayout->setColumnStretch(1, 1);
 
@@ -55,6 +60,7 @@ void NodeEditorWidget::loadNode(Node *node)
 
     if(node != NULL) {
         titleEdit->setText(node->getTitle());
+        summaryEdit->setText(node->getSummary());
         textEdit->load(node->getBody());
         attachedRssList->clear();
 
@@ -126,6 +132,12 @@ void NodeEditorWidget::saveClicked()
         rm->addNode( node );
         m_current = node;
     }
+
+    QString summary = summaryEdit->document()->toPlainText();
+    if(!summary.isEmpty()) {
+        node->setSummary(summary);
+    }
+
 
     // save taxonomy
     /*

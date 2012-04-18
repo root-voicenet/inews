@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
     setupUI();
-    setupDockablePanels();
+    setupActions();
     initWidgets();
 }
 
@@ -27,20 +27,33 @@ void MainWindow::setupUI()
 {
     resize(800, 612);
 
-    QWidget *centralwidget = new QWidget(this);
-    messageLabel = new QLabel(centralwidget);
-    QHBoxLayout*  hbox = new QHBoxLayout(centralwidget);
-    QVBoxLayout* cv = new QVBoxLayout;
+    QSplitter*  split = new QSplitter(Qt::Horizontal, this);
+    messageLabel = new QLabel(split);
 
-    view = new CenterlaWidget(centralwidget);
+
+
+    QSplitter* left = new QSplitter(Qt::Horizontal, this);
+    feedsTree = new QTreeWidget(left);
+    rssList = new NvBaseListView(left);
+    rssList->setViewMode(NvBaseListView::VIEW_LINE);
+    rssList->setModel( ResourceManager::instance()->rssModel() );
+    rssList->expandAll();
+    left->addWidget(feedsTree);
+    left->addWidget(rssList);
+
+
+    QWidget *middle = new QWidget(split);
+    QVBoxLayout* cv = new QVBoxLayout;
+    view = new CenterlaWidget(middle);
     cv->addWidget(messageLabel);
     cv->addWidget(view);
-    hbox->addLayout(cv);
+    middle->setLayout(cv);
 
+
+    QWidget *right = new QWidget(split);
     QGridLayout *gridRught = new QGridLayout();
-    gridRught->addWidget(new QLabel(centralwidget), 0, 0, 1, 1);
-
-    themesList = new QListView(centralwidget);
+    gridRught->addWidget(new QLabel(right), 0, 0, 1, 1);
+    themesList = new QListView(right);
     themesList->setEnabled(false);
     gridRught->addWidget(themesList, 1, 0, 1, 2);
     btnNew = new QPushButton(tr("New Theme"), this);
@@ -48,18 +61,44 @@ void MainWindow::setupUI()
     gridRught->addWidget(btnNew, 2, 0, 1, 2);
     connect(btnNew, SIGNAL(clicked()), this, SLOT(createNode()));
 
-    gridRught->addWidget(new QPushButton(centralwidget), 5, 1, 1, 1);
+    gridRught->addWidget(new QPushButton(right), 5, 1, 1, 1);
 
-    btnSync = new QPushButton(tr("Sync"), centralwidget);
+    btnSync = new QPushButton(tr("Sync"), right);
     btnSync->setMaximumSize(QSize(16777215, 50));
     gridRught->addWidget(btnSync, 6, 0, 1, 2);
-    gridRught->addWidget(new QLabel(centralwidget), 3, 0, 1, 1);
+    gridRught->addWidget(new QLabel(right), 3, 0, 1, 1);
+    right->setLayout(gridRught);
+
+    split->addWidget(left);
+    split->addWidget(middle);
+    split->addWidget(right);
 
 
-    hbox->addLayout(gridRught);
+    setCentralWidget(split);
+}
 
-    hbox->setStretch(1, 0);
-    setCentralWidget(centralwidget);
+void MainWindow::setupActions()
+{
+    QAction *a;
+
+    // set file menu actions
+    QMenu *fileMenu = new QMenu(tr("&File"), this);
+    menuBar()->addMenu(fileMenu);
+
+    a = new QAction(tr("&Quit"), this);
+    a->setShortcut(Qt::CTRL + Qt::Key_Q);
+    connect(a, SIGNAL(triggered()), this, SLOT(close()));
+    fileMenu->addAction(a);
+
+    QMenu* viewMenu = new QMenu(tr("&View"), this);
+    menuBar()->addMenu(viewMenu);
+    a = new QAction(tr("RSS List view"), this);
+    connect(a, SIGNAL(triggered()), this, SLOT(setListViewMode()));
+    viewMenu->addAction(a);
+
+    a = new QAction(tr("RSS Full view"), this);
+    connect(a, SIGNAL(triggered()), this, SLOT(setFullViewMode()));
+    viewMenu->addAction(a);
 }
 
 void MainWindow::showError(const QString& str)
@@ -84,6 +123,7 @@ void MainWindow::setupDockablePanels()
 
     QBoxLayout *box = new QBoxLayout(QBoxLayout::TopToBottom);
     rssList = new NvBaseListView(central);
+    rssList->setViewMode(NvBaseListView::VIEW_LINE);
     rssList->setModel( ResourceManager::instance()->rssModel() );
     rssList->expandAll();
 
@@ -227,3 +267,12 @@ void MainWindow::actionLogin(QString userLogin, QString userPassword)
     view->showDummy();
 }
 
+void MainWindow::setListViewMode()
+{
+    rssList->setViewMode(NvBaseListView::VIEW_LINE);
+}
+
+void MainWindow::setFullViewMode()
+{
+    rssList->setViewMode(NvBaseListView::VIEW_FULL);
+}

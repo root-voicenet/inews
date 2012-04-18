@@ -20,7 +20,6 @@ void RssViewWidget::setupUI()
 
     QWidget *pageBrowser = new QWidget(tabs);
     m_browser = new QWebView(pageBrowser);
-    m_browser->setMaximumWidth(400);
     tabs->addTab(pageBrowser, tr("Browser"));
 
     // set overwiev page layout
@@ -47,7 +46,6 @@ void RssViewWidget::setupUI()
     vbox = new QVBoxLayout;
     vbox->addWidget(m_browser);
     pageBrowser->setLayout(vbox);
-    setMaximumWidth(400);
 }
 
 void RssViewWidget::loadRss(NvRssItem *rss)

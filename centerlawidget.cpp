@@ -46,18 +46,13 @@ void LoginWidget::submitClicked()
 CenterlaWidget::CenterlaWidget(QWidget *parent) :
     QStackedWidget(parent), m_currentRss(NULL)
 {
-    m_mainWidget = new QWidget(this);
-    m_rssView = new RssViewWidget(m_mainWidget);
-    m_nodeView = new NodeEditorWidget(m_mainWidget);
+    m_rssView = new RssViewWidget(this);
+    m_nodeView = new NodeEditorWidget(this);
     m_dummyView = new QWidget(this);
     m_loginView = new LoginWidget(this);
 
-    QHBoxLayout *lay = new QHBoxLayout;
-    lay->addWidget(m_rssView);
-    lay->addWidget(m_nodeView);
-    m_mainWidget->setLayout(lay);
-
-    addWidget(m_mainWidget);
+    addWidget(m_rssView);
+    addWidget(m_nodeView);
     addWidget(m_dummyView);
     addWidget(m_loginView);
 }
@@ -66,8 +61,8 @@ void CenterlaWidget::showNode(Node *node)
 {
     m_nodeView->loadNode(node);
 
-    if(currentIndex() != WIDGET_MAIN) {
-        setCurrentIndex(WIDGET_MAIN);
+    if(currentIndex() != WIDGET_NODE) {
+        setCurrentIndex(WIDGET_NODE);
     }
 }
 
@@ -81,8 +76,8 @@ void CenterlaWidget::showRss(NvRssItem *rss)
     m_rssView->loadRss(rss);
     m_currentRss = rss;
 
-    if(currentIndex() != WIDGET_MAIN) {
-        setCurrentIndex(WIDGET_MAIN);
+    if(currentIndex() != WIDGET_RSS) {
+        setCurrentIndex(WIDGET_RSS);
     }
 }
 

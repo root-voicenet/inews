@@ -29,9 +29,10 @@ class CenterlaWidget : public QStackedWidget
     Q_OBJECT
 public:
     enum {
-        WIDGET_MAIN = 0,
-        WIDGET_DUMMY = 1,
-        WIDGET_LOGIN = 2
+        WIDGET_RSS = 0,
+        WIDGET_NODE = 1,
+        WIDGET_DUMMY = 2,
+        WIDGET_LOGIN = 3
     };
     explicit CenterlaWidget(QWidget *parent = 0);
 
@@ -46,7 +47,6 @@ private:    // widgets
     RssViewWidget* m_rssView;
     NodeEditorWidget *m_nodeView;
     QWidget *m_dummyView, *m_loginView;
-    QWidget *m_mainWidget;
 private:
     void setLogin(const QString &login, const QString& password);
 

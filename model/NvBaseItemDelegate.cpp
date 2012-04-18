@@ -9,7 +9,7 @@
 #include "NvObjectModel.h"
 
 #define ICON_SIZE 32
-#define OFFSET_H 16
+#define OFFSET_H 5
 #define CHECK_WIDTH 50
 #define PROGRESS_HEIGHT 21
 #define OFFSET_BUTTON 5
@@ -114,6 +114,7 @@ void NvBaseItemDelegate::paintObject(QPainter *painter, const QStyleOptionViewIt
 
     p.translate(OFFSET_H, OFFSET_H);
 
+    /*
     QImage img = index.data(Qt::DecorationRole).value<QImage>();
     if(!img.isNull())
     {
@@ -123,6 +124,7 @@ void NvBaseItemDelegate::paintObject(QPainter *painter, const QStyleOptionViewIt
     }
 
     p.translate(ICON_SIZE + OFFSET_H, 0);
+    */
 
     QFont f = option.font;
     f.setPointSize(10);
@@ -132,12 +134,12 @@ void NvBaseItemDelegate::paintObject(QPainter *painter, const QStyleOptionViewIt
     p.setFont(f);
     p.drawText(0, tr.height()-5, name);
 
-    // ðèñóåì îïèñàíèå
+    // ðèñóåì îïèñ� íèå
 
     p.setFont(option.font);
     fm = QFontMetrics(option.font);
 
-    QDate date_ = index.data(NvObjectModel::DateRole).toDate();
+    QDateTime date_ = index.data(NvObjectModel::DateRole).toDateTime();
 
     int maxWidth(option.rect.width() - ICON_SIZE - OFFSET_H - DETAIL_OFFSET );
     if(!index.data(NvObjectModel::DetailRole).toString().isEmpty())
@@ -149,4 +151,9 @@ void NvBaseItemDelegate::paintObject(QPainter *painter, const QStyleOptionViewIt
     p.translate(0, ICON_SIZE / 2);
     tr = fm.boundingRect(description);
     p.drawText(0, tr.height(), description);
+
+    if(!date_.isNull()) {
+        p.translate(0, 10);
+        p.drawText(0, tr.height(), date_.toString(Qt::DefaultLocaleShortDate));
+    }
 }

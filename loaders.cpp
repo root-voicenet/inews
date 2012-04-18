@@ -42,9 +42,8 @@ bool RssImporter::import(const QVariant &in)
                 rss->setSource(tags.value("sourse").toString());
             }
 
-            if(!imageUrl.isEmpty()) {
-                rss->setNetworkAccessManager( ResourceManager::instance()->getNAM() );
-                rss->setIconUrl(imageUrl);
+            if(!tags.value("description").isNull()) {
+                rss->setDescription(tags.value("description").toString());
             }
 
             if(!tags.value("tids").isNull()) {

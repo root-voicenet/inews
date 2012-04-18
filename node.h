@@ -18,6 +18,7 @@ public:
 
     virtual ~Node();
     QString &getBody() { return m_body; }
+    QString getSummary() const { return m_summary; }
 
     bool isRemote() const { return m_isremote; }
     bool isUpdated() const { return m_updated; }
@@ -26,6 +27,7 @@ public:
     void removeFile(File* file);
     void setBody(const QString& body);
     void setUpdated(bool updated);
+    void setSummary(const QString& summary);
 
     RssItem *findAttachedRss(int id);
     void attachRss(RssItem* item);
@@ -35,6 +37,7 @@ protected:
     bool m_isremote;
     bool m_updated;
     QString m_body;
+    QString m_summary;
 
     QList<File*> m_attached;
     QList<RssItem*> m_attachedRss;

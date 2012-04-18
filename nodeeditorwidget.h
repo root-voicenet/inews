@@ -9,6 +9,7 @@ class NvRssItem;
 class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 
 class NodeEditorWidget : public QWidget
@@ -23,6 +24,7 @@ public:
 private: //widgets
     TextEdit *textEdit;
     QLineEdit *titleEdit;
+    QTextEdit *summaryEdit;
     QListWidget *attachedRssList;
     TaxonomyWidget *m_taxonomy;
 private:

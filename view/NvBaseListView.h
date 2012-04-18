@@ -6,6 +6,7 @@
 
 class NvObjectModel;
 class NvBaseItemDelegate;
+class NvLineItemDelegate;
 
 class NvBaseListView : public QTreeView
 {
@@ -14,11 +15,18 @@ public:
     explicit NvBaseListView(QWidget *parent = 0);
     ~NvBaseListView();
 
+    enum {
+        VIEW_FULL = 0,
+        VIEW_LINE
+    };
+
     void setModel(QAbstractItemModel *model);
 
+    void setViewMode( int mode = VIEW_FULL);
 private:
     QPointer<NvObjectModel> model_;
-    QPointer<NvBaseItemDelegate> delegate_;
+    QPointer<NvBaseItemDelegate> _baseDel;
+    QPointer<NvLineItemDelegate> _lineDel;
 signals:
 
 public slots:

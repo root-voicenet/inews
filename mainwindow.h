@@ -15,6 +15,7 @@ QT_FORWARD_DECLARE_CLASS(QListView)
 QT_FORWARD_DECLARE_CLASS(QDockWidget)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QTreeWidget)
 
 class MainWindow : public QMainWindow
 {
@@ -32,6 +33,7 @@ private:
     void initWidgets();
     void setupUI();
     void setupDockablePanels();
+    void setupActions();
 
     void selectTids(QListWidget *widget, const QList<int> &tids);
     QList<int> getSelectedTids(QListWidget *widget);
@@ -45,6 +47,7 @@ private: //widgets
     QDockWidget *dock;
     CenterlaWidget *view;
     NvBaseListView *rssList;
+    QTreeWidget *feedsTree;
 
 private slots:
     void nodesLoaded();
@@ -59,6 +62,9 @@ private slots:
     void networkError(QString msg);
     void actionLogin(QString userLogin, QString userPassword);
 
+    // actions
+    void setListViewMode();
+    void setFullViewMode();
 };
 
 #endif // MAINWINDOW_H

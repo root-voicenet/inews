@@ -280,11 +280,12 @@ RssItem *ResourceManager::searchRss(int id)
 Node *ResourceManager::parseNode(QVariant *resp)
 {
     QMap<QString, QVariant> elements(resp->toMap());
-    int nid = elements.value("node").toInt();
+
+    int nid = elements.value("nid").toInt();
     Node *n = NULL;
     if(nid > 0 && (n = searchNode(nid)) != NULL) {
         n->setBody(elements.value("body").toString());
-        return n;
+        n->setSummary(elements.value("summary").toString());
     }
 
     return NULL;
