@@ -2,14 +2,14 @@
 #define NVOBJECTMODEL_H
 
 #include "NvAbstractListItem.h"
-#include <QAbstractItemModel>
+#include <QAbstractListModel>
 #include <QUrl>
 #include <QVector>
 #include <QStringList>
 #include <QImage>
 
 
-class NvObjectModel : public QAbstractItemModel
+class NvObjectModel : public QAbstractListModel
 {
 	Q_OBJECT
 
@@ -33,34 +33,24 @@ public:
 
     NvObjectModel(QObject *parent);
     ~NvObjectModel();
-	int	columnCount ( const QModelIndex & parent = QModelIndex() ) const;
-	QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
-	QModelIndex	index ( int row, int column, const QModelIndex & parent = QModelIndex() ) const;
-	QModelIndex	parent ( const QModelIndex & index ) const;
-	int	rowCount ( const QModelIndex & parent = QModelIndex() ) const;
-	int	rowWUpdateCount ( const QModelIndex & parent = QModelIndex() ) const;
+
+    int	columnCount ( const QModelIndex & parent = QModelIndex() ) const;
+    QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+
+    int	rowCount ( const QModelIndex & parent = QModelIndex() ) const;
     NvAbstractListItem *item ( const QModelIndex & index ) const;
-	bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
+    bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
 
-	int addSection(const QString & text);
-	void removeSection(int section);
-    void clearSection(int section);
-    bool addInSection(int section, NvAbstractListItem * item);
 
-	Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    bool addItem( NvAbstractListItem * item);
+
+    Qt::ItemFlags flags ( const QModelIndex & index ) const;
 
 
 signals:
 	void needUpdate(QModelIndex);
 
 public slots:
-	void install(const QModelIndex & index );
-	void remove(const QModelIndex & index );
-	void updateItem(const QModelIndex & index );
-	void enable(const QModelIndex & index );
-	void disable(const QModelIndex & index );
-	void detail( const QModelIndex & index );
-	void cancel( const QModelIndex & index );
 
 private slots:
 	void itemNeedUpdate();
@@ -69,8 +59,7 @@ private slots:
 protected:
     typedef QList< NvAbstractListItemPtr > ItemVector;
 	
-	QVector< ItemVector > items;
-	QStringList headers_;
+        ItemVector items;
 
         virtual NvAbstractListItem* getItem( const QModelIndex & index ) const;
 
@@ -90,7 +79,7 @@ protected:
 		return m;
     }
 
-    QVariant itemData(int section, int row, int role);
+    QVariant itemData(int row, int role) const;
 };
 
 #endif // NVOBJECTMODEL_H

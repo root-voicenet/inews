@@ -37,7 +37,6 @@ void MainWindow::setupUI()
     rssList = new NvBaseListView(left);
     rssList->setViewMode(NvBaseListView::VIEW_LINE);
     rssList->setModel( ResourceManager::instance()->rssModel() );
-    rssList->expandAll();
     left->addWidget(feedsTree);
     left->addWidget(rssList);
 
@@ -105,34 +104,13 @@ void MainWindow::showError(const QString& str)
 {
     messageLabel->setText(str);
     messageLabel->setMinimumHeight(50);
-    messageLabel->setStyleSheet("QLabel { background-color : pink; border-radius: 10px; border-color: red; padding: 6px;}");
+    //messageLabel->setStyleSheet("QLabel { background-color : pink; border-radius: 10px; border-color: red; padding: 6px;}");
 
 }
 
 void MainWindow::createNode()
 {
     view->showNode(NULL);
-}
-
-void MainWindow::setupDockablePanels()
-{
-    dock = new QDockWidget(tr("Recent News"), this);
-    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::TopDockWidgetArea);
-    dock->setFeatures(QDockWidget::DockWidgetMovable);
-    QWidget *central = new QWidget(dock);
-
-    QBoxLayout *box = new QBoxLayout(QBoxLayout::TopToBottom);
-    rssList = new NvBaseListView(central);
-    rssList->setViewMode(NvBaseListView::VIEW_LINE);
-    rssList->setModel( ResourceManager::instance()->rssModel() );
-    rssList->expandAll();
-
-    box->addWidget(rssList);
-    central->setLayout(box);
-    dock->setWidget(central);
-    connect(dock, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(dockLocationChanged(Qt::DockWidgetArea)));
-
-    addDockWidget(Qt::LeftDockWidgetArea, dock);
 }
 
 void MainWindow::initWidgets()

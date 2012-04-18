@@ -1,14 +1,14 @@
 #ifndef NVOBJECTLISTVIEW_H
 #define NVOBJECTLISTVIEW_H
 
-#include <QTreeView>
+#include <QListView>
 #include <QPointer>
 
 class NvObjectModel;
 class NvBaseItemDelegate;
 class NvLineItemDelegate;
 
-class NvBaseListView : public QTreeView
+class NvBaseListView : public QListView
 {
     Q_OBJECT
 public:
@@ -26,7 +26,7 @@ public:
 private:
     QPointer<NvObjectModel> model_;
     QPointer<NvBaseItemDelegate> _baseDel;
-    QPointer<NvLineItemDelegate> _lineDel;
+    //QPointer<NvLineItemDelegate> _lineDel;
 signals:
 
 public slots:

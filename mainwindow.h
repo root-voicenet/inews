@@ -32,7 +32,6 @@ private:
     // initialize widgets
     void initWidgets();
     void setupUI();
-    void setupDockablePanels();
     void setupActions();
 
     void selectTids(QListWidget *widget, const QList<int> &tids);

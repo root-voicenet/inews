@@ -45,7 +45,7 @@ SOURCES += main.cpp\
     model/nvrssitem.cpp \
     model/NvRssCachedModel.cpp \
     loaders.cpp \
-    model/NvLineItemDelegate.cpp
+    model/NvFeedModel.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -85,10 +85,8 @@ HEADERS  += mainwindow.h \
     model/NvRssCachedModel.h \
     model/NvObjectImporter.h \
     loaders.h \
-    model/NvLineItemDelegate.h
+    model/NvFeedModel.h
 
-FORMS    += \
-    mainwindow.ui
 QT += core gui network xml webkit sql
 
 RESOURCES += \

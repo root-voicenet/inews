@@ -1,17 +1,12 @@
 #include "NvBaseListView.h"
 #include "../model/NvBaseItemDelegate.h"
-#include "../model/NvLineItemDelegate.h"
 
 NvBaseListView::NvBaseListView(QWidget *parent) :
-    QTreeView(parent)
+    QListView(parent)
 {
     _baseDel = new NvBaseItemDelegate(this);
-    _lineDel = new NvLineItemDelegate(this);
+   // _lineDel = new NvLineItemDelegate(this);
 
-    setIndentation(0);
-    setItemsExpandable(false);
-    setRootIsDecorated(false);
-    setHeaderHidden(true);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
     setMinimumWidth(200);
@@ -21,19 +16,19 @@ NvBaseListView::NvBaseListView(QWidget *parent) :
 NvBaseListView::~NvBaseListView()
 {
     delete _baseDel;
-    delete _lineDel;
+    //delete _lineDel;
 }
 
 void NvBaseListView::setViewMode(int mode)
 {
     if(mode == VIEW_FULL)
         setItemDelegate(_baseDel);
-    else
-        setItemDelegate(_lineDel);
-    doItemsLayout();
+    //else
+    //    setItemDelegate(_lineDel);
+    //doItemsLayout();
 }
 
 void NvBaseListView::setModel(QAbstractItemModel *model)
 {
-    QTreeView::setModel(model);
+    QListView::setModel(model);
 }
