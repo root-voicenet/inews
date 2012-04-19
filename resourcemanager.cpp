@@ -36,6 +36,7 @@ ResourceManager::ResourceManager(QObject *parent)
     m_taxonomy->setText(0, "Root");
 
     m_nam = new QNetworkAccessManager(this);
+    m_feedModel.init();
 }
 
 ResourceManager::~ResourceManager()

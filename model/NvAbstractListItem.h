@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QImage>
-#include <QDate>
+#include <QDateTime>
 #include <QObject>
 #include <QPointer>
 
@@ -22,12 +22,12 @@ public:
 
 	virtual QString source() const = 0;
 	virtual QImage icon() const = 0;
-	virtual QDate date() const = 0;
+    virtual QDateTime date() const = 0;
     virtual quint32 id() const = 0;
 
 	virtual void setDescription(const QString&) = 0;
 	virtual void setSource(const QString&)= 0;
-	virtual void setDate(const QDate&) = 0;
+    virtual void setDate(const QDateTime&) = 0;
     virtual void setId(quint32 id) = 0;
 	virtual void setHasUpdate(bool) = 0;
 

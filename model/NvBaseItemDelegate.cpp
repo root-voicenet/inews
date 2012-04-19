@@ -8,7 +8,7 @@
 #include "NvAbstractListItem.h"
 #include "NvObjectModel.h"
 
-#define HEADER_OFFSET 20
+#define HEADER_OFFSET 30
 
 NvBaseItemDelegate::NvBaseItemDelegate(QObject *parent) :
     QStyledItemDelegate(parent)

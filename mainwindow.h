@@ -9,13 +9,13 @@ class Connector;
 class Node;
 class CenterlaWidget;
 class NvBaseListView;
+class NvFeedsTreeView;
 
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 QT_FORWARD_DECLARE_CLASS(QListView)
 QT_FORWARD_DECLARE_CLASS(QDockWidget)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
-QT_FORWARD_DECLARE_CLASS(QTreeWidget)
 
 class MainWindow : public QMainWindow
 {
@@ -43,10 +43,9 @@ private: //widgets
     QListView *themesList;
     QLabel *messageLabel;
     QPushButton *btnSync, *btnNew;
-    QDockWidget *dock;
     CenterlaWidget *view;
     NvBaseListView *rssList;
-    QTreeWidget *feedsTree;
+    NvFeedsTreeView *feedsTree;
 
 private slots:
     void nodesLoaded();
@@ -54,7 +53,7 @@ private slots:
     void createNode();
     void syncClicked();
     void rssItemSelected(QModelIndex index);
-    void dockLocationChanged(Qt::DockWidgetArea area);
+
     void loadNode(QModelIndex index);
     void nodeLoaded(Node *n);
     void attachRss(QModelIndex index);

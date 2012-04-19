@@ -31,12 +31,17 @@ bool RssImporter::import(const QVariant &in)
             rssId = tags.value("iid").toInt();
             cdate = tags.value("date").toInt();
 
+
             QList<QVariant> images = tags.value("image").toList();
             if(!images.isEmpty()) {
                 imageUrl = images.first().toString();
             }
 
             NvRemoteRssItem *rss = new NvRemoteRssItem(rssId, rssTitle);
+
+            if(cdate) {
+                rss->setDate(QDateTime::fromMSecsSinceEpoch( cdate * 1000 ));
+            }
 
             if(!tags.value("sourse").isNull()) {
                 rss->setSource(tags.value("sourse").toString());

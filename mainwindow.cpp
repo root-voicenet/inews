@@ -7,6 +7,7 @@
 
 #include "model/nvrssitem.h"
 #include "view/NvBaseListView.h"
+#include "view/NvFeedsTreeView.h"
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -26,6 +27,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupUI()
 {
     resize(800, 612);
+    ResourceManager *RM = ResourceManager::instance();
 
     QSplitter*  split = new QSplitter(Qt::Horizontal, this);
     messageLabel = new QLabel(split);
@@ -33,10 +35,11 @@ void MainWindow::setupUI()
 
 
     QSplitter* left = new QSplitter(Qt::Horizontal, this);
-    feedsTree = new QTreeWidget(left);
+    feedsTree = new NvFeedsTreeView(left);
+
     rssList = new NvBaseListView(left);
     rssList->setViewMode(NvBaseListView::VIEW_LINE);
-    rssList->setModel( ResourceManager::instance()->rssModel() );
+    rssList->setModel( RM->rssModel() );
     left->addWidget(feedsTree);
     left->addWidget(rssList);
 
@@ -162,20 +165,6 @@ void MainWindow::rssItemSelected(QModelIndex index)
     }
 }
 
-
-void MainWindow::dockLocationChanged(Qt::DockWidgetArea area)
-{
-    QWidget *central = dock->widget();
-    QBoxLayout *box = static_cast<QBoxLayout*>(central->layout());
-    if(area == Qt::TopDockWidgetArea) {
-        box->setDirection(QBoxLayout::LeftToRight);
-    }else{
-        box->setDirection(QBoxLayout::TopToBottom);
-    }
-
-    central->adjustSize();
-    adjustSize();
-}
 
 void MainWindow::loadNode(QModelIndex index)
 {

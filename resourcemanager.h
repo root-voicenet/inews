@@ -4,6 +4,7 @@
 #include <QMutex>
 #include <QStandardItemModel>
 #include "model/NvRssCachedModel.h"
+#include "model/NvFeedModel.h"
 
 
 class QNetworkAccessManager;
@@ -33,6 +34,8 @@ public:
 
     // manage rss items
     NvRssCachedModel *rssModel() { return &m_rssModel; }
+    NvFeedModel *feedModel() { return &m_feedModel; }
+
     QStandardItemModel &getThemes() { return m_themes; }
 
     void addNode(Node *node);
@@ -61,6 +64,7 @@ private:
     QList<File*> m_files;
 
     NvRssCachedModel m_rssModel;
+    NvFeedModel m_feedModel;
 
     // taxonomys
     QTreeWidgetItem* m_taxonomy;

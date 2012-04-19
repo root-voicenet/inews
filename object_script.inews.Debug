@@ -33,7 +33,11 @@ INPUT(
 ./debug\nvrssitem.o
 ./debug\NvRssCachedModel.o
 ./debug\loaders.o
-./debug\NvLineItemDelegate.o
+./debug\NvFeedModel.o
+./debug\NvAbstractTreeItem.o
+./debug\NvFeedCategory.o
+./debug\NvFeedsTreeView.o
+./debug\NvFeedItem.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -48,9 +52,9 @@ INPUT(
 ./debug\moc_NvSortFilterModel.o
 ./debug\moc_NvAbstractListItem.o
 ./debug\moc_NvObjectModel.o
-./debug\moc_NvBaseItemDelegate.o
 ./debug\moc_NvBaseListView.o
 ./debug\moc_nvrssitem.o
-./debug\moc_NvLineItemDelegate.o
+./debug\moc_NvFeedModel.o
+./debug\moc_NvFeedsTreeView.o
 ./debug\qrc_resource.o
 );

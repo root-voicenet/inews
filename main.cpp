@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QDebug>
 
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -14,13 +15,12 @@ int main(int argc, char *argv[])
     // First init Database manager
     DBManager *dbman = DBManager::instance();
 
-    if(!dbman->init( a.applicationDirPath() + "/local4.db" )) {
+    if(!dbman->init( a.applicationDirPath() + "/local5.db" )) {
         return 0;
     }
 
     MainWindow w;
     w.show();
-
 
     return a.exec();
 }

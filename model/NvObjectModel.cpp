@@ -174,7 +174,7 @@ bool NvObjectModel::setData( const QModelIndex & index, const QVariant & value, 
     case SourceRole:
             item->setSource(value.toString()); break;
     case DateRole:
-            item->setDate(value.toDate()); break;
+            item->setDate(value.toDateTime()); break;
     case NeedUpdateRole:
             item->setHasUpdate(value.toBool()); break;
     default:

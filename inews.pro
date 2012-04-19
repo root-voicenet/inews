@@ -45,7 +45,11 @@ SOURCES += main.cpp\
     model/nvrssitem.cpp \
     model/NvRssCachedModel.cpp \
     loaders.cpp \
-    model/NvFeedModel.cpp
+    model/NvFeedModel.cpp \
+    model/NvAbstractTreeItem.cpp \
+    model/NvFeedCategory.cpp \
+    view/NvFeedsTreeView.cpp \
+    model/NvFeedItem.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -85,7 +89,12 @@ HEADERS  += mainwindow.h \
     model/NvRssCachedModel.h \
     model/NvObjectImporter.h \
     loaders.h \
-    model/NvFeedModel.h
+    model/NvFeedModel.h \
+    model/NvAbstractTreeItem.h \
+    model/NvFeedCategory.h \
+    view/NvFeedsTreeView.h \
+    model/NvAbstractFeedItem.h \
+    model/NvFeedItem.h
 
 QT += core gui network xml webkit sql
 

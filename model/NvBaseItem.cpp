@@ -57,12 +57,12 @@ void NvBaseItem::setIcon( const QImage &v )
 	icon_ = v;
 }
 
-QDate NvBaseItem::date() const
+QDateTime NvBaseItem::date() const
 {
 	return date_;
 }
 
-void NvBaseItem::setDate( const QDate &v )
+void NvBaseItem::setDate( const QDateTime &v )
 {
 	date_ = v;
 }

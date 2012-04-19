@@ -13,6 +13,7 @@ public:
     void clearRemote();
     bool storeRemote();
     void addRemote( NvRemoteRssItem *item );
+
 private:
     int m_buffersize, m_count, m_localCount;
     DBManager *m_storage;
