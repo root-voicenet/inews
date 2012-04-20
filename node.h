@@ -4,7 +4,7 @@
 #include "nvbaseobject.h"
 
 class File;
-class RssItem;
+class NvRssItem;
 
 class Node : public NvBaseObject
 {
@@ -29,10 +29,10 @@ public:
     void setUpdated(bool updated);
     void setSummary(const QString& summary);
 
-    RssItem *findAttachedRss(int id);
-    void attachRss(RssItem* item);
-    void removeAttachedRss(RssItem *item);
-    QList<RssItem*> attachedRss();
+    NvRssItem *findAttachedRss(int id);
+    void attachRss(NvRssItem* item);
+    void removeAttachedRss(NvRssItem *item);
+    QList<NvRssItem *> attachedRss();
 protected:
     bool m_isremote;
     bool m_updated;
@@ -40,7 +40,7 @@ protected:
     QString m_summary;
 
     QList<File*> m_attached;
-    QList<RssItem*> m_attachedRss;
+    QList<NvRssItem*> m_attachedRss;
 
 };
 

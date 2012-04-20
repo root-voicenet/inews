@@ -5,7 +5,7 @@ NvBaseObject::NvBaseObject(int id, const QString& title, int created)
 {
 }
 
-void NvBaseObject::setTids(const QList<TaxonomyTerm*> &tids)
+void NvBaseObject::setTids(const QList<int> &tids)
 {
     m_tids = tids;
 }

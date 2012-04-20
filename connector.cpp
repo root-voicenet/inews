@@ -5,7 +5,7 @@
 #include "rssitem.h"
 #include "node.h"
 #include "taxonomyterm.h"
-#include <qtextdocument.h>
+#include "requestbuilder.h"
 
 
  const QString Connector::METHOD_SYSTEM_CONNECT = "system.connect";
@@ -56,36 +56,25 @@ void Connector::CreateNode(Node *n)
 
 void Connector::SyncRss() {
 
+    xmlrpc::Variant request;
     ResourceManager *rm = ResourceManager::instance();
-    rm->storeData();
-    /*
-    QList<xmlrpc::Variant> res;
-    for(int i = 0; i < rss.size(); ++i) {
-        QMap<QString, xmlrpc::Variant> resItem;
-        resItem.insert("id", rss[i]->getId());
 
-        QList<TaxonomyTerm*> tids = rss[i]->getTids();
-        QList<xmlrpc::Variant> resTids;
-
-        for(int j = 0; j < tids.size(); ++j)
-            resTids.append(tids[j]->getId());
-
-        resItem.insert("tids", resTids);
-
-        res.append(resItem);
+    if(RequestBuilder::buildSyncRss(&request, rm->rssModel())) {
+        int requestID = m_client.request(METHOD_SYNC_RSS, request);
+        addRequest(requestID, METHOD_SYNC_RSS);
     }
-    */
-    xmlrpc::Variant res = "hello";
-
-    int requestID = m_client.request(METHOD_SYNC_RSS, res);
-    addRequest(requestID, METHOD_SYNC_RSS);
-
-    //int requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 6);
-    //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
 }
 
-void Connector::SyncNodes(QList<Node *> nodes)
+void Connector::SyncNodes()
 {
+    xmlrpc::Variant request;
+    ResourceManager *rm = ResourceManager::instance();
+    if(RequestBuilder::buildSyncNodes(&request, rm->nodesModel())) {
+        int requestID = m_client.request(METHOD_SYNC_NODES, request);
+        addRequest(requestID, METHOD_SYNC_NODES);
+    }
+/*
+
     QList<xmlrpc::Variant> res;
     for(int i = 0; i < nodes.size(); ++i) {
         QMap<QString, xmlrpc::Variant> nodeItem;
@@ -125,6 +114,7 @@ void Connector::SyncNodes(QList<Node *> nodes)
 
     int requestID = m_client.request(METHOD_SYNC_NODES, res);
     addRequest(requestID, METHOD_SYNC_NODES);
+*/
 }
 
 void Connector::GetNode(int id)

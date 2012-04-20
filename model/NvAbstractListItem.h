@@ -24,12 +24,15 @@ public:
 	virtual QImage icon() const = 0;
     virtual QDateTime date() const = 0;
     virtual quint32 id() const = 0;
+    virtual bool updated() const = 0;
+    virtual bool promoted() const = 0;
 
 	virtual void setDescription(const QString&) = 0;
 	virtual void setSource(const QString&)= 0;
     virtual void setDate(const QDateTime&) = 0;
     virtual void setId(quint32 id) = 0;
-	virtual void setHasUpdate(bool) = 0;
+    virtual void setUpdated(bool) = 0;
+    virtual void setPromoted(bool) = 0;
 
     virtual Qt::ItemFlags flags() const { return Qt::NoItemFlags;}
 

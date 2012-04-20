@@ -26,7 +26,7 @@ public:
 		SourceRole,
 		IconRole,
 		DateRole,
-		GuidRole,
+        PromotedRole,
 		ProgressRole,
 		NeedUpdateRole
 	};
@@ -40,7 +40,7 @@ public:
     int	rowCount ( const QModelIndex & parent = QModelIndex() ) const;
     NvAbstractListItem *item ( const QModelIndex & index ) const;
     bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
-
+    NvAbstractListItem *find(int id) const;
 
     bool addItem( NvAbstractListItem * item);
 

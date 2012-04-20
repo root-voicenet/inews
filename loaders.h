@@ -10,4 +10,6 @@ public:
     bool import(const QVariant &in);
 };
 
+
+
 #endif // LOADERS_H

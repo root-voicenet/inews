@@ -2,12 +2,13 @@
 #include "rssviewwidget.h"
 #include "nodeeditorwidget.h"
 #include "node.h"
-#include "rssitem.h"
+#include "model/nvrssitem.h"
 #include <QtGui>
 
 LoginWidget::LoginWidget(QWidget *parent)
      : QWidget(parent)
 {
+
         userEdit = new QLineEdit(this);
         passwordEdit = new QLineEdit(this);
         passwordEdit->setEchoMode(QLineEdit::Password);
@@ -36,7 +37,7 @@ void LoginWidget::submitClicked()
     QString userLogin = userEdit->text();
     QString userPassword = passwordEdit->text();
 
-    CenterlaWidget * cnt = static_cast<CenterlaWidget*>(this->parent());
+    CenterlaWidget * cnt = static_cast<CenterlaWidget*>(this->parent()->parent());
     if(cnt) {
         cnt->setLogin(userLogin, userPassword);
     }
@@ -44,26 +45,48 @@ void LoginWidget::submitClicked()
 
 
 CenterlaWidget::CenterlaWidget(QWidget *parent) :
-    QStackedWidget(parent), m_currentRss(NULL)
+    QWidget(parent), m_currentRss(NULL), m_currentNode(NULL)
 {
-    m_rssView = new RssViewWidget(this);
-    m_nodeView = new NodeEditorWidget(this);
-    m_dummyView = new QWidget(this);
-    m_loginView = new LoginWidget(this);
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QHBoxLayout *hbox = new QHBoxLayout;
+    stacked = new QStackedWidget(this);
+    m_btnNav = new QPushButton(tr("Go"), this);
+    m_btnAttach = new QPushButton(tr("Attach"), this);
+    m_titleLabel = new QLabel(this);
 
-    addWidget(m_rssView);
-    addWidget(m_nodeView);
-    addWidget(m_dummyView);
-    addWidget(m_loginView);
+    hbox->addWidget(m_titleLabel, 1);
+    hbox->addWidget(m_btnNav);
+    hbox->addWidget(m_btnAttach);
+    vbox->addWidget(stacked);
+    vbox->addLayout(hbox);
+
+    m_rssView = new RssViewWidget(stacked);
+    m_nodeView = new NodeEditorWidget(stacked);
+    m_dummyView = new QWidget(stacked);
+    m_loginView = new LoginWidget(stacked);
+
+    stacked->addWidget(m_rssView);
+    stacked->addWidget(m_nodeView);
+    stacked->addWidget(m_dummyView);
+    stacked->addWidget(m_loginView);
+
+    connect(m_btnNav, SIGNAL(clicked()), this, SLOT(navigateToOther()));
+    connect(m_btnAttach, SIGNAL(clicked()), this, SLOT(attachRss()));
+
+    m_btnNav->hide();
+    setLayout(vbox);
 }
 
 void CenterlaWidget::showNode(Node *node)
 {
     m_nodeView->loadNode(node);
+    m_currentNode = node;
 
-    if(currentIndex() != WIDGET_NODE) {
-        setCurrentIndex(WIDGET_NODE);
+    if(stacked->currentIndex() != WIDGET_NODE) {
+        stacked->setCurrentIndex(WIDGET_NODE);
     }
+
+    showLinkTo(2);
 }
 
 void CenterlaWidget::showRss(NvRssItem *rss)
@@ -76,26 +99,31 @@ void CenterlaWidget::showRss(NvRssItem *rss)
     m_rssView->loadRss(rss);
     m_currentRss = rss;
 
-    if(currentIndex() != WIDGET_RSS) {
-        setCurrentIndex(WIDGET_RSS);
+    if(stacked->currentIndex() != WIDGET_RSS) {
+        stacked->setCurrentIndex(WIDGET_RSS);
     }
+    showLinkTo(1);
 }
 
 void CenterlaWidget::showDummy()
 {
     m_currentRss = NULL;
+    m_currentNode = NULL;
     m_nodeView->clear();
-    if(currentIndex() != WIDGET_DUMMY) {
-        setCurrentIndex(WIDGET_DUMMY);
+    showLinkTo();
+    if(stacked->currentIndex() != WIDGET_DUMMY) {
+        stacked->setCurrentIndex(WIDGET_DUMMY);
     }
 }
 
 void CenterlaWidget::showLogin()
 {
     m_currentRss = NULL;
+    m_currentNode = NULL;
     m_nodeView->clear();
-    if(currentIndex() != WIDGET_LOGIN) {
-        setCurrentIndex(WIDGET_LOGIN);
+    showLinkTo();
+    if(stacked->currentIndex() != WIDGET_LOGIN) {
+        stacked->setCurrentIndex(WIDGET_LOGIN);
     }
 }
 
@@ -113,4 +141,49 @@ void CenterlaWidget::nodeAttachRss(NvRssItem *rss)
 void CenterlaWidget::setLogin(const QString &login, const QString &password)
 {
     emit actionLogin(login, password);
+}
+
+void CenterlaWidget::showLinkTo(int type)
+{
+    QString title;
+    QString str;
+    if(type == 2 && m_currentRss) // current view node
+    {
+        m_titleLabel->setText(QString("Current news: ") + m_currentRss->name());
+        m_btnNav->show();
+        m_titleLabel->show();
+        m_btnAttach->show();
+    }else{
+        if(type == 1 && m_currentNode) {
+           title = m_currentNode->getTitle();
+           if(title.isEmpty())
+                    title = tr("Edited Theme");
+
+           m_titleLabel->setText(QString("Current News: ") + title);
+           m_btnNav->show();
+           m_titleLabel->show();
+        }else{
+            m_btnNav->hide();
+            m_titleLabel->hide();
+        }
+        m_btnAttach->hide();
+    }
+}
+
+void CenterlaWidget::navigateToOther()
+{
+    if(stacked->currentIndex() == WIDGET_RSS) {
+        stacked->setCurrentIndex(WIDGET_NODE);
+        showLinkTo(2);
+    }else{
+        stacked->setCurrentIndex(WIDGET_RSS);
+        showLinkTo(1);
+    }
+}
+
+void CenterlaWidget::attachRss()
+{
+    Q_ASSERT(m_currentRss);
+
+    nodeAttachRss(m_currentRss);
 }

@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     model/NvAbstractTreeItem.cpp \
     model/NvFeedCategory.cpp \
     view/NvFeedsTreeView.cpp \
-    model/NvFeedItem.cpp
+    model/NvFeedItem.cpp \
+    requestbuilder.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -94,7 +95,8 @@ HEADERS  += mainwindow.h \
     model/NvFeedCategory.h \
     view/NvFeedsTreeView.h \
     model/NvAbstractFeedItem.h \
-    model/NvFeedItem.h
+    model/NvFeedItem.h \
+    requestbuilder.h
 
 QT += core gui network xml webkit sql
 

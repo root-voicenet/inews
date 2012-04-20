@@ -64,7 +64,11 @@ private:
         *actionRedo,
         *actionCut,
         *actionCopy,
-        *actionPaste;
+        *actionPaste,
+        *actionH1,
+        *actionH2,
+        *actionH3,
+        *actionH4;
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;

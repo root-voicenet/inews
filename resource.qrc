@@ -40,5 +40,6 @@
         <file>images/win/zoomin.png</file>
         <file>images/win/zoomout.png</file>
         <file>images/baloon.png</file>
+        <file>images/star.png</file>
     </qresource>
 </RCC>

@@ -88,3 +88,15 @@ void NvRssCachedModel::fetchMore(const QModelIndex & /* index */)
 
 }
 
+
+QList<NvRssItem*> NvRssCachedModel::updatedRss() const
+{
+    QListIterator< NvAbstractListItemPtr > i(items);
+    QList<NvRssItem*> items;
+    while(i.hasNext()) {
+        NvRssItem *item = dynamic_cast<NvRssItem*>(i.next().data());
+        if(item->updated())
+            items << item;
+    }
+    return items;
+}

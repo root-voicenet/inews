@@ -67,8 +67,22 @@ void NvBaseItem::setDate( const QDateTime &v )
 	date_ = v;
 }
 
+bool NvBaseItem::updated() const
+{
+    return updated_;
+}
 
-void NvBaseItem::setHasUpdate( bool v )
+void NvBaseItem::setUpdated( bool v )
 {
 	updated_ = v;
+}
+
+bool NvBaseItem::promoted() const
+{
+    return promoted_;
+}
+
+void NvBaseItem::setPromoted(bool v)
+{
+    promoted_ = v;
 }

@@ -42,6 +42,7 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         QIcon icon = qvariant_cast<QIcon>(index.data(NvObjectModel::IconRole));
         QString subText = qvariant_cast<QString>(index.data(NvObjectModel::DescriptionRole));
         QString dateText = qvariant_cast<QString>(index.data(NvObjectModel::DateRole));
+        bool promoted = qvariant_cast<bool>(index.data(NvObjectModel::PromotedRole));
 
         QSize iconsize = icon.actualSize(option.decorationSize);
 
@@ -51,6 +52,17 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         QRect iconRect = subheaderRect;
         QRect dateRect = subheaderRect;
 
+        if(promoted) {
+            QIcon sicon(":/images/star.png");
+            QRect starRect = subheaderRect;
+            QSize ss = sicon.actualSize(option.decorationSize);
+
+            starRect.setRight(ss.width() + 10);
+
+            iconRect.setLeft(starRect.left() + 5);
+
+            painter->drawPixmap(QPoint(starRect.left()+ss.width()/2+2,starRect.top()),sicon.pixmap(ss.width(),ss.height()));
+        }
         iconRect.setRight(iconsize.width()+30);
         iconRect.setTop(iconRect.top()+5);
 

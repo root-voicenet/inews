@@ -1,8 +1,9 @@
 #include "resourcemanager.h"
 #include "node.h"
 #include "file.h"
-#include "rssitem.h"
+#include "model/nvrssitem.h"
 #include "taxonomyterm.h"
+#include "connector.h"
 #include "loaders.h"
 #include "model/NvRssCachedModel.h"
 
@@ -231,12 +232,21 @@ bool ResourceManager::parseNodes(QVariant *resp)
 
         Node *node = new Node(nid, nodeTitle, true);
 
-        if(!tags.value("rss").isNull()) {
-            QList<QVariant> rss = tags.value("rss").toList();
+        if(!tags.value("tids").isNull()) {
+            QList<QVariant> tids = tags.value("tids").toList();
+            QList<int> res;
+            foreach(const QVariant& i, tids) {
+                res << qvariant_cast<int>(i);
+            }
+           node->setTids(res);
+        }
+
+        if(!tags.value("iids").isNull()) {
+            QList<QVariant> rss = tags.value("iids").toList();
             QListIterator<QVariant> i(rss);
             while(i.hasNext()) {
                 int rss_id = i.next().toInt();
-                RssItem *rssItem;
+                NvRssItem *rssItem;
 
                 if(rss_id && (rssItem = searchRss(rss_id)) != NULL) {
                     node->attachRss(rssItem);
@@ -263,19 +273,9 @@ Node *ResourceManager::searchNode(int id)
     return NULL;
 }
 
-RssItem *ResourceManager::searchRss(int id)
+NvRssItem *ResourceManager::searchRss(int id)
 {
-    /*
-    QListIterator<RssItem*> i(m_rssitems);
-    while(i.hasNext()) {
-        RssItem *n = i.next();
-
-        if(n->getId() == id)
-            return n;
-    }
-    */
-
-    return NULL;
+    return dynamic_cast<NvRssItem*>(m_rssModel.find(id));
 }
 
 Node *ResourceManager::parseNode(QVariant *resp)
@@ -287,6 +287,7 @@ Node *ResourceManager::parseNode(QVariant *resp)
     if(nid > 0 && (n = searchNode(nid)) != NULL) {
         n->setBody(elements.value("body").toString());
         n->setSummary(elements.value("summary").toString());
+        return n;
     }
 
     return NULL;

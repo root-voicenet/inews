@@ -27,7 +27,8 @@ void RssViewWidget::setupUI()
     titleLabel->setWordWrap(true);
     textLabel = new QLabel(pageOverwiev);
     textLabel->setWordWrap(true);
-    taxonomy = new TaxonomyWidget(pageOverwiev);
+    taxonomy = new TaxonomyWidget(this);
+    checkPromoted = new QCheckBox(tr("Promoted"), this);
 
 
     QGridLayout *gridLayout = new QGridLayout;
@@ -39,7 +40,8 @@ void RssViewWidget::setupUI()
     pageOverwiev->setLayout(gridLayout);
 
     QVBoxLayout *vbox = new QVBoxLayout;
-    vbox->addWidget(tabs);
+    vbox->addWidget(tabs, 1);
+    vbox->addWidget(checkPromoted);
     vbox->addWidget(taxonomy);
     setLayout(vbox);
 
@@ -57,6 +59,7 @@ void RssViewWidget::loadRss(NvRssItem *rss)
 
     titleLabel->setText(rss->name());
     textLabel->setText(rss->description());
+    checkPromoted->setChecked( rss->promoted() );
 
     /*
     QUrl url(rss->getLink());
@@ -77,7 +80,16 @@ void RssViewWidget::updateTaxonomy()
 
 bool RssViewWidget::storeRss(NvRssItem *rss)
 {
-    rss->setTerms( taxonomy->selectedTaxonomy() );
+    bool updated = taxonomy->selectedTaxonomy() != rss->terms();
+    if(!updated) {
+        updated = rss->promoted() != (checkPromoted->checkState() == Qt::Checked);
+    }
+
+    if(updated) {
+        rss->setTerms( taxonomy->selectedTaxonomy() );
+        rss->setUpdated( true );
+        rss->setPromoted( checkPromoted->checkState() == Qt::Checked );
+    }
 
     return true;
 }

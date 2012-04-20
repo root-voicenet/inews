@@ -65,21 +65,21 @@ void NodeEditorWidget::loadNode(Node *node)
         attachedRssList->clear();
 
         // select taxonomy
-        /*
+
         if(!node->getTids().isEmpty()) {
             m_taxonomy->selectTaxonomy(node->getTids());
-        }*/
+        }
 
-        /*
-        QList<RssItem*> items = node->attachedRss();
+
+        QList<NvRssItem*> items = node->attachedRss();
         if(!items.isEmpty()) {
             for(int i = 0; i < items.size(); ++i) {
-                QListWidgetItem *listItem = new QListWidgetItem(items[i]->getTitle());
+                QListWidgetItem *listItem = new QListWidgetItem(items[i]->name());
                 listItem->setData(Qt::UserRole + 1, (int)items[i]);
                 attachedRssList->addItem(listItem);
             }
         }
-        */
+
     }
 
     m_current = node;
@@ -88,20 +88,18 @@ void NodeEditorWidget::loadNode(Node *node)
 void NodeEditorWidget::attachRss(NvRssItem *rss)
 {
     // check if rss already in list
-    /*
     for(int i = 0; i < attachedRssList->count(); ++i) {
         QVariant data = attachedRssList->item(i)->data(Qt::UserRole + 1);
         if(!data.isNull()) {
-            RssItem *currentRss = reinterpret_cast<RssItem*>(data.toInt());
-            if(currentRss->getId() == rss->getId())
+            NvRssItem *currentRss = reinterpret_cast<NvRssItem*>(data.toInt());
+            if(currentRss->id() == rss->id())
                 return;
         }
     }
 
-    QListWidgetItem *listItem = new QListWidgetItem(rss->getTitle());
+    QListWidgetItem *listItem = new QListWidgetItem(rss->name());
     listItem->setData(Qt::UserRole + 1, (int)rss);
     attachedRssList->addItem(listItem);
-    */
 }
 
 void NodeEditorWidget::saveClicked()
@@ -140,17 +138,14 @@ void NodeEditorWidget::saveClicked()
 
 
     // save taxonomy
-    /*
-    QList<TaxonomyTerm*> tids = m_taxonomy->selectedTaxonomy();
-    node->setTids(tids);
-    */
+    node->setTids(m_taxonomy->selectedTaxonomy());
 
     // check attached rss
     if(attachedRssList->count() > 0) {
         for(int i = 0; i < attachedRssList->count(); ++i) {
             QVariant data = attachedRssList->item(i)->data(Qt::UserRole + 1);
             if(!data.isNull()) {
-                RssItem *rss = reinterpret_cast<RssItem*>(data.toInt());
+                NvRssItem *rss = reinterpret_cast<NvRssItem*>(data.toInt());
                 node->attachRss(rss);
             }
         }

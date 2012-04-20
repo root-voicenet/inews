@@ -51,6 +51,8 @@ bool RssImporter::import(const QVariant &in)
                 rss->setDescription(tags.value("description").toString());
             }
 
+            rss->setPromoted( tags.value("promoted").toInt() == 1 );
+
             if(!tags.value("tids").isNull()) {
                 QList<QVariant> tids = tags.value("tids").toList();
                 QList<int> res;

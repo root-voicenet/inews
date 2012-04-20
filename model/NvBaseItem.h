@@ -13,6 +13,7 @@ class NvBaseItem : public NvAbstractListItem
     QDateTime date_;
 protected:
 	bool updated_;
+    bool promoted_;
 public:
     NvBaseItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
     virtual ~NvBaseItem(){}
@@ -35,7 +36,11 @@ public:
     QDateTime date() const;
     void setDate(const QDateTime &v);
 
-	void setHasUpdate(bool v);
+    bool updated() const;
+    void setUpdated(bool v);
+
+    bool promoted() const;
+    void setPromoted(bool v);
 
 };
 #endif // NVBASEITEM_H

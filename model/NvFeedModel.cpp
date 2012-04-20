@@ -84,8 +84,8 @@ int NvFeedModel::rowCount(const QModelIndex &parent) const
     if(dynamic_cast<NvFeedCategory*>(parentItem)) {
         NvFeedCategory *category = dynamic_cast<NvFeedCategory*>(parentItem);
         int count = category->childCount();
-        if(m_feeds.contains( category->id() ))
-            count += m_feeds[ category->id() ].size();
+       // if(m_feeds.contains( category->id() ))
+       //     count += m_feeds[ category->id() ].size();
         return count;
     }
 

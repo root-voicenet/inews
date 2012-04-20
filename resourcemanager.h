@@ -11,8 +11,9 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class Node;
 class File;
-class RssItem;
+class NvRssItem;
 class TaxonomyTerm;
+class Connector;
 
 QT_FORWARD_DECLARE_CLASS(QTreeWidgetItem)
 
@@ -35,8 +36,8 @@ public:
     // manage rss items
     NvRssCachedModel *rssModel() { return &m_rssModel; }
     NvFeedModel *feedModel() { return &m_feedModel; }
-
-    QStandardItemModel &getThemes() { return m_themes; }
+    QList<Node*> nodesModel() { return m_nodes; }
+    QStandardItemModel& getThemes() { return m_themes; }
 
     void addNode(Node *node);
     void removeNode(Node *node);
@@ -46,7 +47,7 @@ public:
 
     QTreeWidgetItem *getTaxonomy();
 
-    RssItem *searchRss(int id);
+    NvRssItem *searchRss(int id);
 
     QList<Node*> getUpdatedNodes();
 

@@ -21,7 +21,7 @@ public:
     void Login(const QString& username, const QString& password);
     void UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids);
     void SyncRss();
-    void SyncNodes(QList<Node*> nodes);
+    void SyncNodes();
     void GetNode(int id);
 
     // Remove later

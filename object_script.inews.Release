@@ -38,6 +38,7 @@ INPUT(
 ./release\NvFeedCategory.o
 ./release\NvFeedsTreeView.o
 ./release\NvFeedItem.o
+./release\requestbuilder.o
 ./release\moc_mainwindow.o
 ./release\moc_server_private.o
 ./release\moc_server.o

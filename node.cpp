@@ -1,6 +1,6 @@
 #include "node.h"
 #include "file.h"
-#include "rssitem.h"
+#include "model/nvrssitem.h"
 #include "resourcemanager.h"
 
 Node::Node(int id, const QString& title, bool remote, bool created, const QString &body)
@@ -54,29 +54,29 @@ void Node::removeFile(File *file)
     }
 }
 
-RssItem* Node::findAttachedRss(int id)
+NvRssItem *Node::findAttachedRss(int id)
 {
-    QListIterator<RssItem*> i(m_attachedRss);
+    QListIterator<NvRssItem*> i(m_attachedRss);
     while(i.hasNext()) {
-        RssItem *item = i.next();
-        if(item->getId() == id)
+        NvRssItem *item = i.next();
+        if(item->id() == id)
             return item;
     }
 
     return NULL;
 }
 
-void Node::attachRss(RssItem *item)
+void Node::attachRss(NvRssItem *item)
 {
     m_attachedRss.append(item);
 }
 
-void Node::removeAttachedRss(RssItem* item)
+void Node::removeAttachedRss(NvRssItem *item)
 {
     m_attachedRss.removeOne(item);
 }
 
-QList<RssItem*> Node::attachedRss()
+QList<NvRssItem*> Node::attachedRss()
 {
     return m_attachedRss;
 }

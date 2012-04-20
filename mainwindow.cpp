@@ -120,7 +120,7 @@ void MainWindow::initWidgets()
 {
     ResourceManager *rm = ResourceManager::instance();
 
-    connect(rssList, SIGNAL(activated(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
+    connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
 
     themesList->setModel(&rm->getThemes());
     //rssList->setModel(&rm->getFeed());
@@ -129,7 +129,7 @@ void MainWindow::initWidgets()
     m_connector = new Connector("http://test.irkipedia.ru/news/api");
 
     connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
-    connect(themesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
+    connect(themesList, SIGNAL(clicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
     connect(view, SIGNAL(actionLogin(QString, QString)), this, SLOT(actionLogin(QString, QString)));
     connect(m_connector, SIGNAL(taxonomyLoaded()), view, SLOT(updateTaxonomy()));
     connect(m_connector, SIGNAL(syncNodesComplete()), this, SLOT(nodesLoaded()));
@@ -151,7 +151,7 @@ void MainWindow::syncClicked()
 
     themesList->setEnabled(false);
     btnNew->setEnabled(false);
-    m_connector->SyncNodes(rm->getUpdatedNodes());
+    m_connector->SyncNodes();
 }
 
 void MainWindow::rssItemSelected(QModelIndex index)

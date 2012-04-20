@@ -70,11 +70,8 @@ QVariant NvObjectModel::itemData(int row, int role ) const
 		return item->source();
 	case DateRole:
 		return item->date();
-	case ProgressRole:
-        //return item->progress();
-	case GuidRole:
-        //return item->guid();
-
+    case PromotedRole:
+        return item->promoted();
 	default:
 		return QVariant();
 	}
@@ -176,9 +173,21 @@ bool NvObjectModel::setData( const QModelIndex & index, const QVariant & value, 
     case DateRole:
             item->setDate(value.toDateTime()); break;
     case NeedUpdateRole:
-            item->setHasUpdate(value.toBool()); break;
+            item->setUpdated(value.toBool()); break;
     default:
             return QAbstractItemModel::setData(index, value, role);
     }
 	return true;
+}
+
+NvAbstractListItem *NvObjectModel::find(int id) const
+{
+    QListIterator< NvAbstractListItemPtr > i(items);
+
+    while(i.hasNext()) {
+        NvAbstractListItem *item = i.next();
+        if(item->id() == id)
+            return item;
+    }
+    return NULL;
 }
