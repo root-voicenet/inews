@@ -206,7 +206,7 @@ bool DBManager::storeFeedCategory(NvFeedCategory *cat, bool update)
     int parent_id = 0;
 
     if(cat->parent()) {
-        parent_id = dynamic_cast<NvFeedCategory*>(cat->parent())->id();
+        parent_id = qobject_cast<NvFeedCategory*>(cat->parent())->id();
     }
 
     if(!update) {

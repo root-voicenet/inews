@@ -24,7 +24,6 @@ SOURCES += main.cpp\
     textedit.cpp \
     node.cpp \
     file.cpp \
-    rssitem.cpp \
     taxonomyterm.cpp \
     centerlawidget.cpp \
     rssviewwidget.cpp \
@@ -66,7 +65,6 @@ HEADERS  += mainwindow.h \
     textedit.h \
     node.h \
     file.h \
-    rssitem.h \
     taxonomyterm.h \
     centerlawidget.h \
     rssviewwidget.h \

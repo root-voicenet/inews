@@ -68,8 +68,8 @@ void NvFeedsTreeView::addCategory()
         index = m_model->index(0, 0);
     }
     NvAbstractTreeItem *item = m_model->item( index );
-    if(dynamic_cast<NvFeedCategory*>(item)) {
-        NvFeedCategory *parent = dynamic_cast<NvFeedCategory*>(item);
+    if(qobject_cast<NvFeedCategory*>(item)) {
+        NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
             NvFeedCategory *newCat = new NvFeedCategory(0, "", parent);
 
@@ -91,8 +91,8 @@ void NvFeedsTreeView::renameCategory()
 {
     QModelIndex index = currentIndex();
     NvAbstractTreeItem *item = m_model->item( index );
-    if(dynamic_cast<NvFeedCategory*>(item)) {
-        NvFeedCategory *parent = dynamic_cast<NvFeedCategory*>(item);
+    if(qobject_cast<NvFeedCategory*>(item)) {
+        NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
             if(!askCategoryName(parent) || !m_model->saveCategory( parent )) {
 
@@ -105,8 +105,8 @@ void NvFeedsTreeView::deleteCategory()
 {
     QModelIndex index = currentIndex();
     NvAbstractTreeItem *item = m_model->item( index );
-    if(dynamic_cast<NvFeedCategory*>(item)) {
-        NvFeedCategory *sitem = dynamic_cast<NvFeedCategory*>(item);
+    if(qobject_cast<NvFeedCategory*>(item)) {
+        NvFeedCategory *sitem = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(sitem)) {
             setCurrentIndex( QModelIndex() );
             //sitem->parent()->removeChild( sitem );

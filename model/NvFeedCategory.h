@@ -5,6 +5,7 @@
 
 class NvFeedCategory : public NvAbstractTreeItem
 {
+    Q_OBJECT
 public:
     NvFeedCategory(int id, const QString& title = "", NvFeedCategory *parent = 0);
 
@@ -16,7 +17,9 @@ public:
 
     // overrided
     QVariant data(int role) const;
+    static int maxID();
 private:
+    static int m_maxID;
     QString m_title;
     int m_id;
 };

@@ -1,49 +1,40 @@
 #include "NvAbstractTreeItem.h"
 
-NvAbstractTreeItem::NvAbstractTreeItem(NvAbstractTreeItem *parent)
+NvAbstractTreeItem::NvAbstractTreeItem(QObject *parent)
+    : QObject(parent)
 {
-    parentItem = parent;
-}
 
-NvAbstractTreeItem::~NvAbstractTreeItem()
-{
-    qDeleteAll(childItems);
 }
 
 void NvAbstractTreeItem::appendChild(NvAbstractTreeItem *child)
 {
-    child->parentItem = this;
-    childItems.append(child);
+    child->setParent(this);
 }
 
 NvAbstractTreeItem *NvAbstractTreeItem::child(int row) const
 {
-    return childItems.value(row);
+    return static_cast<NvAbstractTreeItem*>(children().at(row));
 }
 
 int NvAbstractTreeItem::childCount() const
 {
-    return childItems.count();
+    return children().count();
 }
 
-NvAbstractTreeItem *NvAbstractTreeItem::parent()
-{
-    return parentItem;
-}
 
 int NvAbstractTreeItem::row() const
 {
-    if (parentItem)
-         return parentItem->childItems.indexOf(const_cast<NvAbstractTreeItem*>(this));
+    if (parent())
+       return static_cast<NvAbstractTreeItem*>(parent())->children().indexOf(const_cast<NvAbstractTreeItem*>(this));
 
-         return 0;
+     return 0;
 }
 
 void NvAbstractTreeItem::removeChild(NvAbstractTreeItem *child)
 {
-    int index = childItems.indexOf(child);
+    int index = children().indexOf(child);
     if(index != -1) {
-        childItems.removeAt(index);
-        child->parentItem = NULL;
+        child->setParent(NULL);
+        delete child;
      }
 }

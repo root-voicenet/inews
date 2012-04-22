@@ -1,8 +1,17 @@
 #include "NvFeedCategory.h"
 
+int NvFeedCategory::m_maxID = 0;
+
 NvFeedCategory::NvFeedCategory(int id, const QString &title, NvFeedCategory *parent)
-    : NvAbstractTreeItem( parent ), m_id(id), m_title( title )
+    : NvAbstractTreeItem( parent ), m_title( title )
 {
+    if(!id) {
+        m_id = ++m_maxID;
+    }else{
+        m_id = id;
+        m_maxID = qMax(id, m_maxID);
+    }
+
 }
 
 int NvFeedCategory::id() const
@@ -35,6 +44,9 @@ QVariant NvFeedCategory::data(int role) const
             return QVariant();
             break;
     }
+}
 
-    return QVariant();
+int NvFeedCategory::maxID()
+{
+    return m_maxID;
 }

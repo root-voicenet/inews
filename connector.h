@@ -6,12 +6,11 @@
 #include <QString>
 #include <QMap>
 
-class RssItem;
 class Node;
 
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
-class Connector : public QObject
+class Connector : public xmlrpc::Client
 {
     Q_OBJECT
 public:
@@ -23,9 +22,6 @@ public:
     void SyncRss();
     void SyncNodes();
     void GetNode(int id);
-
-    // Remove later
-    void CreateNode(Node *n);
 private:
     //To allow to return pointers to signals
     typedef void (Connector::*Signal)();

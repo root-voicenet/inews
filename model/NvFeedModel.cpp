@@ -4,16 +4,28 @@
 #include "NvFeedItem.h"
 #include <QModelIndex>
 #include <QInputDialog>
+#include <QDebug>
 
 NvFeedModel::NvFeedModel(QObject *parent) :
     QAbstractItemModel(parent)
 {
     rootItem = new NvFeedCategory(0, "Root");
-    rootItem->appendChild( new NvFeedCategory(1, "All", rootItem));
+    addCategory(new NvFeedCategory(1, "All", rootItem));
+    NvFeedCategory* is = new NvFeedCategory(3, "Category 2");
+    addCategory(is);
+    addCategory(new NvFeedCategory(444, "Sub Hello"), is);
+    addCategory(new NvFeedCategory(2, "Category 1", rootItem));
 
-    QList<NvFeedItem*> items;
-    items << new NvFeedItem(111, "Hello");
-    m_feeds.insert(1, items);
+    ItemsList list;
+    NvFeedItem *feed1 = new NvFeedItem(222, "Hello 1");
+    list << feed1;
+    list << new NvFeedItem(333, "Hello 2");
+
+    m_feeds.insert(2, list);
+    list.clear();
+    list << feed1;
+    m_feeds.insert(444, list);
+    feed1->setTitle("viper");
 }
 
 NvFeedModel::~NvFeedModel()
@@ -36,18 +48,20 @@ QModelIndex NvFeedModel::index(int row, int column, const QModelIndex &parent) c
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<NvFeedCategory*>(parent.internalPointer());
+        parentItem = reinterpret_cast<NvFeedCategory*>(m_categories[parent.internalId()]);
 
-    NvFeedCategory *childItem = dynamic_cast<NvFeedCategory*>(parentItem->child(row));
-    if (childItem)
-        return createIndex(row, column, childItem);
-    else{
-        NvFeedItem *item = 0;
-        if(m_feeds.contains(parentItem->id()) && row < m_feeds[ parentItem->id() ].count()) {
-            item = m_feeds[ parentItem->id() ].at(row);
+    if(row < parentItem->childCount()) {
+        NvFeedCategory *childItem = qobject_cast<NvFeedCategory*>(parentItem->child(row));
+        return createIndex(row, column, childItem->id());
+    }else{
+        int itemIdx = row - parentItem->childCount();
+        int id = (itemIdx + 1) << magickNum();
+        id = id | parentItem->id();
+
+        if(m_feeds.contains(parentItem->id()) && itemIdx < m_feeds[parentItem->id()].count()) {
+           return createIndex(row, column, id);
         }
-        if(item)
-            return createIndex(row, column, item);
+
     }
     return QModelIndex();
 }
@@ -57,14 +71,21 @@ QModelIndex NvFeedModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return QModelIndex();
 
-    NvAbstractTreeItem *childItem = static_cast<NvAbstractTreeItem*>(index.internalPointer());
+    if(index.internalId() >= (1 << magickNum()) ) {
+        NvFeedCategory *parentItem = qobject_cast<NvFeedCategory*>(m_categories[index.internalId() & mask()]);
+        if (parentItem == rootItem)
+            return QModelIndex();
+        return createIndex(parentItem->row(), 0, parentItem->id());
+    }
+
+    NvAbstractTreeItem *childItem = static_cast<NvAbstractTreeItem*>(m_categories[index.internalId()]);
     if(childItem) {
-        NvFeedCategory *parentItem = dynamic_cast<NvFeedCategory*>(childItem->parent());
+        NvFeedCategory *parentItem = qobject_cast<NvFeedCategory*>(childItem->parent());
 
         if (parentItem == rootItem)
             return QModelIndex();
 
-        return createIndex(parentItem->row(), 0, parentItem);
+        return createIndex(parentItem->row(), 0, parentItem->id());
     }
 
     return QModelIndex();
@@ -73,19 +94,24 @@ QModelIndex NvFeedModel::parent(const QModelIndex &index) const
 int NvFeedModel::rowCount(const QModelIndex &parent) const
 {
     NvAbstractTreeItem *parentItem;
+
     if (parent.column() > 0)
             return 0;
 
-    if (!parent.isValid())
+    if (!parent.isValid()) {
         parentItem = rootItem;
-    else
-        parentItem = static_cast<NvAbstractTreeItem*>(parent.internalPointer());
+    }else{
+        if(parent.internalId() >= (1 << magickNum())) {
+            return 0;
+        }
 
-    if(dynamic_cast<NvFeedCategory*>(parentItem)) {
-        NvFeedCategory *category = dynamic_cast<NvFeedCategory*>(parentItem);
+        parentItem = reinterpret_cast<NvAbstractTreeItem*>(m_categories[parent.internalId()]);
+    }
+    if(qobject_cast<NvFeedCategory*>(parentItem)) {
+        NvFeedCategory *category = qobject_cast<NvFeedCategory*>(parentItem);
         int count = category->childCount();
-       // if(m_feeds.contains( category->id() ))
-       //     count += m_feeds[ category->id() ].size();
+        if(m_feeds.contains( category->id() ))
+            count += m_feeds[ category->id() ].size();
         return count;
     }
 
@@ -116,7 +142,15 @@ QVariant NvFeedModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
              return QVariant();
 
-    NvFeedCategory *item = static_cast<NvFeedCategory*>(index.internalPointer());
+    if(index.internalId() >= (1 << magickNum())) {
+        int catID = index.internalId() & mask();
+        if(m_feeds.contains(catID)) {
+            return m_feeds[catID].at(index.row())->data(role);
+        }
+        return QVariant();
+    }
+
+    NvFeedCategory *item = static_cast<NvFeedCategory*>(m_categories[index.internalId()]);
 
     return item->data(role);
 }
@@ -138,7 +172,7 @@ bool NvFeedModel::categoryIsValid(NvFeedCategory *item) const
 
 bool NvFeedModel::saveCategory(NvFeedCategory *item)
 {
-    NvFeedCategory* parent = dynamic_cast<NvFeedCategory*>(item->parent());
+    NvFeedCategory* parent = qobject_cast<NvFeedCategory*>(item->parent());
     if(!item->id()) {
         parent->appendChild(item);
     }
@@ -152,4 +186,23 @@ bool NvFeedModel::init()
     // load stored categories
     DBManager* db = DBManager::instance();
     return db->loadFeedTree(rootItem);
+}
+
+void NvFeedModel::categoryDeleted(QObject *item)
+{
+    NvFeedCategory * category = qobject_cast<NvFeedCategory*>(item);
+    if(m_categories.contains(category->id())) {
+        m_categories.remove(category->id());
+    }
+}
+
+void NvFeedModel::addCategory(NvFeedCategory *item, NvFeedCategory *parent)
+{
+    if(!parent)
+        parent = rootItem;
+    parent->appendChild(item);
+    bool ret = connect(item, SIGNAL(destroyed(QObject *)), this, SLOT(categoryDeleted(QObject*)));
+    Q_ASSERT(ret);
+
+    m_categories.insert(item->id(), item);
 }

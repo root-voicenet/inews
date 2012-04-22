@@ -7,5 +7,17 @@ NvFeedItem::NvFeedItem(int id, const QString& title)
 
 QVariant NvFeedItem::data(int role) const
 {
-    return QVariant();
+    switch(role) {
+        case Qt::DisplayRole:
+            return m_title;
+            break;
+        default:
+            return QVariant();
+            break;
+    }
+}
+
+void NvFeedItem::setTitle(const QString &title)
+{
+    m_title = title;
 }

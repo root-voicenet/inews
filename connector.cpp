@@ -2,7 +2,6 @@
 #include <QUrl>
 #include <QProgressBar>
 #include "resourcemanager.h"
-#include "rssitem.h"
 #include "node.h"
 #include "taxonomyterm.h"
 #include "requestbuilder.h"
@@ -20,14 +19,14 @@
  const QString Connector::METHOD_NODE_CREATE = "node.create";
 
 Connector::Connector(const QString& url, QObject *parent):
-    QObject(parent), m_isLogged(false)
+    Client(parent), m_isLogged(false)
 {
     QUrl weburl(url);
-    m_client.setHost(weburl.host(), 80, weburl.path());
-    m_client.setUserAgent("Qt");
+    setHost(weburl.host(), 80, weburl.path());
+    setUserAgent("Qt");
 
-    connect(&m_client, SIGNAL(done(int, QVariant)), this, SLOT(processResponse(int, QVariant)));
-    connect(&m_client, SIGNAL(failed(int, int, QString)), this, SLOT(failed(int, int, QString)));
+    connect(this, SIGNAL(done(int, QVariant)), this, SLOT(processResponse(int, QVariant)));
+    connect(this, SIGNAL(failed(int, int, QString)), this, SLOT(failed(int, int, QString)));
 }
 
 Connector::~Connector()
@@ -37,21 +36,8 @@ Connector::~Connector()
 
 void Connector::Login(const QString& username, const QString& password) {
 
-    int requestID = m_client.request(METHOD_USER_LOGIN, username, password);
+    int requestID = request(METHOD_USER_LOGIN, username, password);
     addRequest(requestID, METHOD_USER_LOGIN);
-
-    //int requestID = m_client.request(METHOD_TAXONOMY_GETTREE, 6);
-    //addRequest(requestID, METHOD_TAXONOMY_GETTREE);
-}
-
-void Connector::CreateNode(Node *n)
-{
-    QMap<QString, xmlrpc::Variant> res;
-    res.insert("title", n->getTitle());
-    res.insert("body", n->getBody());
-
-    int requestID = m_client.request(METHOD_NODE_CREATE, res);
-    addRequest(requestID, METHOD_NODE_CREATE);
 }
 
 void Connector::SyncRss() {
@@ -67,59 +53,17 @@ void Connector::SyncRss() {
 
 void Connector::SyncNodes()
 {
-    xmlrpc::Variant request;
+    xmlrpc::Variant req;
     ResourceManager *rm = ResourceManager::instance();
-    if(RequestBuilder::buildSyncNodes(&request, rm->nodesModel())) {
-        int requestID = m_client.request(METHOD_SYNC_NODES, request);
+    if(RequestBuilder::buildSyncNodes(&req, rm->nodesModel())) {
+        int requestID = request(METHOD_SYNC_NODES, req);
         addRequest(requestID, METHOD_SYNC_NODES);
     }
-/*
-
-    QList<xmlrpc::Variant> res;
-    for(int i = 0; i < nodes.size(); ++i) {
-        QMap<QString, xmlrpc::Variant> nodeItem;
-        QString action = "update";
-        QList<xmlrpc::Variant> rss;
-        if(nodes[i]->getId() == Node::NODEID_DEFAULT) {
-            action = "create";
-        }
-        nodeItem.insert("action", action);
-        nodeItem.insert("id", nodes[i]->getId());
-        nodeItem.insert("title", nodes[i]->getTitle());
-
-        if(!nodes[i]->getBody().isEmpty()) {
-            nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
-        }
-
-        // attach tids
-        QList<TaxonomyTerm*> tids = nodes[i]->getTids();
-        QList<xmlrpc::Variant> nodeTids;
-
-        for(int j = 0; j < tids.size(); ++j)
-            nodeTids.append(tids[j]->getId());
-
-        nodeItem.insert("tids", nodeTids);
-
-        // attach rss ids
-        QList<RssItem*> attached = nodes[i]->attachedRss();
-        for(int j = 0; j < attached.size(); ++j)
-            rss << attached[j]->getId();
-
-        if(rss.size() > 0) {
-            nodeItem.insert("rss", rss);
-        }
-
-        res.append(nodeItem);
-    }
-
-    int requestID = m_client.request(METHOD_SYNC_NODES, res);
-    addRequest(requestID, METHOD_SYNC_NODES);
-*/
 }
 
 void Connector::GetNode(int id)
 {
-    int requestID = m_client.request(METHOD_NODE_GET, id);
+    int requestID = request(METHOD_NODE_GET, id);
     addRequest(requestID, METHOD_NODE_GET);
 }
 
@@ -130,7 +74,7 @@ void Connector::UploadFile(const QByteArray *postData, const QString &descriptio
     for(int i = 0; i < pointer_tids.size(); ++i)
         tids.append(pointer_tids[i]);
 
-    int requestID = m_client.request(METHOD_FILE_UPLOAD, buffer, description, tids);
+    int requestID = request(METHOD_FILE_UPLOAD, buffer, description, tids);
     addRequest(requestID, METHOD_FILE_UPLOAD);
 }
 
@@ -176,7 +120,7 @@ void Connector::processResponse(int id, QVariant responce)
             cookie.append("=");
             cookie.append(elements.value("sessid").toString());
 
-            m_client.setCookie(cookie);
+            setCookie(cookie);
             m_isLogged = true;
 
             signal = &Connector::logInFinished;
@@ -216,7 +160,7 @@ void Connector::sendPostRequest(const QString& method)
     int requestID;
 
     if(method == METHOD_USER_LOGIN) {
-        requestID = m_client.request(METHOD_TAXONOMY_GETTREE);
+        requestID = request(METHOD_TAXONOMY_GETTREE);
         addRequest(requestID, METHOD_TAXONOMY_GETTREE);
     }
 }

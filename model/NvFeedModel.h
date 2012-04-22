@@ -2,6 +2,8 @@
 #define NVFEEDMODEL_H
 
 #include <QAbstractItemModel>
+#include <QVector>
+#include "NvFeedCategory.h"
 
 QT_FORWARD_DECLARE_CLASS(NvFeedCategory)
 QT_FORWARD_DECLARE_CLASS(NvFeedItem)
@@ -28,18 +30,37 @@ public:
 
     NvAbstractTreeItem *item(const QModelIndex &index);
 
-
 public:
     bool init();
     bool categoryIsValid(NvFeedCategory *item) const;
     bool saveCategory(NvFeedCategory* item);
-private:
+    void addCategory(NvFeedCategory *item, NvFeedCategory *parent = 0);
+private:   
+    typedef QVector<NvAbstractTreeItemPtr> ItemsList;
+
     NvFeedCategory *rootItem;
-    QMap< int, QList<NvFeedItem*> > m_feeds;
+    QMap<int, ItemsList> m_feeds;
+    QMap<int, NvFeedCategory*> m_categories;
+
+    inline int magickNum() const
+    {
+       return 16;
+    }
+
+    inline int mask() const
+    {
+            int m = 1;
+            int c = magickNum();
+            for (int i = 1; i < c; ++i)
+            {
+                    m = (m << 1) | 1;
+            }
+            return m;
+    };
 signals:
 
 public slots:
-
+    void categoryDeleted(QObject *item);
 };
 
 #endif // NVFEEDMODEL_H

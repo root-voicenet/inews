@@ -4,12 +4,13 @@
 #include <QObject>
 #include <QVariant>
 #include <QList>
+#include <QPointer>
 
-class NvAbstractTreeItem
+class NvAbstractTreeItem : public QObject
 {
+    Q_OBJECT
 public:
-    explicit NvAbstractTreeItem(NvAbstractTreeItem *parent = 0);
-    virtual ~NvAbstractTreeItem();
+    explicit NvAbstractTreeItem(QObject *parent = 0);
 
     void appendChild(NvAbstractTreeItem *child);
     void removeChild(NvAbstractTreeItem *child);
@@ -18,12 +19,8 @@ public:
     int childCount() const;
     virtual QVariant data(int role) const = 0;
     virtual int row() const;
-    NvAbstractTreeItem *parent();
-
-protected:
-    QList<NvAbstractTreeItem*> childItems;
-    NvAbstractTreeItem* parentItem;
-
 };
+
+typedef QPointer< NvAbstractTreeItem > NvAbstractTreeItemPtr;
 
 #endif // NVABSTRACTTREEITEM_H
