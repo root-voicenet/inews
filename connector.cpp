@@ -7,16 +7,17 @@
 #include "requestbuilder.h"
 
 
- const QString Connector::METHOD_SYSTEM_CONNECT = "system.connect";
- const QString Connector::METHOD_USER_LOGOUT = "user.logout";
- const QString Connector::METHOD_USER_LOGIN = "user.login";
- const QString Connector::METHOD_USER_CREATE = "user.create";
- const QString Connector::METHOD_TAXONOMY_GETTREE = "node.taxonomy";
- const QString Connector::METHOD_FILE_UPLOAD = "media.upload";
- const QString Connector::METHOD_SYNC_RSS = "sync.rss";
- const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
- const QString Connector::METHOD_NODE_GET = "node.full";
- const QString Connector::METHOD_NODE_CREATE = "node.create";
+const QString Connector::METHOD_SYSTEM_CONNECT = "system.connect";
+const QString Connector::METHOD_USER_LOGOUT = "user.logout";
+const QString Connector::METHOD_USER_LOGIN = "user.login";
+const QString Connector::METHOD_USER_CREATE = "user.create";
+const QString Connector::METHOD_TAXONOMY_GETTREE = "node.taxonomy";
+const QString Connector::METHOD_FILE_UPLOAD = "media.upload";
+const QString Connector::METHOD_SYNC_RSS = "sync.rss";
+const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
+const QString Connector::METHOD_NODE_GET = "node.full";
+const QString Connector::METHOD_NODE_CREATE = "node.create";
+const QString Connector::METHOD_RSS_FEEDS = "rss.feeds";
 
 Connector::Connector(const QString& url, QObject *parent):
     Client(parent), m_isLogged(false)
@@ -42,11 +43,11 @@ void Connector::Login(const QString& username, const QString& password) {
 
 void Connector::SyncRss() {
 
-    xmlrpc::Variant request;
+    xmlrpc::Variant req;
     ResourceManager *rm = ResourceManager::instance();
 
-    if(RequestBuilder::buildSyncRss(&request, rm->rssModel())) {
-        int requestID = m_client.request(METHOD_SYNC_RSS, request);
+    if(RequestBuilder::buildSyncRss(&req, rm->rssModel())) {
+        int requestID = request(METHOD_SYNC_RSS, req);
         addRequest(requestID, METHOD_SYNC_RSS);
     }
 }
@@ -143,6 +144,9 @@ void Connector::processResponse(int id, QVariant responce)
             if(node) {
                 emit Connector::nodeGetComplete( node );
             }
+        }else if(method == METHOD_RSS_FEEDS) {
+            rm->parseFeeds(&responce);
+            signal = &Connector::feedsLoaded;
         }
     }
 
@@ -162,6 +166,9 @@ void Connector::sendPostRequest(const QString& method)
     if(method == METHOD_USER_LOGIN) {
         requestID = request(METHOD_TAXONOMY_GETTREE);
         addRequest(requestID, METHOD_TAXONOMY_GETTREE);
+
+        requestID = request(METHOD_RSS_FEEDS);
+        addRequest(requestID, METHOD_RSS_FEEDS);
     }
 }
 

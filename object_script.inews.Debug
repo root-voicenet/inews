@@ -12,7 +12,6 @@ INPUT(
 ./debug\textedit.o
 ./debug\node.o
 ./debug\file.o
-./debug\rssitem.o
 ./debug\taxonomyterm.o
 ./debug\centerlawidget.o
 ./debug\rssviewwidget.o
@@ -39,6 +38,7 @@ INPUT(
 ./debug\NvFeedsTreeView.o
 ./debug\NvFeedItem.o
 ./debug\requestbuilder.o
+./debug\addeditlink.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -56,6 +56,10 @@ INPUT(
 ./debug\moc_NvBaseListView.o
 ./debug\moc_nvrssitem.o
 ./debug\moc_NvFeedModel.o
+./debug\moc_NvAbstractTreeItem.o
+./debug\moc_NvFeedCategory.o
 ./debug\moc_NvFeedsTreeView.o
+./debug\moc_NvFeedItem.o
+./debug\moc_addeditlink.o
 ./debug\qrc_resource.o
 );

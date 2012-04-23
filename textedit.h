@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QPointer>
+#include <QTextFormat>
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QComboBox)
@@ -41,6 +42,10 @@ private slots:
     void textStyle(int styleIndex);
     void textColor();
     void textAlign(QAction *a);
+    void heading(QAction *a);
+    void addEditLink();
+    void removeLink();
+    void setLink( const QString& address, const QString& target, const QString& title);
 
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
@@ -68,12 +73,15 @@ private:
         *actionH1,
         *actionH2,
         *actionH3,
-        *actionH4;
+        *actionH4,
+        *actionAddLink,
+        *actionRemoveLink;
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
     QComboBox *comboSize;
     QVBoxLayout *vbox;
+    QTextCharFormat defaultCharFormat;
 
     QToolBar *tb;
     QString fileName;

@@ -257,20 +257,22 @@ QList<HtmlExporter::tag> HtmlExporter::emitCharFormatStyle( const QTextCharForma
         html += QString::number( charFormat.fontPointSize() );
         html += QLatin1String( "pt;" );
         attributesEmitted = true;
-    } else if ( charFormat.hasProperty( QTextFormat::FontSizeAdjustment ) && 
-               !( blockFormat.hasProperty( NvTextFormat::HtmlHeading ) &&
-                  blockFormat.intProperty( NvTextFormat::HtmlHeading ) ) ) {
+    } else if ( charFormat.hasProperty( QTextFormat::FontSizeAdjustment ) ) {
 
-        ///To use <h1-5> tags for font size
-//         const int idx = format.intProperty(QTextFormat::FontSizeAdjustment) + 1;
-//
-//         switch (idx) {
-//         case 0: tags << h5; break;
-//             //case 1: tags << h4; break; //NOTE h4 will be the normal text!
-//         case 2: tags << h3; break;
-//         case 3: tags << h2; break;
-//         case 4: tags << h1; break;
-//         }
+        //To use <h1-5> tags for font size
+        if(blockFormat.hasProperty( NvTextFormat::HtmlHeading )) {
+         const int idx = charFormat.intProperty(QTextFormat::FontSizeAdjustment) + 1;
+
+         switch (idx) {
+             case 0: tags << h5; break;
+             case 1: tags << h4; break; //NOTE h4 will be the normal text!
+             case 2: tags << h3; break;
+             case 3: tags << h2; break;
+             case 4: tags << h1; break;
+         }
+
+         return tags;
+       }
 
         ///To use <span> tags for font size
         static const char * const sizeNames[] = {
@@ -608,21 +610,21 @@ void HtmlExporter::emitFragment( const QTextFragment &fragment, const QTextBlock
         switch ( tags.at( i ) ) {
             case span:
                 break; //Jump
-//             case h1:
-//                 html += QLatin1String( "<h1>" );
-//                 break;
-//             case h2:
-//                 html += QLatin1String( "<h2>" );
-//                 break;
-//             case h3:
-//                 html += QLatin1String( "<h3>" );
-//                 break;
-//             case h4:
-//                 html += QLatin1String( "<h4>" );
-//                 break;
-//             case h5:
-//                 html += QLatin1String( "<h5>" );
-//                 break;
+             case h1:
+                 html += QLatin1String( "<h1>" );
+                 break;
+             case h2:
+                 html += QLatin1String( "<h2>" );
+                 break;
+             case h3:
+                 html += QLatin1String( "<h3>" );
+                 break;
+             case h4:
+                 html += QLatin1String( "<h4>" );
+                 break;
+             case h5:
+                 html += QLatin1String( "<h5>" );
+                 break;
             case strong:
                 html += QLatin1String( "<strong>" );
                 break;
@@ -730,21 +732,21 @@ void HtmlExporter::emitFragment( const QTextFragment &fragment, const QTextBlock
             case span:
                 html += QLatin1String( "</span>" );
                 break; //Jump
-//             case h1:
-//                 html += QLatin1String( "</h1>" );
-//                 break;
-//             case h2:
-//                 html += QLatin1String( "</h2>" );
-//                 break;
-//             case h3:
-//                 html += QLatin1String( "</h3>" );
-//                 break;
-//             case h4:
-//                 html += QLatin1String( "</h4>" );
-//                 break;
-//             case h5:
-//                 html += QLatin1String( "</h5>" );
-//                 break;
+             case h1:
+                 html += QLatin1String( "</h1>" );
+                 break;
+             case h2:
+                 html += QLatin1String( "</h2>" );
+                 break;
+             case h3:
+                 html += QLatin1String( "</h3>" );
+                 break;
+             case h4:
+                 html += QLatin1String( "</h4>" );
+                 break;
+             case h5:
+                 html += QLatin1String( "</h5>" );
+                 break;
             case strong:
                 html += QLatin1String( "</strong>" );
                 break;

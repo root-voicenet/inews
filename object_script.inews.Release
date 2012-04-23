@@ -12,7 +12,6 @@ INPUT(
 ./release\textedit.o
 ./release\node.o
 ./release\file.o
-./release\rssitem.o
 ./release\taxonomyterm.o
 ./release\centerlawidget.o
 ./release\rssviewwidget.o
@@ -39,6 +38,7 @@ INPUT(
 ./release\NvFeedsTreeView.o
 ./release\NvFeedItem.o
 ./release\requestbuilder.o
+./release\addeditlink.o
 ./release\moc_mainwindow.o
 ./release\moc_server_private.o
 ./release\moc_server.o
@@ -56,6 +56,10 @@ INPUT(
 ./release\moc_NvBaseListView.o
 ./release\moc_nvrssitem.o
 ./release\moc_NvFeedModel.o
+./release\moc_NvAbstractTreeItem.o
+./release\moc_NvFeedCategory.o
 ./release\moc_NvFeedsTreeView.o
+./release\moc_NvFeedItem.o
+./release\moc_addeditlink.o
 ./release\qrc_resource.o
 );

@@ -308,3 +308,8 @@ void ResourceManager::storeData()
 {
     m_rssModel.storeRemote();
 }
+
+bool ResourceManager::parseFeeds(QVariant *resp)
+{
+    return m_feedModel.importFeeds(resp);
+}

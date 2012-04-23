@@ -34,7 +34,6 @@ private:
     void addRequest(int requestID, const QString& method, QVariant *param = NULL);
     void sendPostRequest(const QString& method);
 
-    xmlrpc::Client m_client;
     bool m_isLogged;
     bool m_isConnected;
     QMap<int, Request> m_requests;
@@ -50,6 +49,7 @@ private:
     static const QString METHOD_SYNC_RSS;
     static const QString METHOD_SYNC_NODES;
     static const QString METHOD_NODE_GET;
+    static const QString METHOD_RSS_FEEDS;
 
     //TODO: Remove later
     static const QString METHOD_NODE_CREATE;
@@ -65,7 +65,7 @@ signals:
         For status check use isPhotoUploadSuccessful() */
     void fileUploadFinished();
 
-
+    void feedsLoaded();
     void networkError(QString);
 
     void syncRssComplete();

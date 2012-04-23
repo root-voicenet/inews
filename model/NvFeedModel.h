@@ -32,16 +32,22 @@ public:
 
 public:
     bool init();
+    void clearFeeds();
     bool categoryIsValid(NvFeedCategory *item) const;
     bool saveCategory(NvFeedCategory* item);
     void addCategory(NvFeedCategory *item, NvFeedCategory *parent = 0);
+    bool importFeeds(QVariant *resp);
 private:   
+    enum {
+        DEFAULT_CATEGORY_ID = 1
+    };
     typedef QVector<NvAbstractTreeItemPtr> ItemsList;
 
     NvFeedCategory *rootItem;
     QMap<int, ItemsList> m_feeds;
     QMap<int, NvFeedCategory*> m_categories;
 
+    void addFeed(NvFeedItem *item);
     inline int magickNum() const
     {
        return 16;
@@ -56,7 +62,7 @@ private:
                     m = (m << 1) | 1;
             }
             return m;
-    };
+    }
 signals:
 
 public slots:

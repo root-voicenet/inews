@@ -136,6 +136,7 @@ void MainWindow::initWidgets()
     connect(m_connector, SIGNAL(syncRssComplete()), this, SLOT(rssLoaded()));
     connect(m_connector, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
     connect(m_connector, SIGNAL(networkError(QString)), this, SLOT(networkError(QString)));
+    connect(m_connector, SIGNAL(feedsLoaded()), rssList, SLOT(doItemsLayout()));
 
     view->showLogin();
 }

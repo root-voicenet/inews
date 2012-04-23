@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     model/NvFeedCategory.cpp \
     view/NvFeedsTreeView.cpp \
     model/NvFeedItem.cpp \
-    requestbuilder.cpp
+    requestbuilder.cpp \
+    dialogs/addeditlink.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -94,9 +95,13 @@ HEADERS  += mainwindow.h \
     view/NvFeedsTreeView.h \
     model/NvAbstractFeedItem.h \
     model/NvFeedItem.h \
-    requestbuilder.h
+    requestbuilder.h \
+    dialogs/addeditlink.h
 
 QT += core gui network xml webkit sql
 
 RESOURCES += \
     resource.qrc
+
+FORMS += \
+    dialogs/linkdialog.ui

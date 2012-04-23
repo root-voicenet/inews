@@ -2,6 +2,9 @@
 
 #include "text/texthtmlimporter.h"
 #include "text/htmlexporter.h"
+#include "text/textformat.h"
+
+#include "dialogs/addeditlink.h"
 
 #include <QAction>
 #include <QApplication>
@@ -173,8 +176,26 @@ void TextEdit::setupTextActions()
     tb->addAction(actionTextUnderline);
     actionTextUnderline->setCheckable(true);
 
+    QActionGroup *grpHeading = new QActionGroup(this);
+    actionH1 = new QAction(QIcon(rsrcPath + "/h1.png"), tr("&H1"), grpHeading);
+    actionH2 = new QAction(QIcon(rsrcPath + "/h2.png"), tr("&H2"), grpHeading);
+    actionH3 = new QAction(QIcon(rsrcPath + "/h3.png"), tr("&H3"), grpHeading);
+    actionH4 = new QAction(QIcon(rsrcPath + "/h4.png"), tr("&H4"), grpHeading);
+    connect(grpHeading, SIGNAL(triggered(QAction*)), this, SLOT(heading(QAction*)));
+    tb->addActions(grpHeading->actions());
+    tb->addSeparator();
+
+    // edit links
+    actionAddLink = new QAction( QIcon( rsrcPath + "/insert-link.png" ), tr("Add/Edit Link" ), this );
+    connect( actionAddLink, SIGNAL( triggered( bool ) ), this, SLOT( addEditLink()) );
+    tb->addAction( actionAddLink );
+    actionRemoveLink = new QAction( QIcon( rsrcPath + "/remove-link.png" ), tr("Remove Link"), this );
+    connect( actionRemoveLink, SIGNAL( triggered( bool ) ), this, SLOT( removeLink()) );
+    tb->addAction( actionRemoveLink );
+
     QActionGroup *grp = new QActionGroup(this);
     connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(textAlign(QAction*)));
+
 
     // Make sure the alignLeft  is always left of the alignRight
     if (QApplication::isLeftToRight()) {
@@ -396,6 +417,88 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
     else if (a == actionAlignJustify)
         textEdit->setAlignment(Qt::AlignJustify);
+}
+
+void TextEdit::heading(QAction *a)
+{
+    QTextCursor cursor = textEdit->textCursor();
+    cursor.beginEditBlock();
+
+    QTextBlockFormat blockFmt = cursor.blockFormat();
+    blockFmt.setIndent(0);
+
+    int idx = 0;
+    if(a == actionH1) {
+        idx = 3; // h1
+    }else if(a == actionH2) {
+        idx = 2;
+    }else if(a == actionH3) {
+        idx = 1;
+    }
+    blockFmt.setProperty(NvTextFormat::HtmlHeading, true);
+
+    QTextCharFormat fmt;
+    fmt.setProperty(QTextFormat::FontSizeAdjustment, idx);
+    cursor.select( QTextCursor::BlockUnderCursor );
+    cursor.mergeCharFormat( fmt );
+
+    cursor.setBlockFormat(blockFmt);
+    cursor.endEditBlock();
+
+}
+
+void TextEdit::addEditLink()
+{
+    AddEditLink *linkDialog = new AddEditLink( this );
+    linkDialog->setAttribute( Qt::WA_DeleteOnClose );
+    linkDialog->setWindowModality( Qt::WindowModal );
+    connect( linkDialog, SIGNAL( addLink( const QString&, const QString&, const QString& ) ),
+                 this, SLOT( setLink( const QString&, const QString&, const QString& ) ) );
+    QTextCharFormat f = textEdit->currentCharFormat();
+   if ( !f.isAnchor() ) {
+       linkDialog->show();
+   } else {
+     linkDialog->show( f.anchorHref(), f.stringProperty( NvTextFormat::AnchorTitle )
+                , f.stringProperty( NvTextFormat::AnchorTarget ) );
+   }
+}
+
+void TextEdit::setLink(const QString &address, const QString &target, const QString &title)
+{
+        textEdit->setFocus( Qt::OtherFocusReason );
+   //     QTextCharFormat f = editor->currentCharFormat();
+       QTextCharFormat charFormat = textEdit->currentCharFormat();
+       QTextCharFormat f;
+       QTextCursor cursor = textEdit->textCursor();
+       if ( ( charFormat.isAnchor() ) && ( !textEdit->textCursor().hasSelection() ) ) {
+           QTextBlock block = cursor.block();
+           QTextBlock::iterator i;
+           for ( i = block.begin(); !( i.atEnd() ); ++i ) {
+               if ( i.fragment().contains( cursor.position() ) ) {
+                   cursor.setPosition( i.fragment().position() );
+                   cursor.movePosition( QTextCursor::NextCharacter,
+                                        QTextCursor::KeepAnchor, i.fragment().length() );
+                   break;
+               }
+           }
+       }
+       f.setAnchor( true );
+       f.setAnchorHref( address );
+       f.setProperty( NvTextFormat::AnchorTitle, QVariant( title ) );
+       f.setProperty( NvTextFormat::AnchorTarget, QVariant( target ) );
+       f.setFontUnderline( true );
+       f.setForeground( QBrush( Qt::blue ) );
+       cursor.mergeCharFormat( f );
+}
+
+void TextEdit::removeLink()
+{
+    QTextCharFormat f;
+    f.setAnchor( false );
+    f.setUnderlineStyle( this->defaultCharFormat.underlineStyle() );
+    f.setForeground( this->defaultCharFormat.foreground() );
+    textEdit->textCursor().mergeCharFormat( f );
+    textEdit->setFocus( Qt::MouseFocusReason );
 }
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)

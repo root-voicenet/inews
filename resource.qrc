@@ -41,5 +41,11 @@
         <file>images/win/zoomout.png</file>
         <file>images/baloon.png</file>
         <file>images/star.png</file>
+        <file>images/win/h1.png</file>
+        <file>images/win/h2.png</file>
+        <file>images/win/h3.png</file>
+        <file>images/win/h4.png</file>
+        <file>images/win/insert-link.png</file>
+        <file>images/win/remove-link.png</file>
     </qresource>
 </RCC>

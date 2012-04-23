@@ -10,7 +10,7 @@ NvFeedModel::NvFeedModel(QObject *parent) :
     QAbstractItemModel(parent)
 {
     rootItem = new NvFeedCategory(0, "Root");
-    addCategory(new NvFeedCategory(1, "All", rootItem));
+    addCategory(new NvFeedCategory(DEFAULT_CATEGORY_ID, "All", rootItem));
     NvFeedCategory* is = new NvFeedCategory(3, "Category 2");
     addCategory(is);
     addCategory(new NvFeedCategory(444, "Sub Hello"), is);
@@ -205,4 +205,50 @@ void NvFeedModel::addCategory(NvFeedCategory *item, NvFeedCategory *parent)
     Q_ASSERT(ret);
 
     m_categories.insert(item->id(), item);
+}
+
+void NvFeedModel::clearFeeds()
+{
+    QMapIterator<int, ItemsList> i(m_feeds);
+    while(i.hasNext()) {
+        qDeleteAll(i.next().value());
+    }
+    m_feeds.clear();
+}
+
+bool NvFeedModel::importFeeds(QVariant *resp)
+{
+    QList<QVariant> elements(resp->toList());
+    clearFeeds();
+
+    for (int i = 0; i < elements.size(); ++i) {
+        // parse element
+        QMap<QString, QVariant> tags = elements[i].toMap();
+        QString feedTitle;
+        int fid = 0;
+
+        fid = tags.value("fid").toInt();
+        if(!fid) {
+            qDebug() << "Feed Id is empty";
+            clearFeeds();
+            return false;
+        }
+
+        feedTitle = tags.value("title").toString();
+        if(feedTitle.isEmpty()) {
+            qDebug() << "Feed Title is empty";
+            clearFeeds();
+            return false;
+        }
+
+        NvFeedItem *feed = new NvFeedItem(fid, feedTitle);
+        addFeed(feed);
+    }
+
+    return false;
+}
+
+void NvFeedModel::addFeed(NvFeedItem *item)
+{
+    m_feeds[DEFAULT_CATEGORY_ID].append(item);
 }
