@@ -39,7 +39,7 @@ public:
     QList<Node*> nodesModel() { return m_nodes; }
     QStandardItemModel& getThemes() { return m_themes; }
 
-    void addNode(Node *node);
+    void addNode(Node *node, bool top = false);
     void removeNode(Node *node);
     void clearNodes();
     Node* searchNode(int id);

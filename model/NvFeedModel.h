@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <QVector>
+#include <QIcon>
 #include "NvFeedCategory.h"
 
 QT_FORWARD_DECLARE_CLASS(NvFeedCategory)
@@ -17,6 +18,10 @@ class NvFeedModel : public QAbstractItemModel
 public:
     explicit NvFeedModel(QObject *parent = 0);
     ~NvFeedModel();
+
+    enum {
+        CATEGORY_ALL = 8000
+    };
 
     QVariant data(const QModelIndex &index, int role) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
@@ -37,15 +42,17 @@ public:
     bool saveCategory(NvFeedCategory* item);
     void addCategory(NvFeedCategory *item, NvFeedCategory *parent = 0);
     bool importFeeds(QVariant *resp);
+
+    NvFeedCategory *category(int id);
+    NvFeedCategory *addCategory(const QString& title, NvFeedCategory *parent);
 private:   
-    enum {
-        DEFAULT_CATEGORY_ID = 1
-    };
+
     typedef QVector<NvAbstractTreeItemPtr> ItemsList;
 
     NvFeedCategory *rootItem;
     QMap<int, ItemsList> m_feeds;
     QMap<int, NvFeedCategory*> m_categories;
+    QIcon m_categoryIcon;
 
     void addFeed(NvFeedItem *item);
     inline int magickNum() const

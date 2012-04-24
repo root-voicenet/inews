@@ -11,6 +11,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.addLibraryPath(a.applicationDirPath() + "/plugins");
 
     // First init Database manager
     DBManager *dbman = DBManager::instance();

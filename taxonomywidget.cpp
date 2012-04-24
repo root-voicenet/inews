@@ -15,6 +15,7 @@ void TaxonomyWidget::setupUI()
     taxonomyList->setMinimumSize(150, 200);
 
     QVBoxLayout *vbox = new QVBoxLayout;
+    vbox->setMargin(0);
     vbox->addWidget(taxonomyList);
     setLayout(vbox);
 }

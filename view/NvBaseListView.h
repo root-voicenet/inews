@@ -7,6 +7,8 @@
 class NvObjectModel;
 class NvBaseItemDelegate;
 class NvLineItemDelegate;
+class NvRssItem;
+class QAction;
 
 class NvBaseListView : public QListView
 {
@@ -20,15 +22,19 @@ public:
         VIEW_LINE
     };
 
-    void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractListModel *model);
 
     void setViewMode( int mode = VIEW_FULL);
 private:
-    QPointer<NvObjectModel> model_;
     QPointer<NvBaseItemDelegate> _baseDel;
+    QAction* m_attachAction;
     //QPointer<NvLineItemDelegate> _lineDel;
 signals:
+    void attachSelected(NvRssItem *item);
 
+private slots:
+     void showContextMenu(QPoint point);
+     void attachRss();
 public slots:
 
 };

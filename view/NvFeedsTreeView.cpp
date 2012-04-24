@@ -16,6 +16,7 @@ void NvFeedsTreeView::init()
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_model = ResourceManager::instance()->feedModel();
     setModel(m_model);
+    setHeaderHidden( true );
 
     m_addAction = new QAction(tr("Add New"), this);
     connect(m_addAction, SIGNAL(triggered()), this, SLOT(addCategory()));
@@ -30,17 +31,13 @@ void NvFeedsTreeView::init()
     connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
 }
 
-bool NvFeedsTreeView::askCategoryName(NvFeedCategory *item)
+QString NvFeedsTreeView::askCategoryName(const QString& title)
 {
     bool ok;
     QString categoryName = QInputDialog::getText(this, tr("Category"),
-        tr("Category name:"), QLineEdit::Normal, item->title(), &ok);
-    if(ok && !categoryName.isEmpty()) {
-        item->setTitle(categoryName);
-        return true;
-    }
+        tr("Category name:"), QLineEdit::Normal, title, &ok);
 
-    return false;
+    return categoryName;
 }
 
 
@@ -71,16 +68,12 @@ void NvFeedsTreeView::addCategory()
     if(qobject_cast<NvFeedCategory*>(item)) {
         NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
-            NvFeedCategory *newCat = new NvFeedCategory(0, "", parent);
 
-            if(!askCategoryName(newCat)) {
-                delete newCat;
-                return;
+            QString title = askCategoryName();
+            if(!title.isEmpty()) {
+                m_model->addCategory(title, parent);
             }
 
-            if(!m_model->saveCategory( newCat )) {
-
-            }
             expand( index );
             doItemsLayout();
         }
@@ -94,8 +87,9 @@ void NvFeedsTreeView::renameCategory()
     if(qobject_cast<NvFeedCategory*>(item)) {
         NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
-            if(!askCategoryName(parent) || !m_model->saveCategory( parent )) {
-
+            QString title = askCategoryName();
+            if(!title.isEmpty()) {
+                m_model->saveCategory( parent );
             }
         }
     }

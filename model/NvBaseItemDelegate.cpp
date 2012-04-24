@@ -23,13 +23,15 @@ NvBaseItemDelegate::~NvBaseItemDelegate()
 
 void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    QFont font = QApplication::font();
+    font.setBold( true );
     QStyleOptionViewItem opt = option;
     opt.displayAlignment = Qt::AlignTop | Qt::AlignLeft;
+    opt.font = font;
+
     QStyledItemDelegate::paint(painter,opt,index);
 
         painter->save();
-
-        QFont font = QApplication::font();
         QFont SubFont = QApplication::font();
         QFont dateFont = QApplication::font();
 

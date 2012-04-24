@@ -173,14 +173,17 @@ void ResourceManager::removeFile(File *file)
         m_files.removeAt(pos);
 }
 
-void ResourceManager::addNode(Node *node)
+void ResourceManager::addNode(Node *node, bool top)
 {
     m_nodes.append(node);
 
     QStandardItem *newItem = new QStandardItem(node->getTitle());
     newItem->setEditable(false);
     newItem->setData((int)node);
-    m_themes.appendRow(newItem);
+    if(top)
+        m_themes.insertRow(0, newItem);
+    else
+        m_themes.appendRow(newItem);
 }
 
 void ResourceManager::removeNode(Node *node)

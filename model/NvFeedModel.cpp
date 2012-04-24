@@ -7,25 +7,10 @@
 #include <QDebug>
 
 NvFeedModel::NvFeedModel(QObject *parent) :
-    QAbstractItemModel(parent)
+    QAbstractItemModel(parent), m_categoryIcon(":/images/baloon.png")
 {
     rootItem = new NvFeedCategory(0, "Root");
-    addCategory(new NvFeedCategory(DEFAULT_CATEGORY_ID, "All", rootItem));
-    NvFeedCategory* is = new NvFeedCategory(3, "Category 2");
-    addCategory(is);
-    addCategory(new NvFeedCategory(444, "Sub Hello"), is);
-    addCategory(new NvFeedCategory(2, "Category 1", rootItem));
-
-    ItemsList list;
-    NvFeedItem *feed1 = new NvFeedItem(222, "Hello 1");
-    list << feed1;
-    list << new NvFeedItem(333, "Hello 2");
-
-    m_feeds.insert(2, list);
-    list.clear();
-    list << feed1;
-    m_feeds.insert(444, list);
-    feed1->setTitle("viper");
+    addCategory(new NvFeedCategory(CATEGORY_ALL, "All"), rootItem);
 }
 
 NvFeedModel::~NvFeedModel()
@@ -144,21 +129,37 @@ QVariant NvFeedModel::data(const QModelIndex &index, int role) const
 
     if(index.internalId() >= (1 << magickNum())) {
         int catID = index.internalId() & mask();
+        NvFeedCategory *category = m_categories[catID];
         if(m_feeds.contains(catID)) {
-            return m_feeds[catID].at(index.row())->data(role);
+            return m_feeds[catID].at(index.row() - category->childCount())->data(role);
         }
         return QVariant();
     }
 
     NvFeedCategory *item = static_cast<NvFeedCategory*>(m_categories[index.internalId()]);
+    if(role == Qt::DecorationRole) {
+        return m_categoryIcon;
+    }
 
     return item->data(role);
+}
+
+NvFeedCategory* NvFeedModel::category(int id)
+{
+    if(id == CATEGORY_ALL) {
+        if(m_categories.contains(id))
+            return m_categories[id];
+    }
+
+    return NULL;
 }
 
 NvAbstractTreeItem* NvFeedModel::item(const QModelIndex &index)
 {
     if (index.isValid()) {
-        return static_cast<NvFeedCategory*>(index.internalPointer());
+        if(index.internalId() < (1 << magickNum())) {
+            return qobject_cast<NvFeedCategory*>(m_categories[index.internalId()]);
+        }
     }
 
     return NULL;
@@ -170,22 +171,31 @@ bool NvFeedModel::categoryIsValid(NvFeedCategory *item) const
     return true;
 }
 
+NvFeedCategory *NvFeedModel::addCategory(const QString &title, NvFeedCategory *parent)
+{
+    DBManager* db = DBManager::instance();
+    int id = db->storeFeedCategory(title, parent->id());
+    if(id) {
+        NvFeedCategory *item = new NvFeedCategory(id, title);
+        addCategory(item, parent);
+        return item;
+    }
+
+    return NULL;
+}
+
 bool NvFeedModel::saveCategory(NvFeedCategory *item)
 {
     NvFeedCategory* parent = qobject_cast<NvFeedCategory*>(item->parent());
-    if(!item->id()) {
-        parent->appendChild(item);
-    }
-
     DBManager* db = DBManager::instance();
-    return db->storeFeedCategory( item, item->id() != 0);
+    return db->storeFeedCategory( item->title(), parent->id(), item->id() ) != 0;
 }
 
 bool NvFeedModel::init()
 {
     // load stored categories
     DBManager* db = DBManager::instance();
-    return db->loadFeedTree(rootItem);
+    return db->loadFeedTree(this, rootItem);
 }
 
 void NvFeedModel::categoryDeleted(QObject *item)
@@ -250,5 +260,5 @@ bool NvFeedModel::importFeeds(QVariant *resp)
 
 void NvFeedModel::addFeed(NvFeedItem *item)
 {
-    m_feeds[DEFAULT_CATEGORY_ID].append(item);
+    m_feeds[CATEGORY_ALL].append(item);
 }

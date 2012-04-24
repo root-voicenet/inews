@@ -15,8 +15,12 @@ public:
 
     QList<int> terms() const;
     void setTerms(const QList<int>& tids);
+    QString link() const { return m_link; }
+
+    void setLink(const QString &link);
 protected:
     QList<int> tids_;
+    QString m_link;
 };
 
 class NvRemoteRssItem : public NvRssItem

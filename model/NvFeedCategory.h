@@ -14,6 +14,9 @@ public:
 
     void setTitle( const QString& title );
     void setId( int id );
+    QList<int> feeds() const { return m_fids; }
+    void addFeed(int fid);
+    void removeFid(int fid);
 
     // overrided
     QVariant data(int role) const;
@@ -22,6 +25,7 @@ private:
     static int m_maxID;
     QString m_title;
     int m_id;
+    QList<int> m_fids;
 };
 
 #endif // NVFEEDCATEGORY_H

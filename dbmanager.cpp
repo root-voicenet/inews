@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QVariant>
 #include "model/NvFeedCategory.h"
+#include "model/NvFeedModel.h"
 
 #define DATABASE_DEFAULT_PATH "local.db"
 
@@ -161,7 +162,7 @@ bool DBManager::storeRss(const NvRemoteRssItem *item)
      return true;
 }
 
-bool DBManager::loadFeedTree(NvFeedCategory *root)
+bool DBManager::loadFeedTree(NvFeedModel *model, NvFeedCategory *root)
 {
     QSqlQuery q;
     QList<FeedCategoryInternal> items;
@@ -183,11 +184,15 @@ bool DBManager::loadFeedTree(NvFeedCategory *root)
 
         for(int i = 0; i < items.size(); ++i) {
             NvFeedCategory *croot = root;
-            if(items[i].parent && refs.contains(items[i].parent)) {
+            if(refs.contains(items[i].parent)) {
                 croot = refs[ items[i].parent ]->item;
+            }else{
+                NvFeedCategory *cat = model->category( items[i].parent );
+                if(cat)
+                    croot = cat;
             }
 
-            croot->appendChild( items[i].item );
+            model->addCategory( items[i].item, croot);
         }
     }else{
         m_lastError = q.lastError().text();
@@ -198,42 +203,36 @@ bool DBManager::loadFeedTree(NvFeedCategory *root)
     return true;
 }
 
-bool DBManager::storeFeedCategory(NvFeedCategory *cat, bool update)
+int DBManager::storeFeedCategory(const QString& title, int parent_id, int id)
 {
     QSqlQuery q;
-    int id = 0;
+    int current_id = 0;
 
-    int parent_id = 0;
 
-    if(cat->parent()) {
-        parent_id = qobject_cast<NvFeedCategory*>(cat->parent())->id();
-    }
-
-    if(!update) {
-
+    if(!id) {
         q.prepare("INSERT INTO feed_category (title, parent) VALUES(?, ?)");
-        q.addBindValue( cat->title() );
+        q.addBindValue( title );
         q.addBindValue( parent_id );
         if(q.exec()) {
-            id = qvariant_cast<int>( q.lastInsertId() );
-            cat->setId( id );
+            current_id = qvariant_cast<int>( q.lastInsertId() );
         }else{
             m_lastError = q.lastError().text();
             qDebug() << "Cannot store Feed Category " << m_lastError;
-            return false;
+            return 0;
         }
     }else{
         q.prepare("UPDATE feed_category SET title = ?, parent = ? WHERE id = ?");
-        q.addBindValue( cat->title() );
+        q.addBindValue( title );
         q.addBindValue( parent_id );
-        q.addBindValue( cat->id() );
+        q.addBindValue( id );
 
         if(!q.exec()) {
             m_lastError = q.lastError().text();
             qDebug() << "Cannot store Feed Category " << m_lastError;
-            return false;
+            return 0;
         }
+        current_id = id;
     }
 
-    return true;
+    return current_id;
 }

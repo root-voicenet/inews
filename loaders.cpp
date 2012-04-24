@@ -25,11 +25,11 @@ bool RssImporter::import(const QVariant &in)
 
             // create view
             int rssId;
-            int cdate;
+            uint cdate;
 
             rssTitle = tags.value("title").toString();
             rssId = tags.value("iid").toInt();
-            cdate = tags.value("date").toInt();
+            cdate = tags.value("date").toUInt();
 
 
             QList<QVariant> images = tags.value("image").toList();
@@ -40,7 +40,7 @@ bool RssImporter::import(const QVariant &in)
             NvRemoteRssItem *rss = new NvRemoteRssItem(rssId, rssTitle);
 
             if(cdate) {
-                rss->setDate(QDateTime::fromMSecsSinceEpoch( cdate * 1000 ));
+                rss->setDate(QDateTime::fromTime_t( cdate ));
             }
 
             if(!tags.value("sourse").isNull()) {
@@ -63,7 +63,7 @@ bool RssImporter::import(const QVariant &in)
             }
 
             if(!tags.value("link").isNull()) {
-                //rss->set(tags.value("link").toString());
+                rss->setLink(tags.value("link").toString());
             }
 
             if(rssTitle.isEmpty()) {

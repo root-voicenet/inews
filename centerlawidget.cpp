@@ -57,8 +57,9 @@ CenterlaWidget::CenterlaWidget(QWidget *parent) :
     hbox->addWidget(m_titleLabel, 1);
     hbox->addWidget(m_btnNav);
     hbox->addWidget(m_btnAttach);
-    vbox->addWidget(stacked);
+    vbox->addWidget(stacked, 1);
     vbox->addLayout(hbox);
+    vbox->setMargin(0);
 
     m_rssView = new RssViewWidget(stacked);
     m_nodeView = new NodeEditorWidget(stacked);
@@ -72,15 +73,18 @@ CenterlaWidget::CenterlaWidget(QWidget *parent) :
 
     connect(m_btnNav, SIGNAL(clicked()), this, SLOT(navigateToOther()));
     connect(m_btnAttach, SIGNAL(clicked()), this, SLOT(attachRss()));
+    connect(m_rssView, SIGNAL(attachClicked()), this, SLOT(attachRss()));
 
     m_btnNav->hide();
+
+
     setLayout(vbox);
 }
 
 void CenterlaWidget::showNode(Node *node)
 {
-    m_nodeView->loadNode(node);
-    m_currentNode = node;
+    m_currentNode = m_nodeView->loadNode(node);
+    Q_ASSERT(m_currentNode);
 
     if(stacked->currentIndex() != WIDGET_NODE) {
         stacked->setCurrentIndex(WIDGET_NODE);
@@ -97,6 +101,7 @@ void CenterlaWidget::showRss(NvRssItem *rss)
     }
 
     m_rssView->loadRss(rss);
+    m_rssView->showAttachLink( m_currentNode != NULL );
     m_currentRss = rss;
 
     if(stacked->currentIndex() != WIDGET_RSS) {
@@ -186,4 +191,9 @@ void CenterlaWidget::attachRss()
     Q_ASSERT(m_currentRss);
 
     nodeAttachRss(m_currentRss);
+}
+
+void CenterlaWidget::attachRss(NvRssItem *item)
+{
+    nodeAttachRss(item);
 }

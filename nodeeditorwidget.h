@@ -17,7 +17,7 @@ class NodeEditorWidget : public QWidget
     Q_OBJECT
 public:
     explicit NodeEditorWidget(QWidget *parent = 0);
-    void loadNode(Node *node);
+    Node *loadNode(Node *node);
     void attachRss(NvRssItem *node);
     void clear();
     void updateTaxonomy();

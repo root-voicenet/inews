@@ -26,26 +26,36 @@ void RssViewWidget::setupUI()
     titleLabel = new QLabel(pageOverwiev);
     titleLabel->setWordWrap(true);
     textLabel = new QLabel(pageOverwiev);
+    QFont font = QApplication::font();
+    font.setBold( true );
+    titleLabel->setFont(font);
     textLabel->setWordWrap(true);
     taxonomy = new TaxonomyWidget(this);
     checkPromoted = new QCheckBox(tr("Promoted"), this);
+    attachLink = new QLabel("<a href=\"#\">Attach</a>", this);
+    attachLink->hide();
+    connect(attachLink, SIGNAL(linkActivated(QString)), this, SIGNAL(attachClicked()));
 
 
     QGridLayout *gridLayout = new QGridLayout;
     gridLayout->addWidget(new QLabel(tr("Title"), pageOverwiev), 0, 0, 1, 1);
     gridLayout->addWidget(titleLabel, 0, 1, 1, 2);
-    gridLayout->addWidget(new QLabel(tr("Description"), pageOverwiev), 1, 0, 1, 1);
-    gridLayout->addWidget(textLabel, 1, 1, 1, 2);
+    gridLayout->addWidget(new QLabel(tr("Description"), pageOverwiev), 1, 0, 1, 1, Qt::AlignTop);
+    gridLayout->addWidget(textLabel, 1, 1, 1, 2, Qt::AlignTop);
     gridLayout->setRowStretch(1, 1);
+    gridLayout->setColumnStretch(1, 1);
     pageOverwiev->setLayout(gridLayout);
 
-    QVBoxLayout *vbox = new QVBoxLayout;
-    vbox->addWidget(tabs, 1);
-    vbox->addWidget(checkPromoted);
-    vbox->addWidget(taxonomy);
-    setLayout(vbox);
+    QGridLayout *grid = new QGridLayout;
+    grid->setMargin(0);
+    grid->addWidget(tabs, 0, 0, 1, 2, Qt::AlignTop);
+    grid->addWidget(checkPromoted, 1, 0, 1, 1);
+    grid->addWidget(attachLink, 1, 1, 1, 1);
+    grid->addWidget(taxonomy, 2, 0, 1, 2);
+    grid->setRowStretch(0, 1);
+    setLayout(grid);
 
-    vbox = new QVBoxLayout;
+    QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(m_browser);
     pageBrowser->setLayout(vbox);
 }
@@ -60,6 +70,11 @@ void RssViewWidget::loadRss(NvRssItem *rss)
     titleLabel->setText(rss->name());
     textLabel->setText(rss->description());
     checkPromoted->setChecked( rss->promoted() );
+
+    QUrl url = rss->link();
+    if(url.isValid()) {
+        m_browser->setUrl(url);
+    }
 
     /*
     QUrl url(rss->getLink());
@@ -92,4 +107,12 @@ bool RssViewWidget::storeRss(NvRssItem *rss)
     }
 
     return true;
+}
+
+void RssViewWidget::showAttachLink(bool show)
+{
+    if(show)
+        attachLink->show();
+    else
+        attachLink->hide();
 }

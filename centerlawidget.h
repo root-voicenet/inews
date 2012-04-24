@@ -40,6 +40,7 @@ public:
     explicit CenterlaWidget(QWidget *parent = 0);
 
     void showNode(Node *node);
+    void newNode();
     void showRss(NvRssItem* rss);
     void nodeAttachRss(NvRssItem *rss);
     void showDummy();
@@ -65,6 +66,7 @@ public slots:
     void updateTaxonomy();
     void navigateToOther();
     void attachRss();
+    void attachRss(NvRssItem *item);
 };
 
 #endif // CENTERLAWIDGET_H

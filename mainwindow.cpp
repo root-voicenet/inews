@@ -46,21 +46,22 @@ void MainWindow::setupUI()
 
     QWidget *middle = new QWidget(split);
     QVBoxLayout* cv = new QVBoxLayout;
+    cv->setMargin(0);
     view = new CenterlaWidget(middle);
     cv->addWidget(messageLabel);
     cv->addWidget(view);
     middle->setLayout(cv);
-
+    connect(rssList, SIGNAL(attachSelected(NvRssItem*)), view, SLOT(attachRss(NvRssItem*)));
 
     QWidget *right = new QWidget(split);
     QGridLayout *gridRught = new QGridLayout();
-    gridRught->addWidget(new QLabel(right), 0, 0, 1, 1);
+    gridRught->setMargin(0);
     themesList = new QListView(right);
     themesList->setEnabled(false);
-    gridRught->addWidget(themesList, 1, 0, 1, 2);
+    gridRught->addWidget(themesList, 0, 0, 1, 2);
     btnNew = new QPushButton(tr("New Theme"), this);
     btnNew->setEnabled(false);
-    gridRught->addWidget(btnNew, 2, 0, 1, 2);
+    gridRught->addWidget(btnNew, 1, 0, 1, 2);
     connect(btnNew, SIGNAL(clicked()), this, SLOT(createNode()));
 
     gridRught->addWidget(new QPushButton(right), 5, 1, 1, 1);
@@ -68,7 +69,7 @@ void MainWindow::setupUI()
     btnSync = new QPushButton(tr("Sync"), right);
     btnSync->setMaximumSize(QSize(16777215, 50));
     gridRught->addWidget(btnSync, 6, 0, 1, 2);
-    gridRught->addWidget(new QLabel(right), 3, 0, 1, 1);
+    gridRught->addWidget(new QLabel(right), 2, 0, 1, 1);
     right->setLayout(gridRught);
 
     split->addWidget(left);
@@ -120,7 +121,7 @@ void MainWindow::initWidgets()
 {
     ResourceManager *rm = ResourceManager::instance();
 
-    connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
+    connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
 
     themesList->setModel(&rm->getThemes());
     //rssList->setModel(&rm->getFeed());

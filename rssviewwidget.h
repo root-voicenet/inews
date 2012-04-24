@@ -19,10 +19,11 @@ public:
     void loadRss(NvRssItem *rss);
     void updateTaxonomy();
     bool storeRss(NvRssItem *rss);
-
+    void showAttachLink(bool show = false);
 private: // widgets
     QLabel *titleLabel;
     QLabel *textLabel;
+    QLabel *attachLink;
     QWebView *m_browser;
     QCheckBox *checkPromoted;
 
@@ -30,7 +31,7 @@ private: // widgets
 private:
     void setupUI();
 signals:
-
+    void attachClicked();
 public slots:
 
 };

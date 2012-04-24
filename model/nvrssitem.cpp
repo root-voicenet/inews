@@ -13,6 +13,11 @@ void NvRssItem::setTerms(const QList<int> &tids)
     tids_ = tids;
 }
 
+void NvRssItem::setLink(const QString &link)
+{
+    m_link = link;
+}
+
 NvRssItem::NvRssItem(quint32 id, const QString& title)
     : NvBaseItem(id, title)
 {

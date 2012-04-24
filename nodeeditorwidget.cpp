@@ -49,10 +49,10 @@ void NodeEditorWidget::clear()
     m_current = NULL;
 }
 
-void NodeEditorWidget::loadNode(Node *node)
+Node* NodeEditorWidget::loadNode(Node *node)
 {
     if(node && m_current == node)
-            return;
+            return m_current;
 
     m_taxonomy->clearSelection();
     textEdit->clearContent();
@@ -80,9 +80,14 @@ void NodeEditorWidget::loadNode(Node *node)
             }
         }
 
+    }else{
+        ResourceManager *rm = ResourceManager::instance();
+        node = new Node(Node::NODEID_DEFAULT, "new node", false, 0);
+        rm->addNode( node, true );
     }
 
     m_current = node;
+    return node;
 }
 
 void NodeEditorWidget::attachRss(NvRssItem *rss)
@@ -104,6 +109,8 @@ void NodeEditorWidget::attachRss(NvRssItem *rss)
 
 void NodeEditorWidget::saveClicked()
 {
+    Q_ASSERT(m_current);
+
     QString title = titleEdit->text();
     if(title.isEmpty()) {
         QMessageBox msg(QMessageBox::Information, "Error", "You must enter title of the theme",
@@ -113,29 +120,19 @@ void NodeEditorWidget::saveClicked()
     }
 
     Node *node = NULL;
-    ResourceManager *rm = ResourceManager::instance();
 
-    if(m_current) {
-        node = m_current;
-        node->setTitle(title);
+    node = m_current;
+    node->setTitle(title);
 
-        if(textEdit->maybeSave()) {
-            QString body = textEdit->getContent();
-            node->setBody(body);
-        }
-    }else{
+    if(textEdit->maybeSave()) {
         QString body = textEdit->getContent();
-        node = new Node(Node::NODEID_DEFAULT, title, false, 0);
         node->setBody(body);
-        rm->addNode( node );
-        m_current = node;
     }
 
     QString summary = summaryEdit->document()->toPlainText();
     if(!summary.isEmpty()) {
         node->setSummary(summary);
     }
-
 
     // save taxonomy
     node->setTids(m_taxonomy->selectedTaxonomy());

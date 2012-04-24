@@ -4,6 +4,7 @@
 #include "model/nvrssitem.h"
 #include <QSqlDatabase>
 
+class NvFeedModel;
 class NvFeedCategory;
 class DBManager
 {
@@ -15,8 +16,8 @@ public:
     bool init(const QString& databasePath = "");
 
     QList<NvLocalRssItem*> listRss(int start, int count);
-    bool loadFeedTree( NvFeedCategory *root );
-    bool storeFeedCategory( NvFeedCategory* cat, bool update = false);
+    bool loadFeedTree( NvFeedModel *model, NvFeedCategory *root );
+    int storeFeedCategory( const QString &title, int parent_id = false, int id = 0);
 
     // manage functions
 

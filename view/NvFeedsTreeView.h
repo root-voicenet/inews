@@ -16,7 +16,7 @@ public:
 
 private:
     void init();
-    bool askCategoryName(NvFeedCategory *item);
+    QString askCategoryName(const QString &title = QString());
 private:
     NvFeedModel *m_model;
     QAction *m_addAction, *m_renAction, *m_delAction;

@@ -33,7 +33,7 @@ void RssListItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     QFont dateFont = QApplication::font();
 
     //font.setPixelSize(font.weight()+);
-    font.setBold(true);
+
     SubFont.setWeight(SubFont.weight()-2);
     QFontMetrics fm(font);
     QFontMetrics dfm(dateFont);
