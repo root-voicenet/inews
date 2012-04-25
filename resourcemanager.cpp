@@ -83,6 +83,7 @@ bool ResourceManager::parseTaxonomy(QVariant *resp)
            ts.parents << parents[j].toInt();
        }
 
+       m_tags.insert(ts.tid, ts.name);
        TaxonomyTerm *tx = new TaxonomyTerm(ts.tid, ts.name);
 
        QTreeWidgetItem *treeItem = new QTreeWidgetItem();
@@ -105,6 +106,14 @@ bool ResourceManager::parseTaxonomy(QVariant *resp)
 
         croot->addChild( items[i].treeItem );
     }
+}
+
+QString ResourceManager::tag(int id) const
+{
+    if(m_tags.contains(id)) {
+        return m_tags[id];
+    }
+    return QString();
 }
 
 TaxonomyTerm *ResourceManager::searchTaxonomy(int id)

@@ -50,7 +50,7 @@ void NvBaseListView::setViewMode(int mode)
     //doItemsLayout();
 }
 
-void NvBaseListView::setModel(QAbstractListModel *model)
+void NvBaseListView::setModel(QAbstractItemModel *model)
 {
     QListView::setModel(model);
 }

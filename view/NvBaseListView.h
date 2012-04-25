@@ -22,7 +22,7 @@ public:
         VIEW_LINE
     };
 
-    void setModel(QAbstractListModel *model);
+    void setModel(QAbstractItemModel *model);
 
     void setViewMode( int mode = VIEW_FULL);
 private:

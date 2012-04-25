@@ -19,9 +19,9 @@ public:
 	{
 		DescriptionRole = Qt::UserRole + 1,
 		DetailRole,
-		VersionRole,
-		InstalledRole,
-		EnabledRole,
+        FeedRole,
+        TagRole,
+        FeedIdRole,
 		BuildInRole,
 		SourceRole,
 		IconRole,

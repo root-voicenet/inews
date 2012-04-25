@@ -1,4 +1,5 @@
 #include "nvrssitem.h"
+#include "resourcemanager.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QDebug>
@@ -18,6 +19,11 @@ void NvRssItem::setLink(const QString &link)
     m_link = link;
 }
 
+void NvRssItem::setFeed(NvFeedItem *feed)
+{
+    m_feed = feed;
+}
+
 NvRssItem::NvRssItem(quint32 id, const QString& title)
     : NvBaseItem(id, title)
 {
@@ -28,6 +34,15 @@ NvRemoteRssItem::NvRemoteRssItem(quint32 id, const QString& title)
     : NvRssItem(id, title)
 {
 
+}
+
+QString NvRssItem::termNames() const
+{
+    QString res;
+    ResourceManager *rm = ResourceManager::instance();
+    foreach(int tid, terms())
+        res += rm->tag(tid) + " ";
+    return res;
 }
 
 

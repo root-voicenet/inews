@@ -5,6 +5,7 @@
 #include <QModelIndex>
 #include <QInputDialog>
 #include <QDebug>
+#include <QMimeData>
 
 NvFeedModel::NvFeedModel(QObject *parent) :
     QAbstractItemModel(parent), m_categoryIcon(":/images/baloon.png")
@@ -115,8 +116,46 @@ Qt::ItemFlags NvFeedModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
              return 0;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    NvAbstractTreeItem *m = item(index);
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    if(qobject_cast<NvFeedCategory*>(m)) {
+        flags |= Qt::ItemIsDropEnabled;
+    }else if(qobject_cast<NvFeedItem*>(m)) {
+        flags |= Qt::ItemIsDragEnabled;
+    }
+
+    return flags;
+}
+
+QMimeData *NvFeedModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    foreach (QModelIndex index, indexes) {
+       if (index.isValid()) {
+           NvAbstractTreeItem *m = item(index);
+           if(qobject_cast<NvFeedItem*>(m)) {
+               stream << m->id();
+           }
+       }
+    }
+    mimeData->setData("inews/feeds", encodedData);
+    return mimeData;
+}
+
+QStringList NvFeedModel::mimeTypes() const
+{
+    QStringList types;
+    types << "inews/feeds";
+    return types;
+}
+
+Qt::DropActions NvFeedModel::supportedDropActions() const
+{
+    return Qt::CopyAction;
 }
 
 QVariant NvFeedModel::data(const QModelIndex &index, int role) const
@@ -127,21 +166,56 @@ QVariant NvFeedModel::data(const QModelIndex &index, int role) const
     if (role != Qt::DisplayRole)
              return QVariant();
 
-    if(index.internalId() >= (1 << magickNum())) {
-        int catID = index.internalId() & mask();
-        NvFeedCategory *category = m_categories[catID];
-        if(m_feeds.contains(catID)) {
-            return m_feeds[catID].at(index.row() - category->childCount())->data(role);
+    NvAbstractTreeItem *m = item(index);
+    if(qobject_cast<NvFeedItem*>(m)) {
+        return qobject_cast<NvFeedItem*>(m)->data( role );
+    }
+
+    if(qobject_cast<NvFeedCategory*>(m)) {
+        return qobject_cast<NvFeedCategory*>(m)->data( role );
+    }
+
+    return QVariant();
+}
+
+bool NvFeedModel::dropMimeData(const QMimeData *data,
+    Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    if (!data->hasFormat("inews/feeds"))
+        return false;
+
+    if(!parent.isValid())
+        return false;
+
+    NvFeedCategory *c = qobject_cast<NvFeedCategory*>(item(parent));
+
+    if(!c)
+        return false;
+
+    QByteArray encodedData = data->data("inews/feeds");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+    while (!stream.atEnd()) {
+        int fid;
+        stream >> fid;
+        NvFeedItem *f = feed(fid);
+        if(f) {
+           addFeed(f, c);
+
+           DBManager* db = DBManager::instance();
+           NvFeedCategory* parentCat = qobject_cast<NvFeedCategory*>(c->parent());
+
+           if(!db->storeFeedCategory(c->name(), parentCat->id(), c->feeds(), c->id())) {
+               qDebug() << "Could not store feed";
+               return false;
+           }
         }
-        return QVariant();
     }
 
-    NvFeedCategory *item = static_cast<NvFeedCategory*>(m_categories[index.internalId()]);
-    if(role == Qt::DecorationRole) {
-        return m_categoryIcon;
-    }
-
-    return item->data(role);
+    return true;
 }
 
 NvFeedCategory* NvFeedModel::category(int id)
@@ -154,11 +228,17 @@ NvFeedCategory* NvFeedModel::category(int id)
     return NULL;
 }
 
-NvAbstractTreeItem* NvFeedModel::item(const QModelIndex &index)
+NvAbstractTreeItem* NvFeedModel::item(const QModelIndex &index) const
 {
     if (index.isValid()) {
         if(index.internalId() < (1 << magickNum())) {
             return qobject_cast<NvFeedCategory*>(m_categories[index.internalId()]);
+        }else{
+            int catID = index.internalId() & mask();
+            NvFeedCategory *category = m_categories[catID];
+            if(m_feeds.contains(catID)) {
+                return m_feeds[catID].at(index.row() - category->childCount());
+            }
         }
     }
 
@@ -188,7 +268,7 @@ bool NvFeedModel::saveCategory(NvFeedCategory *item)
 {
     NvFeedCategory* parent = qobject_cast<NvFeedCategory*>(item->parent());
     DBManager* db = DBManager::instance();
-    return db->storeFeedCategory( item->title(), parent->id(), item->id() ) != 0;
+    return db->storeFeedCategory( item->name(), parent->id(), parent->feeds(), item->id() ) != 0;
 }
 
 bool NvFeedModel::init()
@@ -252,13 +332,44 @@ bool NvFeedModel::importFeeds(QVariant *resp)
         }
 
         NvFeedItem *feed = new NvFeedItem(fid, feedTitle);
-        addFeed(feed);
+
+        QMapIterator<int, NvFeedCategory*> ci(m_categories);
+        NvFeedCategory *parent = NULL;
+        while(ci.hasNext()) {
+            NvFeedCategory* c = ci.next().value();
+            if(c->feeds().indexOf(feed->id()) != -1) {
+                parent = c;
+            }
+        }
+
+        addFeed(feed, parent);
     }
 
     return false;
 }
 
-void NvFeedModel::addFeed(NvFeedItem *item)
+void NvFeedModel::addFeed(NvFeedItem *item, NvFeedCategory *parent)
 {
-    m_feeds[CATEGORY_ALL].append(item);
+    if(parent) {
+        parent->addFeed(item->id());
+        if(m_feeds[parent->id()].indexOf(item) == -1)
+            m_feeds[parent->id()].append(item);
+    }
+
+    if(m_feeds[CATEGORY_ALL].indexOf(item) == -1)
+        m_feeds[CATEGORY_ALL].append(item);
+}
+
+NvFeedItem *NvFeedModel::feed(int id)
+{
+    ItemsList s = m_feeds[CATEGORY_ALL];
+
+    foreach(NvAbstractTreeItem *feed, s) {
+        NvFeedItem* c = qobject_cast<NvFeedItem*>(feed);
+
+        if(c->id() == id)
+            return c;
+    }
+
+    return NULL;
 }

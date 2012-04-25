@@ -27,13 +27,18 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation,
                             int role = Qt::DisplayRole) const;
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action,
+                          int row, int column, const QModelIndex &parent);
+    QStringList mimeTypes() const;
+    Qt::DropActions supportedDropActions() const;
     QModelIndex index(int row, int column,
                           const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-    NvAbstractTreeItem *item(const QModelIndex &index);
+    NvAbstractTreeItem *item(const QModelIndex &index) const;
 
 public:
     bool init();
@@ -43,6 +48,7 @@ public:
     void addCategory(NvFeedCategory *item, NvFeedCategory *parent = 0);
     bool importFeeds(QVariant *resp);
 
+    NvFeedItem* feed( int id );
     NvFeedCategory *category(int id);
     NvFeedCategory *addCategory(const QString& title, NvFeedCategory *parent);
 private:   
@@ -54,7 +60,7 @@ private:
     QMap<int, NvFeedCategory*> m_categories;
     QIcon m_categoryIcon;
 
-    void addFeed(NvFeedItem *item);
+    void addFeed(NvFeedItem *item, NvFeedCategory *parent = NULL);
     inline int magickNum() const
     {
        return 16;

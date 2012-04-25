@@ -10,6 +10,7 @@ class Node;
 class CenterlaWidget;
 class NvBaseListView;
 class NvFeedsTreeView;
+class NvSortFilterModel;
 
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 QT_FORWARD_DECLARE_CLASS(QListView)
@@ -46,6 +47,7 @@ private: //widgets
     CenterlaWidget *view;
     NvBaseListView *rssList;
     NvFeedsTreeView *feedsTree;
+    NvSortFilterModel* m_rssFilterModel;
 
 private slots:
     void nodesLoaded();
@@ -59,6 +61,7 @@ private slots:
     void attachRss(QModelIndex index);
     void networkError(QString msg);
     void actionLogin(QString userLogin, QString userPassword);
+    void userLoged();
 
     // actions
     void setListViewMode();

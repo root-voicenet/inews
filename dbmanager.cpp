@@ -84,6 +84,12 @@ bool DBManager::createDB()
         m_lastError = q.lastQuery();
     }
 
+    if(!q.exec("CREATE TABLE category_fids (id INTEGER PRIMARY KEY, category_id INTEGER NOT NULL, fid INTEGER NOT NULL)")) {
+        ret = false;
+
+        m_lastError = q.lastQuery();
+    }
+
 
     return ret;
 }
@@ -164,7 +170,7 @@ bool DBManager::storeRss(const NvRemoteRssItem *item)
 
 bool DBManager::loadFeedTree(NvFeedModel *model, NvFeedCategory *root)
 {
-    QSqlQuery q;
+    QSqlQuery q, fq;
     QList<FeedCategoryInternal> items;
     QMap<int, FeedCategoryInternal*> refs;
 
@@ -177,6 +183,18 @@ bool DBManager::loadFeedTree(NvFeedModel *model, NvFeedCategory *root)
             fd.title = q.value( 1 ).toString();
             fd.parent = q.value( 2 ).toInt();
             fd.item = new NvFeedCategory( fd.id, fd.title );
+
+            // load category feeds
+            fq.prepare("SELECT fid FROM category_fids WHERE category_id = ?");
+            fq.addBindValue( fd.id );
+            if(fq.exec()) {
+                while( fq.next() ) {
+                    fd.item->addFeed( qvariant_cast<int>( fq.value(0)) );
+                }
+                fq.clear();
+            }else{
+                qDebug() << "Can load category feeds";
+            }
 
             items << fd;
             refs[fd.id] = &items.last();
@@ -203,7 +221,36 @@ bool DBManager::loadFeedTree(NvFeedModel *model, NvFeedCategory *root)
     return true;
 }
 
-int DBManager::storeFeedCategory(const QString& title, int parent_id, int id)
+bool DBManager::storeCategoryFids(int id, QList<int> fids)
+{
+   QSqlQuery q;
+   q.prepare("DELETE FROM category_fids WHERE category_id = ?");
+   q.addBindValue( id );
+   if(q.exec()) {
+       QListIterator<int> i(fids);
+
+       while(i.hasNext()) {
+           int fid = i.next();
+           q.prepare("INSERT INTO category_fids (category_id, fid) VALUES(?, ?)");
+           q.addBindValue( id );
+           q.addBindValue( fid );
+           if(!q.exec()) {
+               m_lastError = q.lastError().text();
+               qDebug() << "Cannot store Category fid ID " << m_lastError;
+               return false;
+           }
+       }
+
+       return true;
+   }else{
+        m_lastError = q.lastError().text();
+       qDebug() << "Error while deleting category fids" << m_lastError;
+   }
+
+   return false;
+}
+
+int DBManager::storeFeedCategory(const QString& title, int parent_id, QList<int> fids, int id)
 {
     QSqlQuery q;
     int current_id = 0;
@@ -215,6 +262,8 @@ int DBManager::storeFeedCategory(const QString& title, int parent_id, int id)
         q.addBindValue( parent_id );
         if(q.exec()) {
             current_id = qvariant_cast<int>( q.lastInsertId() );
+            if(!storeCategoryFids(current_id, fids))
+                return 0;
         }else{
             m_lastError = q.lastError().text();
             qDebug() << "Cannot store Feed Category " << m_lastError;
@@ -231,7 +280,12 @@ int DBManager::storeFeedCategory(const QString& title, int parent_id, int id)
             qDebug() << "Cannot store Feed Category " << m_lastError;
             return 0;
         }
+
         current_id = id;
+
+        if(!storeCategoryFids(current_id, fids))
+            return 0;
+
     }
 
     return current_id;

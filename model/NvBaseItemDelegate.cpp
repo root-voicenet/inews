@@ -4,11 +4,13 @@
 #include <QDate>
 #include <QDebug>
 #include <QApplication>
+#include <QTextDocument>
 
 #include "NvAbstractListItem.h"
 #include "NvObjectModel.h"
 
-#define HEADER_OFFSET 30
+#define HEADER_OFFSET 15
+#define ITEM_HEIGHT 70;
 
 NvBaseItemDelegate::NvBaseItemDelegate(QObject *parent) :
     QStyledItemDelegate(parent)
@@ -23,7 +25,7 @@ NvBaseItemDelegate::~NvBaseItemDelegate()
 
 void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QFont font = QApplication::font();
+    QFont font = option.font;
     font.setBold( true );
     QStyleOptionViewItem opt = option;
     opt.displayAlignment = Qt::AlignTop | Qt::AlignLeft;
@@ -31,66 +33,73 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
 
     QStyledItemDelegate::paint(painter,opt,index);
 
-        painter->save();
-        QFont SubFont = QApplication::font();
-        QFont dateFont = QApplication::font();
+    painter->save();
+    painter->translate(option.rect.topLeft());
+
+    QFont dateFont = QApplication::font();
+    QRect tr;
+    int offset = HEADER_OFFSET;
 
         //font.setPixelSize(font.weight()+);
-        font.setBold(true);
-        SubFont.setWeight(SubFont.weight()-2);
-        QFontMetrics fm(font);
+        font.setBold( false );
+        dateFont.setBold( true );
         QFontMetrics dfm(dateFont);
 
-        QIcon icon = qvariant_cast<QIcon>(index.data(NvObjectModel::IconRole));
         QString subText = qvariant_cast<QString>(index.data(NvObjectModel::DescriptionRole));
-        QString dateText = qvariant_cast<QString>(index.data(NvObjectModel::DateRole));
+        QDateTime date = qvariant_cast<QDateTime>(index.data(NvObjectModel::DateRole));
         bool promoted = qvariant_cast<bool>(index.data(NvObjectModel::PromotedRole));
-
-        QSize iconsize = icon.actualSize(option.decorationSize);
-
-        QRect subheaderRect = option.rect;
-        subheaderRect.translate(0, HEADER_OFFSET);
-
-        QRect iconRect = subheaderRect;
-        QRect dateRect = subheaderRect;
+        QString dateText = date.toString("dd.MM hh:mm");
+        QString tags = qvariant_cast<QString>(index.data(NvObjectModel::TagRole));
 
         if(promoted) {
             QIcon sicon(":/images/star.png");
-            QRect starRect = subheaderRect;
+            QRect starRect = option.rect;
             QSize ss = sicon.actualSize(option.decorationSize);
 
             starRect.setRight(ss.width() + 10);
-
-            iconRect.setLeft(starRect.left() + 5);
-
             painter->drawPixmap(QPoint(starRect.left()+ss.width()/2+2,starRect.top()),sicon.pixmap(ss.width(),ss.height()));
         }
-        iconRect.setRight(iconsize.width()+30);
-        iconRect.setTop(iconRect.top()+5);
-
 
         int dateWidth = 0;
         if(!dateText.isEmpty()) {
             dateWidth = dfm.width(dateText) + 5;
-            dateRect.setLeft(iconRect.right());
         }
 
-
-        subheaderRect.setLeft(iconRect.right() + dateWidth);
-
-
-        //painter->drawPixmap(QPoint(iconRect.right()/2,iconRect.top()/2),icon.pixmap(iconsize.width(),iconsize.height()));
-        painter->drawPixmap(QPoint(iconRect.left()+iconsize.width()/2+2,iconRect.top()+iconsize.height()/2+3),icon.pixmap(iconsize.width(),iconsize.height()));
-
-
-        painter->setFont(SubFont);
-        painter->drawText(subheaderRect.left(),subheaderRect.top(),subText);
-
-        if(dateWidth) {
-            painter->setFont(dateFont);
-            painter->drawText(dateRect.left(), dateRect.top(), dateText);
+        QFontMetrics fm(option.font);
+        if(!subText.isEmpty()) {
+            tr = fm.boundingRect( subText );
+            tr.moveTo( 0, offset );
+            offset += tr.height() + 2;
+            painter->setFont(option.font);
+            painter->drawText(tr, Qt::TextWordWrap | Qt::TextWrapAnywhere, subText);
         }
 
+        int dateOffset = 0;
+        if(!dateText.isEmpty()) {
+            tr = dfm.boundingRect( dateText );
+            tr.moveTo( 0, offset );
+            painter->setFont( dateFont );
+            painter->drawText(tr, dateText);
+            dateOffset = tr.width() + 5;
+        }
+
+        QString feedName = qvariant_cast<QString>(index.data(NvObjectModel::FeedRole));
+        if(!feedName.isEmpty()) {
+            tr = fm.boundingRect( feedName );
+            tr.moveTo(dateOffset, offset);
+            offset += tr.height() + 2;
+            painter->setPen(QColor(0, 0, 210));
+            painter->setFont( font );
+            painter->drawText(tr, feedName);
+        }
+
+        if(!tags.isEmpty()) {
+            tr = fm.boundingRect( tags );
+            tr.moveTo( 0, offset);
+            offset += tr.height() + 2;
+            painter->setPen(QColor(210, 150, 0));
+            painter->drawText(tr, tags );
+        }
 
         painter->restore();
         painter->save();
@@ -101,14 +110,9 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
 
 QSize NvBaseItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QIcon icon = qvariant_cast<QIcon>(index.data(NvObjectModel::IconRole));
-    QSize iconsize = icon.actualSize(option.decorationSize);
-    QFont font = QApplication::font();
-    QFontMetrics fm(font);
+    int height = ITEM_HEIGHT;
 
-    int height = iconsize.isEmpty() ? 30 : iconsize.height();
-
-    return(QSize(iconsize.width(), height + fm.height() + 8));
+    return(QSize(0, height));
 }
 
 /*

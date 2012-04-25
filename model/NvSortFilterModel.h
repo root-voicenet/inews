@@ -11,23 +11,12 @@ public:
     ~NvSortFilterModel(void);
 
 	void setSourceModel ( QAbstractItemModel * sourceModel );
-
-signals:
-	void needUpdate(const QModelIndex & index);
-
-public slots:
-	void install(const QModelIndex & index );
-	void remove(const QModelIndex & index );
-	void updateItem(const QModelIndex & index );
-	void enable(const QModelIndex & index );
-	void disable(const QModelIndex & index );
-	void detail( const QModelIndex & index );
-	void cancel( const QModelIndex & index );
-
-private slots:
-	void needUpdate_src(const QModelIndex & index);
-
 protected:
-	bool lessThan ( const QModelIndex & left, const QModelIndex & right ) const;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+public slots:
+    void setFeedId(int id);
+
+private:
+    int m_fid;
 };
 #endif // NVSORTFILTERMODEL_H

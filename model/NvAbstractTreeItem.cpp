@@ -1,9 +1,29 @@
 #include "NvAbstractTreeItem.h"
 
-NvAbstractTreeItem::NvAbstractTreeItem(QObject *parent)
-    : QObject(parent)
+NvAbstractTreeItem::NvAbstractTreeItem(int id, const QString &name, QObject *parent)
+    : QObject(parent), m_id(id), m_name(name)
 {
 
+}
+
+int NvAbstractTreeItem::id() const
+{
+    return m_id;
+}
+
+void NvAbstractTreeItem::setId( int id )
+{
+    m_id = id;
+}
+
+QString NvAbstractTreeItem::name() const
+{
+    return m_name;
+}
+
+void NvAbstractTreeItem::setName(const QString& name)
+{
+    m_name = name;
 }
 
 void NvAbstractTreeItem::appendChild(NvAbstractTreeItem *child)

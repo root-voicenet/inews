@@ -8,6 +8,7 @@
 
 class QNetworkAccessManager;
 
+class NvFeedItem;
 class NvRssItem : public NvBaseItem
 {
 public:
@@ -16,11 +17,15 @@ public:
     QList<int> terms() const;
     void setTerms(const QList<int>& tids);
     QString link() const { return m_link; }
+    NvFeedItem *feed() const { return m_feed; }
+    QString termNames() const;
 
     void setLink(const QString &link);
+    void setFeed( NvFeedItem *feed );
 protected:
     QList<int> tids_;
     QString m_link;
+    NvFeedItem *m_feed;
 };
 
 class NvRemoteRssItem : public NvRssItem

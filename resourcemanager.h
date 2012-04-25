@@ -43,15 +43,14 @@ public:
     void removeNode(Node *node);
     void clearNodes();
     Node* searchNode(int id);
+
     TaxonomyTerm *searchTaxonomy(int id);
-
     QTreeWidgetItem *getTaxonomy();
-
     NvRssItem *searchRss(int id);
-
     QList<Node*> getUpdatedNodes();
-
     QNetworkAccessManager *getNAM() { return m_nam; }
+
+    QString tag(int id) const;
 private:
     ResourceManager(QObject *parent = NULL);
     static ResourceManager* m_instance;
@@ -63,6 +62,7 @@ private:
 
     // and attached files
     QList<File*> m_files;
+    QMap<int, QString> m_tags;
 
     NvRssCachedModel m_rssModel;
     NvFeedModel m_feedModel;

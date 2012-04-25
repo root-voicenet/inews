@@ -17,7 +17,7 @@ public:
 
     QList<NvLocalRssItem*> listRss(int start, int count);
     bool loadFeedTree( NvFeedModel *model, NvFeedCategory *root );
-    int storeFeedCategory( const QString &title, int parent_id = false, int id = 0);
+    int storeFeedCategory( const QString &title, int parent_id = false, QList<int> fids = QList<int>(), int id = 0);
 
     // manage functions
 
@@ -27,10 +27,10 @@ public:
     void clearRss();
     bool editRss( const NvBaseItem &newRss, int rssId );
     bool removeRss( int rssId );
-
 private:
     bool connectDB();
     bool createDB();
+    bool storeCategoryFids(int id, QList<int> fids);
     static DBManager* m_instance;
     QString m_lastError;
     QString m_dbPath;

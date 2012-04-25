@@ -6,6 +6,7 @@
 #include "centerlawidget.h"
 
 #include "model/nvrssitem.h"
+#include "model/NvSortFilterModel.h"
 #include "view/NvBaseListView.h"
 #include "view/NvFeedsTreeView.h"
 #include <QtGui>
@@ -37,11 +38,19 @@ void MainWindow::setupUI()
     QSplitter* left = new QSplitter(Qt::Horizontal, this);
     feedsTree = new NvFeedsTreeView(left);
 
+    // prepare filter model
+    m_rssFilterModel = new NvSortFilterModel(this);
+    m_rssFilterModel->setSourceModel( RM->rssModel() );
+    m_rssFilterModel->setDynamicSortFilter(true);
+
     rssList = new NvBaseListView(left);
     rssList->setViewMode(NvBaseListView::VIEW_LINE);
-    rssList->setModel( RM->rssModel() );
+    rssList->setModel( m_rssFilterModel );
+    connect(feedsTree, SIGNAL(feedClicked(int)), m_rssFilterModel, SLOT(setFeedId(int)));
+
     left->addWidget(feedsTree);
     left->addWidget(rssList);
+
 
 
     QWidget *middle = new QWidget(split);
@@ -68,6 +77,7 @@ void MainWindow::setupUI()
 
     btnSync = new QPushButton(tr("Sync"), right);
     btnSync->setMaximumSize(QSize(16777215, 50));
+    btnSync->setEnabled( false );
     gridRught->addWidget(btnSync, 6, 0, 1, 2);
     gridRught->addWidget(new QLabel(right), 2, 0, 1, 1);
     right->setLayout(gridRught);
@@ -138,8 +148,14 @@ void MainWindow::initWidgets()
     connect(m_connector, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
     connect(m_connector, SIGNAL(networkError(QString)), this, SLOT(networkError(QString)));
     connect(m_connector, SIGNAL(feedsLoaded()), rssList, SLOT(doItemsLayout()));
+    connect(m_connector, SIGNAL(logInFinished()), this, SLOT(userLoged()));
 
     view->showLogin();
+}
+
+void MainWindow::userLoged()
+{
+    btnSync->setEnabled( true );
 }
 
 
@@ -192,6 +208,7 @@ void MainWindow::nodesLoaded()
 void MainWindow::rssLoaded()
 {
     rssList->setEnabled(true);
+    m_rssFilterModel->invalidate();
 }
 
 void MainWindow::nodeLoaded(Node *node)

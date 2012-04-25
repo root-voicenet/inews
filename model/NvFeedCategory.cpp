@@ -3,7 +3,7 @@
 int NvFeedCategory::m_maxID = 0;
 
 NvFeedCategory::NvFeedCategory(int id, const QString &title, NvFeedCategory *parent)
-    : NvAbstractTreeItem( parent ), m_title( title )
+    : NvAbstractTreeItem( 0, title, parent )
 {
     if(!id) {
         m_id = ++m_maxID;
@@ -14,31 +14,11 @@ NvFeedCategory::NvFeedCategory(int id, const QString &title, NvFeedCategory *par
 
 }
 
-int NvFeedCategory::id() const
-{
-    return m_id;
-}
-
-QString NvFeedCategory::title() const
-{
-    return m_title;
-}
-
-void NvFeedCategory::setTitle(const QString &title)
-{
-    m_title = title;
-}
-
-void NvFeedCategory::setId(int id)
-{
-    m_id = id;
-}
-
 QVariant NvFeedCategory::data(int role) const
 {
     switch(role) {
         case Qt::DisplayRole:
-            return m_title;
+            return m_name;
             break;
         default:
             return QVariant();
@@ -49,4 +29,9 @@ QVariant NvFeedCategory::data(int role) const
 int NvFeedCategory::maxID()
 {
     return m_maxID;
+}
+
+void NvFeedCategory::addFeed(int fid)
+{
+    m_fids.append(fid);
 }

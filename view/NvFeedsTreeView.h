@@ -1,13 +1,17 @@
 #ifndef NVFEEDSTREEVIEW_H
 #define NVFEEDSTREEVIEW_H
 
-#include <QTreeView>
+#include <QModelIndex>
+#include <QWidget>
 
 class NvFeedModel;
 class NvFeedCategory;
 
 QT_FORWARD_DECLARE_CLASS(QAction)
-class NvFeedsTreeView : public QTreeView
+QT_FORWARD_DECLARE_CLASS(QTreeView)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+
+class NvFeedsTreeView : public QWidget
 {
     Q_OBJECT
 public:
@@ -19,15 +23,18 @@ private:
     QString askCategoryName(const QString &title = QString());
 private:
     NvFeedModel *m_model;
+    QTreeView *m_tree;
     QAction *m_addAction, *m_renAction, *m_delAction;
+    QPushButton *m_btnClear;
 signals:
-    
+    void feedClicked(int fid);
 private slots:
     void addCategory();
     void renameCategory();
     void deleteCategory();
-
+    void itemClicked(QModelIndex index);
     void showContextMenu(QPoint point);
+    void clearFilter();
 };
 
 #endif // NVFEEDSTREEVIEW_H

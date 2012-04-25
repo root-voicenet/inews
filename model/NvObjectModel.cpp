@@ -1,7 +1,9 @@
 #include "NvObjectModel.h"
-#include "NvAbstractListItem.h"
+#include "nvrssitem.h"
 #include <QCoreApplication>
 #include <QDebug>
+#include "NvFeedItem.h"
+#include "resourcemanager.h"
 
 NvObjectModel::NvObjectModel(QObject *parent)
         : QAbstractListModel(parent)
@@ -41,7 +43,8 @@ QVariant NvObjectModel::itemData(int row, int role ) const
     if(row < 0 || row >= items.size())
         return QVariant();
 
-    const NvAbstractListItem * item = items[row];
+    NvAbstractListItem * s = items[row];
+    NvRssItem *item = dynamic_cast<NvRssItem*>(s);
 
     if(!item)
     {
@@ -58,12 +61,17 @@ QVariant NvObjectModel::itemData(int row, int role ) const
 		return item->name();
 	case DescriptionRole:
 		return item->description();
-	case VersionRole:
-        //return item->version();
-	case InstalledRole:
-        //return item->installed();
-	case EnabledRole:
-        //return item->enabled();
+    case FeedRole:
+        if(item->feed())
+            return item->feed()->name();
+        break;
+    case TagRole:
+        return item->termNames();
+        break;
+    case FeedIdRole:
+        if(item->feed())
+            return item->feed()->id();
+        break;
 	case BuildInRole:
         //return item->buildIn();
 	case SourceRole:
@@ -72,9 +80,9 @@ QVariant NvObjectModel::itemData(int row, int role ) const
 		return item->date();
     case PromotedRole:
         return item->promoted();
-	default:
-		return QVariant();
 	}
+
+    return QVariant();
 }
 
 NvAbstractListItem *NvObjectModel::item(const QModelIndex &index) const
@@ -166,8 +174,6 @@ bool NvObjectModel::setData( const QModelIndex & index, const QVariant & value, 
     //item->setDetail(value.toString()); break;
     case DescriptionRole:
             item->setDescription(value.toString()); break;
-    case VersionRole:
-    //item->setVersion(value.toInt()); break;
     case SourceRole:
             item->setSource(value.toString()); break;
     case DateRole:

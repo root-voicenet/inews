@@ -2,6 +2,7 @@
 #include "resourcemanager.h"
 #include "model/NvRssCachedModel.h"
 #include "model/nvrssitem.h"
+#include "model/NvFeedModel.h"
 #include <QDebug>
 
 RssImporter::RssImporter(NvObjectModel *target)
@@ -13,6 +14,10 @@ RssImporter::RssImporter(NvObjectModel *target)
 bool RssImporter::import(const QVariant &in)
 {
     NvRssCachedModel *rssModel = dynamic_cast<NvRssCachedModel*>(m_target);
+    ResourceManager *rm = ResourceManager::instance();
+
+    NvFeedModel *feeds = rm->feedModel();
+
     if(rssModel) {
         rssModel->clearRemote();
         QList<QVariant> elements(in.toList());
@@ -43,8 +48,9 @@ bool RssImporter::import(const QVariant &in)
                 rss->setDate(QDateTime::fromTime_t( cdate ));
             }
 
-            if(!tags.value("sourse").isNull()) {
-                rss->setSource(tags.value("sourse").toString());
+            if(!tags.value("fid").isNull()) {
+                quint32 fid = tags.value("fid").toUInt();
+                rss->setFeed( feeds->feed( fid ) );
             }
 
             if(!tags.value("description").isNull()) {
