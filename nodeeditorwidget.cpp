@@ -19,8 +19,11 @@ void NodeEditorWidget::setupUI()
     titleEdit = new QLineEdit(this);
     summaryEdit = new QTextEdit(this);
     attachedRssList = new QListWidget(this);
+    attachedMediaList = new QListWidget(this);
+    attachedMediaList->setMaximumHeight(80);
     attachedRssList->setMaximumHeight(50);
     m_taxonomy = new TaxonomyWidget(this);
+    m_taxonomy->setMaximumHeight(100);
 
     summaryEdit->setMaximumHeight(100);
 
@@ -33,11 +36,24 @@ void NodeEditorWidget::setupUI()
     gridLayout->addWidget(textEdit, 3, 0, 1, 6);
     gridLayout->addWidget(new QLabel(tr("Attached RSS"), this), 4, 0, 1, 1);
     gridLayout->addWidget(attachedRssList,  4, 1, 1, 5);
-    gridLayout->addWidget(m_taxonomy, 5, 0, 2, 2);
+
+    gridLayout->addWidget(new QLabel(tr("Tags"), this), 5, 0, 1, 2);
+    gridLayout->addWidget(m_taxonomy, 6, 0, 1, 2);
+    gridLayout->addWidget(new QLabel(tr("Media"), this), 5, 2, 1, 4);
+
+    QHBoxLayout *hb = new QHBoxLayout;
+    hb->addWidget(new QToolButton(this));
+    hb->addWidget(new QToolButton(this));
+    hb->addStretch(1);
+    QVBoxLayout *vb = new QVBoxLayout;
+    vb->addWidget(attachedMediaList);
+    vb->addLayout(hb);
+
+    gridLayout->addLayout(vb, 6, 2, 1, 4);
 
     QPushButton *btnSave = new QPushButton(tr("Save"), this);
     connect(btnSave, SIGNAL(clicked()), this, SLOT(saveClicked()));
-    gridLayout->addWidget(btnSave, 6, 5, 1, 1);
+    gridLayout->addWidget(btnSave, 7, 5, 1, 1);
 
     gridLayout->setColumnStretch(1, 1);
 

@@ -1,5 +1,6 @@
 #include "NvRssCachedModel.h"
 #include "nvrssitem.h"
+#include "NvFeedItem.h"
 #include "../dbmanager.h"
 #include <QDebug>
 
@@ -25,6 +26,47 @@ void NvRssCachedModel::clearRemote()
 
 }
 
+QVariant NvRssCachedModel::itemData(int row, int role) const
+{
+    if(row < 0 || row >= items.size())
+        return QVariant();
+
+    NvAbstractListItem * s = items[row];
+    NvRssItem *item = dynamic_cast<NvRssItem*>( s );
+
+    if(!item)
+    {
+            return QVariant();
+    }
+
+    switch(role)
+    {
+    case Qt::DecorationRole:
+        return item->icon();
+    case Qt::DisplayRole:
+        return item->name();
+    case DescriptionRole:
+        return item->description();
+    case FeedRole:
+        if(item->feed())
+            return item->feed()->name();
+        break;
+    case TagRole:
+        return item->termNames();
+        break;
+    case FeedIdRole:
+        if(item->feed())
+            return item->feed()->id();
+        break;
+    case DateRole:
+        return item->date();
+    case PromotedRole:
+        return item->promoted();
+    }
+
+    return QVariant();
+}
+
 bool NvRssCachedModel::storeRemote()
 {
     /*
@@ -45,7 +87,7 @@ bool NvRssCachedModel::storeRemote()
     return true;
 }
 
-void NvRssCachedModel::addRemote(NvRemoteRssItem *item)
+void NvRssCachedModel::addRemote(NvRssItem *item)
 {
     addItem(item);
 }
@@ -69,11 +111,11 @@ void NvRssCachedModel::fetchMore(const QModelIndex & /* index */)
     int remainder = localRssCount() - m_localCount;
     int itemsToFetch = qMin(m_buffersize, remainder);
 
-    QList<NvLocalRssItem*> l_items = m_storage->listRss(m_localCount, itemsToFetch);
+    QList<NvRssItem*> l_items = m_storage->listRss(m_localCount, itemsToFetch);
 
     beginInsertRows(QModelIndex(), m_localCount, m_localCount + l_items.size() - 1);
     for(int j = 0; j < l_items.size(); ++j) {
-        NvLocalRssItem *item = l_items[j];
+        NvRssItem *item = l_items[j];
 
         item->setParent(this);
         connect(item, SIGNAL(destroyed(QObject *)), this, SLOT(itemDeleted(QObject *)));

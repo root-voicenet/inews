@@ -18,6 +18,8 @@ void TaxonomyWidget::setupUI()
     vbox->setMargin(0);
     vbox->addWidget(taxonomyList);
     setLayout(vbox);
+
+    connect(taxonomyList, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SIGNAL(selected()));
 }
 
 void TaxonomyWidget::loadTaxonomy(QTreeWidgetItem *root)

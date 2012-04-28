@@ -26,12 +26,15 @@ private: // widgets
     QLabel *attachLink;
     QWebView *m_browser;
     QCheckBox *checkPromoted;
+    NvRssItem *m_current;
 
     TaxonomyWidget* taxonomy;
 private:
     void setupUI();
 signals:
     void attachClicked();
+private slots:
+    void taxonomySelected();
 public slots:
 
 };

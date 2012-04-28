@@ -38,8 +38,6 @@ SOURCES += main.cpp\
     model/NvSortFilterModel.cpp \
     model/NvObjectModel.cpp \
     dbmanager.cpp \
-    model/NvBaseItem.cpp \
-    model/NvBaseItemDelegate.cpp \
     view/NvBaseListView.cpp \
     model/nvrssitem.cpp \
     model/NvRssCachedModel.cpp \
@@ -50,7 +48,14 @@ SOURCES += main.cpp\
     view/NvFeedsTreeView.cpp \
     model/NvFeedItem.cpp \
     requestbuilder.cpp \
-    dialogs/addeditlink.cpp
+    dialogs/addeditlink.cpp \
+    mediawindow.cpp \
+    widgetimage.cpp \
+    addiconimagethread.cpp \
+    windowmanager.cpp \
+    model/NvRssItemDelegate.cpp \
+    model/NvMediaItem.cpp \
+    model/NvMediaModel.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -82,8 +87,6 @@ HEADERS  += mainwindow.h \
     model/NvAbstractListItem.h \
     model/NvObjectModel.h \
     dbmanager.h \
-    model/NvBaseItem.h \
-    model/NvBaseItemDelegate.h \
     view/NvBaseListView.h \
     model/nvrssitem.h \
     model/NvRssCachedModel.h \
@@ -96,7 +99,14 @@ HEADERS  += mainwindow.h \
     model/NvAbstractFeedItem.h \
     model/NvFeedItem.h \
     requestbuilder.h \
-    dialogs/addeditlink.h
+    dialogs/addeditlink.h \
+    mediawindow.h \
+    widgetimage.h \
+    addiconimagethread.h \
+    windowmanager.h \
+    model/NvRssItemDelegate.h \
+    model/NvMediaItem.h \
+    model/NvMediaModel.h
 
 QT += core gui network xml webkit sql
 
@@ -104,4 +114,5 @@ RESOURCES += \
     resource.qrc
 
 FORMS += \
-    dialogs/linkdialog.ui
+    dialogs/linkdialog.ui \
+    mediawindow.ui

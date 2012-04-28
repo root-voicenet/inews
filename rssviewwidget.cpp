@@ -6,7 +6,7 @@
 #include <QWebView>
 
 RssViewWidget::RssViewWidget(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent), m_current(NULL)
 {
     setupUI();
 }
@@ -52,6 +52,8 @@ void RssViewWidget::setupUI()
     grid->addWidget(checkPromoted, 1, 0, 1, 1);
     grid->addWidget(attachLink, 1, 1, 1, 1);
     grid->addWidget(taxonomy, 2, 0, 1, 2);
+    connect(taxonomy, SIGNAL(selected()), this, SLOT(taxonomySelected()));
+
     grid->setRowStretch(0, 1);
     setLayout(grid);
 
@@ -62,6 +64,8 @@ void RssViewWidget::setupUI()
 
 void RssViewWidget::loadRss(NvRssItem *rss)
 {
+    m_current = rss;
+
     taxonomy->clearSelection();
     if(!rss->terms().isEmpty()) {
         taxonomy->selectTaxonomy(rss->terms());
@@ -115,4 +119,10 @@ void RssViewWidget::showAttachLink(bool show)
         attachLink->show();
     else
         attachLink->hide();
+}
+
+void RssViewWidget::taxonomySelected()
+{
+    Q_ASSERT( m_current );
+    storeRss( m_current );
 }

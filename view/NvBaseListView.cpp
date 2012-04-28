@@ -1,14 +1,15 @@
 #include "NvBaseListView.h"
-#include "../model/NvBaseItemDelegate.h"
+#include "../model/NvRssItemDelegate.h".h"
 #include <QAction>
 #include <QMenu>
 #include "../model/NvObjectModel.h"
+#include "../model/NvSortFilterModel.h"
 #include "../model/nvrssitem.h"
 
 NvBaseListView::NvBaseListView(QWidget *parent) :
     QListView(parent)
 {
-    _baseDel = new NvBaseItemDelegate(this);
+    _baseDel = new NvRssItemDelegate(this);
    // _lineDel = new NvLineItemDelegate(this);
     m_attachAction = new QAction(tr("Attach Rss"), this);
     connect(m_attachAction, SIGNAL(triggered()), this, SLOT(attachRss()));
@@ -58,8 +59,17 @@ void NvBaseListView::setModel(QAbstractItemModel *model)
 void NvBaseListView::attachRss()
 {
     QModelIndex index = currentIndex();
-    NvObjectModel *m = qobject_cast<NvObjectModel*>(model());
-    if(index.isValid()) {
+    NvObjectModel *m;
+
+    if(qobject_cast<NvSortFilterModel*>(model())) {
+        NvSortFilterModel *sort = qobject_cast<NvSortFilterModel*>(model());
+        m = qobject_cast<NvObjectModel*>(sort->sourceModel());
+        index = sort->mapToSource(index);
+    }else{
+        m = qobject_cast<NvObjectModel*>(model());
+    }
+
+    if(m && index.isValid()) {
         NvRssItem *item = dynamic_cast<NvRssItem*>(m->item(index));
         if(item) {
             emit attachSelected(item);

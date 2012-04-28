@@ -5,7 +5,6 @@
 #include <QModelIndex>
 
 
-class Connector;
 class Node;
 class CenterlaWidget;
 class NvBaseListView;
@@ -28,8 +27,6 @@ public:
     
     void showError(const QString& str);
 private:
-    Connector* m_connector;
-
     // initialize widgets
     void initWidgets();
     void setupUI();
@@ -54,14 +51,15 @@ private slots:
     void rssLoaded();
     void createNode();
     void syncClicked();
-    void rssItemSelected(QModelIndex index);
+    void itemClicked(QModelIndex index);
+    void itemDoubleClicked(QModelIndex index);
 
     void loadNode(QModelIndex index);
     void nodeLoaded(Node *n);
-    void attachRss(QModelIndex index);
     void networkError(QString msg);
     void actionLogin(QString userLogin, QString userPassword);
     void userLoged();
+    void showMedia();
 
     // actions
     void setListViewMode();

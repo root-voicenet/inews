@@ -17,18 +17,7 @@ public:
 
 	enum ObjectDataRole
 	{
-		DescriptionRole = Qt::UserRole + 1,
-		DetailRole,
-        FeedRole,
-        TagRole,
-        FeedIdRole,
-		BuildInRole,
-		SourceRole,
-		IconRole,
-		DateRole,
-        PromotedRole,
-		ProgressRole,
-		NeedUpdateRole
+        IconRole = Qt::UserRole + 1
 	};
 
     NvObjectModel(QObject *parent);
@@ -46,7 +35,7 @@ public:
 
     Qt::ItemFlags flags ( const QModelIndex & index ) const;
 
-
+    void clear();
 signals:
 	void needUpdate(QModelIndex);
 
@@ -61,7 +50,8 @@ protected:
 	
         ItemVector items;
 
-        virtual NvAbstractListItem* getItem( const QModelIndex & index ) const;
+    virtual NvAbstractListItem* getItem( const QModelIndex & index ) const;
+    virtual QVariant itemData(int row, int role) const;
 
 	inline int magickNum() const
 	{
@@ -78,8 +68,6 @@ protected:
 		}
 		return m;
     }
-
-    QVariant itemData(int row, int role) const;
 };
 
 #endif // NVOBJECTMODEL_H

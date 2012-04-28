@@ -5,6 +5,8 @@
 #include "node.h"
 #include "taxonomyterm.h"
 #include "requestbuilder.h"
+#include "windowmanager.h"
+#include "mediawindow.h"
 
 
 const QString Connector::METHOD_SYSTEM_CONNECT = "system.connect";
@@ -18,6 +20,7 @@ const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
 const QString Connector::METHOD_NODE_GET = "node.full";
 const QString Connector::METHOD_NODE_CREATE = "node.create";
 const QString Connector::METHOD_RSS_FEEDS = "rss.feeds";
+const QString Connector::METHOD_MEDIA_FILES = "media.files";
 
 Connector::Connector(const QString& url, QObject *parent):
     Client(parent), m_isLogged(false)
@@ -68,6 +71,12 @@ void Connector::GetNode(int id)
     addRequest(requestID, METHOD_NODE_GET);
 }
 
+void Connector::GetMedia()
+{
+    int requestID = request(METHOD_MEDIA_FILES);
+    addRequest(requestID, METHOD_MEDIA_FILES);
+}
+
 void Connector::UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids) {
     QByteArray buffer = postData->toBase64();
     QList<xmlrpc::Variant> tids;
@@ -75,7 +84,12 @@ void Connector::UploadFile(const QByteArray *postData, const QString &descriptio
     for(int i = 0; i < pointer_tids.size(); ++i)
         tids.append(pointer_tids[i]);
 
-    int requestID = request(METHOD_FILE_UPLOAD, buffer, description, tids);
+    QList<xmlrpc::Variant> param;
+    param.append( buffer );
+    param.append( description );
+    param.append( tids );
+
+    int requestID = request(METHOD_FILE_UPLOAD, param);
     addRequest(requestID, METHOD_FILE_UPLOAD);
 }
 
@@ -147,6 +161,9 @@ void Connector::processResponse(int id, QVariant responce)
         }else if(method == METHOD_RSS_FEEDS) {
             rm->parseFeeds(&responce);
             signal = &Connector::feedsLoaded;
+        }else if(method == METHOD_MEDIA_FILES) {
+            WindowManager::instance()->mediaWindow()->parseRemoteFiles(&responce);
+            signal = &Connector::mediaLoaded;
         }
     }
 

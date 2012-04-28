@@ -1,4 +1,4 @@
-#include "NvBaseItemDelegate.h"
+#include "NvRssItemDelegate.h"
 #include <QPainter>
 #include <QStyle>
 #include <QDate>
@@ -7,23 +7,23 @@
 #include <QTextDocument>
 
 #include "NvAbstractListItem.h"
-#include "NvObjectModel.h"
+#include "NvRssCachedModel.h"
 
 #define HEADER_OFFSET 15
 #define ITEM_HEIGHT 70;
 
-NvBaseItemDelegate::NvBaseItemDelegate(QObject *parent) :
+NvRssItemDelegate::NvRssItemDelegate(QObject *parent) :
     QStyledItemDelegate(parent)
 {
 
 }
 
-NvBaseItemDelegate::~NvBaseItemDelegate()
+NvRssItemDelegate::~NvRssItemDelegate()
 {
 
 }
 
-void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void NvRssItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QFont font = option.font;
     font.setBold( true );
@@ -45,11 +45,11 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         dateFont.setBold( true );
         QFontMetrics dfm(dateFont);
 
-        QString subText = qvariant_cast<QString>(index.data(NvObjectModel::DescriptionRole));
-        QDateTime date = qvariant_cast<QDateTime>(index.data(NvObjectModel::DateRole));
-        bool promoted = qvariant_cast<bool>(index.data(NvObjectModel::PromotedRole));
+        QString subText = qvariant_cast<QString>(index.data(NvRssCachedModel::DescriptionRole));
+        QDateTime date = qvariant_cast<QDateTime>(index.data(NvRssCachedModel::DateRole));
+        bool promoted = qvariant_cast<bool>(index.data(NvRssCachedModel::PromotedRole));
         QString dateText = date.toString("dd.MM hh:mm");
-        QString tags = qvariant_cast<QString>(index.data(NvObjectModel::TagRole));
+        QString tags = qvariant_cast<QString>(index.data(NvRssCachedModel::TagRole));
 
         if(promoted) {
             QIcon sicon(":/images/star.png");
@@ -83,7 +83,7 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
             dateOffset = tr.width() + 5;
         }
 
-        QString feedName = qvariant_cast<QString>(index.data(NvObjectModel::FeedRole));
+        QString feedName = qvariant_cast<QString>(index.data(NvRssCachedModel::FeedRole));
         if(!feedName.isEmpty()) {
             tr = fm.boundingRect( feedName );
             tr.moveTo(dateOffset, offset);
@@ -108,7 +108,7 @@ void NvBaseItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         painter->restore();
 }
 
-QSize NvBaseItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize NvRssItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     int height = ITEM_HEIGHT;
 

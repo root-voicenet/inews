@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "windowmanager.h"
 #include "model/nvrssitem.h"
 #include "model/NvRssCachedModel.h"
 #include "view/NvBaseListView.h"
@@ -20,8 +20,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    MainWindow w;
-    w.show();
+    WindowManager *wm = WindowManager::instance();
+    wm->init();
+    wm->showMainWindow();
 
     return a.exec();
 }

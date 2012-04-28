@@ -45,6 +45,8 @@ public:
     void nodeAttachRss(NvRssItem *rss);
     void showDummy();
     void showLogin();
+
+    int currentView() const;
 private:    // widgets
 
     NvRssItem *m_currentRss;

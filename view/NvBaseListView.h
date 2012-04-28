@@ -5,7 +5,7 @@
 #include <QPointer>
 
 class NvObjectModel;
-class NvBaseItemDelegate;
+class NvRssItemDelegate;
 class NvLineItemDelegate;
 class NvRssItem;
 class QAction;
@@ -26,7 +26,7 @@ public:
 
     void setViewMode( int mode = VIEW_FULL);
 private:
-    QPointer<NvBaseItemDelegate> _baseDel;
+    QPointer<NvRssItemDelegate> _baseDel;
     QAction* m_attachAction;
     //QPointer<NvLineItemDelegate> _lineDel;
 signals:

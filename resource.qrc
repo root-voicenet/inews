@@ -47,5 +47,6 @@
         <file>images/win/h4.png</file>
         <file>images/win/insert-link.png</file>
         <file>images/win/remove-link.png</file>
+        <file>images/cover.png</file>
     </qresource>
 </RCC>

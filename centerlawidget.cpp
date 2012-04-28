@@ -93,6 +93,11 @@ void CenterlaWidget::showNode(Node *node)
     showLinkTo(2);
 }
 
+int CenterlaWidget::currentView() const
+{
+    return stacked->currentIndex();
+}
+
 void CenterlaWidget::showRss(NvRssItem *rss)
 {
     if(m_currentRss) {

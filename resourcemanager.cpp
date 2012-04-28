@@ -272,6 +272,18 @@ bool ResourceManager::parseNodes(QVariant *resp)
     return true;
 }
 
+bool ResourceManager::parseMedia(QVariant *media)
+{
+    QList<QVariant> elements(media->toList());
+    for (int i = 0; i < elements.size(); ++i) {
+        // parse element
+        QMap<QString, QVariant> tags = elements[i].toMap();
+
+    }
+
+    return true;
+}
+
 Node *ResourceManager::searchNode(int id)
 {
     QListIterator<Node*> i(m_nodes);

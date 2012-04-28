@@ -3,7 +3,7 @@
 
 #include "nvbaseobject.h"
 
-class File;
+class NvMediaItem;
 class NvRssItem;
 
 class Node : public NvBaseObject
@@ -23,8 +23,8 @@ public:
     bool isRemote() const { return m_isremote; }
     bool isUpdated() const { return m_updated; }
 
-    void attachFile(File* file);
-    void removeFile(File* file);
+    void attachMedia(NvMediaItem* file);
+    void removeMedia(NvMediaItem* file);
     void setBody(const QString& body);
     void setUpdated(bool updated);
     void setSummary(const QString& summary);
@@ -39,7 +39,7 @@ protected:
     QString m_body;
     QString m_summary;
 
-    QList<File*> m_attached;
+    QList<NvMediaItem*> m_attached;
     QList<NvRssItem*> m_attachedRss;
 
 };

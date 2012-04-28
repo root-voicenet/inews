@@ -31,7 +31,7 @@ void Node::setUpdated(bool updated)
     m_updated = updated;
 }
 
-void Node::attachFile(File *file)
+void Node::attachMedia(NvMediaItem *file)
 {
     if(m_attached.indexOf(file) != -1)
         return;
@@ -43,7 +43,7 @@ void Node::attachFile(File *file)
     m_attached.append(file);
 }
 
-void Node::removeFile(File *file)
+void Node::removeMedia(NvMediaItem *file)
 {
     int pos = m_attached.indexOf(file);
     if(pos != -1) {

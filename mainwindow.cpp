@@ -4,6 +4,7 @@
 #include "taxonomyterm.h"
 #include "resourcemanager.h"
 #include "centerlawidget.h"
+#include "windowmanager.h"
 
 #include "model/nvrssitem.h"
 #include "model/NvSortFilterModel.h"
@@ -21,8 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    if(m_connector)
-        delete m_connector;
+
 }
 
 void MainWindow::setupUI()
@@ -112,6 +112,12 @@ void MainWindow::setupActions()
     a = new QAction(tr("RSS Full view"), this);
     connect(a, SIGNAL(triggered()), this, SLOT(setFullViewMode()));
     viewMenu->addAction(a);
+
+    QMenu* windowMenu = new QMenu(tr("&Window"), this);
+    menuBar()->addMenu(windowMenu);
+    a = new QAction(tr("Show Media Browser"), this);
+    connect(a, SIGNAL(triggered()), this, SLOT(showMedia()));
+    windowMenu->addAction(a);
 }
 
 void MainWindow::showError(const QString& str)
@@ -130,25 +136,25 @@ void MainWindow::createNode()
 void MainWindow::initWidgets()
 {
     ResourceManager *rm = ResourceManager::instance();
+    Connector *c = WindowManager::instance()->connector();
 
-    connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(rssItemSelected(QModelIndex)));
+    connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
+    connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemDoubleClicked(QModelIndex)));
 
     themesList->setModel(&rm->getThemes());
     //rssList->setModel(&rm->getFeed());
-    connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(attachRss(QModelIndex)));
 
-    m_connector = new Connector("http://test.irkipedia.ru/news/api");
 
     connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
     connect(themesList, SIGNAL(clicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
     connect(view, SIGNAL(actionLogin(QString, QString)), this, SLOT(actionLogin(QString, QString)));
-    connect(m_connector, SIGNAL(taxonomyLoaded()), view, SLOT(updateTaxonomy()));
-    connect(m_connector, SIGNAL(syncNodesComplete()), this, SLOT(nodesLoaded()));
-    connect(m_connector, SIGNAL(syncRssComplete()), this, SLOT(rssLoaded()));
-    connect(m_connector, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
-    connect(m_connector, SIGNAL(networkError(QString)), this, SLOT(networkError(QString)));
-    connect(m_connector, SIGNAL(feedsLoaded()), rssList, SLOT(doItemsLayout()));
-    connect(m_connector, SIGNAL(logInFinished()), this, SLOT(userLoged()));
+    connect(c, SIGNAL(taxonomyLoaded()), view, SLOT(updateTaxonomy()));
+    connect(c, SIGNAL(syncNodesComplete()), this, SLOT(nodesLoaded()));
+    connect(c, SIGNAL(syncRssComplete()), this, SLOT(rssLoaded()));
+    connect(c, SIGNAL(nodeGetComplete(Node*)), this, SLOT(nodeLoaded(Node*)));
+    connect(c, SIGNAL(networkError(QString)), this, SLOT(networkError(QString)));
+    connect(c, SIGNAL(feedsLoaded()), rssList, SLOT(doItemsLayout()));
+    connect(c, SIGNAL(logInFinished()), this, SLOT(userLoged()));
 
     view->showLogin();
 }
@@ -162,36 +168,54 @@ void MainWindow::userLoged()
 void MainWindow::syncClicked()
 {
     view->showDummy();
+    Connector *c = WindowManager::instance()->connector();
 
     ResourceManager *rm = ResourceManager::instance();
     rssList->setEnabled(false);
-    m_connector->SyncRss();
+    c->SyncRss();
 
     themesList->setEnabled(false);
     btnNew->setEnabled(false);
-    m_connector->SyncNodes();
+    c->SyncNodes();
 }
 
-void MainWindow::rssItemSelected(QModelIndex index)
+void MainWindow::itemClicked(QModelIndex index)
 {
     NvRssItem* item;
     ResourceManager* rm = ResourceManager::instance();
 
+    if(view->currentView() == CenterlaWidget::WIDGET_NODE)
+        return;
+
     item = dynamic_cast<NvRssItem*>(rm->rssModel()->item(index));
+
     if(item) {
         view->showRss(item);
     }
 }
 
+void MainWindow::itemDoubleClicked(QModelIndex index)
+{
+    NvRssItem* item;
+    ResourceManager* rm = ResourceManager::instance();
+
+    item = dynamic_cast<NvRssItem*>(rm->rssModel()->item(index));
+
+    if(item) {
+        view->showRss(item);
+    }
+}
 
 void MainWindow::loadNode(QModelIndex index)
 {
+    Connector *c = WindowManager::instance()->connector();
+
     QStandardItemModel *model = static_cast<QStandardItemModel*>(themesList->model());
     QStandardItem *item = model->itemFromIndex(index);
     if(item && !item->data().isNull()) {
         Node* node = reinterpret_cast<Node*>(item->data().toInt());
         if(node->isRemote() && node->getBody().isEmpty()) {
-            m_connector->GetNode(node->getId());
+            c->GetNode(node->getId());
         }else{
            view->showNode(node);
         }
@@ -219,21 +243,6 @@ void MainWindow::nodeLoaded(Node *node)
 }
 
 
-void MainWindow::attachRss(QModelIndex index)
-{
-    /*
-    QStandardItemModel *model = static_cast<QStandardItemModel*>(rssList->model());
-    QStandardItem *item = model->itemFromIndex(index);
-
-    if(item && !item->data().isNull()) {
-        RssItem* rss = reinterpret_cast<RssItem*>(item->data().toInt());
-        if(rss) {
-            view->nodeAttachRss(rss);
-        }
-    }
-    */
-}
-
 void MainWindow::networkError(QString msg)
 {
     showError(msg);
@@ -248,7 +257,8 @@ void MainWindow::networkError(QString msg)
 
 void MainWindow::actionLogin(QString userLogin, QString userPassword)
 {
-    m_connector->Login(userLogin, userPassword);
+    Connector *c = WindowManager::instance()->connector();
+    c->Login(userLogin, userPassword);
     btnSync->setEnabled(true);
     view->showDummy();
 }
@@ -261,4 +271,9 @@ void MainWindow::setListViewMode()
 void MainWindow::setFullViewMode()
 {
     rssList->setViewMode(NvBaseListView::VIEW_FULL);
+}
+
+void MainWindow::showMedia()
+{
+    WindowManager::instance()->showMediaWindow();
 }

@@ -26,7 +26,9 @@ private: //widgets
     QLineEdit *titleEdit;
     QTextEdit *summaryEdit;
     QListWidget *attachedRssList;
+    QListWidget *attachedMediaList;
     TaxonomyWidget *m_taxonomy;
+
 private:
     Node *m_current;
 

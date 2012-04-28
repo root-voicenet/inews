@@ -177,7 +177,7 @@ int Client::request( QList<Variant> params, QString methodName )
 
     QByteArray data = Request(methodName,params).composeRequest();
 
-    //qDebug() << "data: " << data;
+    qDebug() << "data: " << data;
 
     QHttpRequestHeader header("POST",d->path);
     header.setContentLength( data.size() );

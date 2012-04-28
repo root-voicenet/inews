@@ -43,8 +43,7 @@ QVariant NvObjectModel::itemData(int row, int role ) const
     if(row < 0 || row >= items.size())
         return QVariant();
 
-    NvAbstractListItem * s = items[row];
-    NvRssItem *item = dynamic_cast<NvRssItem*>(s);
+    NvAbstractListItem * item = items[row];
 
     if(!item)
     {
@@ -53,33 +52,10 @@ QVariant NvObjectModel::itemData(int row, int role ) const
 
 	switch(role)
 	{
-	case DetailRole:
-        //return item->detail();
 	case Qt::DecorationRole:
 		return item->icon();
 	case Qt::DisplayRole:
 		return item->name();
-	case DescriptionRole:
-		return item->description();
-    case FeedRole:
-        if(item->feed())
-            return item->feed()->name();
-        break;
-    case TagRole:
-        return item->termNames();
-        break;
-    case FeedIdRole:
-        if(item->feed())
-            return item->feed()->id();
-        break;
-	case BuildInRole:
-        //return item->buildIn();
-	case SourceRole:
-		return item->source();
-	case DateRole:
-		return item->date();
-    case PromotedRole:
-        return item->promoted();
 	}
 
     return QVariant();
@@ -168,22 +144,7 @@ bool NvObjectModel::setData( const QModelIndex & index, const QVariant & value, 
             return QAbstractItemModel::setData(index, value, role);
     }
 
-    switch(role)
-    {
-    case DetailRole:
-    //item->setDetail(value.toString()); break;
-    case DescriptionRole:
-            item->setDescription(value.toString()); break;
-    case SourceRole:
-            item->setSource(value.toString()); break;
-    case DateRole:
-            item->setDate(value.toDateTime()); break;
-    case NeedUpdateRole:
-            item->setUpdated(value.toBool()); break;
-    default:
-            return QAbstractItemModel::setData(index, value, role);
-    }
-	return true;
+    return QAbstractItemModel::setData(index, value, role);
 }
 
 NvAbstractListItem *NvObjectModel::find(int id) const
@@ -196,4 +157,10 @@ NvAbstractListItem *NvObjectModel::find(int id) const
             return item;
     }
     return NULL;
+}
+
+void NvObjectModel::clear()
+{
+    qDeleteAll(items);
+    items.clear();
 }

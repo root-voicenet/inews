@@ -4,18 +4,32 @@
 #include "NvObjectModel.h"
 
 class DBManager;
-class NvRemoteRssItem;
 class NvRssItem;
 
 class NvRssCachedModel : public NvObjectModel
 {
 public:
+
+    enum RssDataRole
+    {
+        FeedRole = Qt::UserRole + 100,
+        DateRole,
+        DescriptionRole,
+        PromotedRole,
+        TagRole,
+        FeedIdRole
+    };
+
     NvRssCachedModel(QObject *parent = 0);
     bool store(const QModelIndex & index);
     void clearRemote();
     bool storeRemote();
-    void addRemote( NvRemoteRssItem *item );
+    void addRemote( NvRssItem *item );
     QList<NvRssItem*> updatedRss() const;
+
+protected:
+    QVariant itemData(int row, int role ) const;
+
 private:
     int m_buffersize, m_count, m_localCount;
     DBManager *m_storage;

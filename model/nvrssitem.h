@@ -1,7 +1,7 @@
 #ifndef NVRSSITEM_H
 #define NVRSSITEM_H
 
-#include "NvBaseItem.h"
+#include "NvAbstractListItem.h"
 #include <QPointer>
 #include <QUrl>
 #include <QList>
@@ -9,47 +9,54 @@
 class QNetworkAccessManager;
 
 class NvFeedItem;
-class NvRssItem : public NvBaseItem
+class NvRssItem : public NvAbstractListItem
 {
-public:
-    NvRssItem(quint32 id, const QString& title);
-
-    QList<int> terms() const;
-    void setTerms(const QList<int>& tids);
-    QString link() const { return m_link; }
-    NvFeedItem *feed() const { return m_feed; }
-    QString termNames() const;
-
-    void setLink(const QString &link);
-    void setFeed( NvFeedItem *feed );
-protected:
+    QString name_, description_, source_;
+    QIcon icon_;
+    quint32 id_;
+    QDateTime date_;
     QList<int> tids_;
     QString m_link;
     NvFeedItem *m_feed;
-};
-
-class NvRemoteRssItem : public NvRssItem
-{
-    Q_OBJECT
+protected:
+    bool updated_;
+    bool promoted_;
 public:
-    NvRemoteRssItem(quint32 id, const QString& title);
+    NvRssItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
+    virtual ~NvRssItem(){}
 
-    void setIconUrl(const QUrl & url);
+    QString name() const;
+    void setName(const QString &v);
 
-    void setNetworkAccessManager(QNetworkAccessManager * manager);
-    QNetworkAccessManager *networkAccessManager() const;
+    QString description() const;
+    void setDescription(const QString &v);
 
-private:
-    QPointer<QNetworkAccessManager> manager_;
+    quint32 id() const;
+    void setId(quint32 id);
 
-private slots:
-        void iconDownloaded();
-};
+    QIcon icon() const;
+    void setIcon(const QIcon &v);
 
-class NvLocalRssItem : public NvRssItem
-{
-public:
-    NvLocalRssItem(quint32 id, const QString& title);
+    QDateTime date() const;
+    void setDate(const QDateTime &v);
+
+    bool updated() const;
+    void setUpdated(bool v);
+
+    bool promoted() const;
+    void setPromoted(bool v);
+
+
+    QList<int> terms() const;
+    void setTerms(const QList<int>& tids);
+
+    QString link() const { return m_link; }
+    void setLink(const QString &link);
+
+    NvFeedItem *feed() const { return m_feed; }
+    void setFeed( NvFeedItem *feed );
+
+    QString termNames() const;
 };
 
 #endif // NVRSSITEM_H

@@ -1,5 +1,5 @@
 #include "NvSortFilterModel.h"
-#include "NvObjectModel.h"
+#include "NvRssCachedModel.h"
 
 NvSortFilterModel::NvSortFilterModel(QObject * parent)
     : QSortFilterProxyModel(parent), m_fid(0)
@@ -30,6 +30,6 @@ bool NvSortFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
     if(!m_fid)
         return true;
 
-    return qvariant_cast<int>(sourceModel()->data(index, NvObjectModel::FeedIdRole)) == m_fid;
+    return qvariant_cast<int>(sourceModel()->data(index, NvRssCachedModel::FeedIdRole)) == m_fid;
 }
 

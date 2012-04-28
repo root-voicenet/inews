@@ -3,11 +3,11 @@
 
 #include <QStyledItemDelegate>
 
-class NvBaseItemDelegate : public QStyledItemDelegate
+class NvRssItemDelegate : public QStyledItemDelegate
 {
 public:
-    NvBaseItemDelegate(QObject *parent = 0);
-    virtual ~NvBaseItemDelegate();
+    NvRssItemDelegate(QObject *parent = 0);
+    virtual ~NvRssItemDelegate();
 
 protected:
     // overwrited methods

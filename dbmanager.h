@@ -15,17 +15,17 @@ public:
     static DBManager* instance();
     bool init(const QString& databasePath = "");
 
-    QList<NvLocalRssItem*> listRss(int start, int count);
+    QList<NvRssItem*> listRss(int start, int count);
     bool loadFeedTree( NvFeedModel *model, NvFeedCategory *root );
     int storeFeedCategory( const QString &title, int parent_id = false, QList<int> fids = QList<int>(), int id = 0);
 
     // manage functions
 
     // return local rss id if sucess, 0 if false
-    bool storeRss( const NvRemoteRssItem *item );
+    bool storeRss( const NvRssItem *item );
     int rssCount();
     void clearRss();
-    bool editRss( const NvBaseItem &newRss, int rssId );
+    bool editRss( const NvRssItem &newRss, int rssId );
     bool removeRss( int rssId );
 private:
     bool connectDB();

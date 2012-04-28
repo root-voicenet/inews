@@ -28,7 +28,7 @@ private:
     QList<int> selectedItem(QTreeWidgetItem *parent = 0);
 
 signals:
-
+    void selected();
 public slots:
 
 };

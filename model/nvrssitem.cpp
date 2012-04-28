@@ -4,6 +4,12 @@
 #include <QNetworkReply>
 #include <QDebug>
 
+NvRssItem::NvRssItem(quint32 id, const QString &name, const QString &desc)
+    : id_(id), name_(name), description_(desc)
+{
+
+}
+
 QList<int> NvRssItem::terms() const
 {
     return tids_;
@@ -24,16 +30,74 @@ void NvRssItem::setFeed(NvFeedItem *feed)
     m_feed = feed;
 }
 
-NvRssItem::NvRssItem(quint32 id, const QString& title)
-    : NvBaseItem(id, title)
+quint32 NvRssItem::id() const {
+    return id_;
+}
+
+void NvRssItem::setId(quint32 id)
 {
+    id_ = id;
+}
+
+QString NvRssItem::name() const
+{
+    return name_;
+}
+
+void NvRssItem::setName( const QString &v )
+{
+    name_ = v;
+}
+
+QString NvRssItem::description() const
+{
+    return description_;
+}
+
+void NvRssItem::setDescription( const QString &v )
+{
+    description_ = v;
 }
 
 
-NvRemoteRssItem::NvRemoteRssItem(quint32 id, const QString& title)
-    : NvRssItem(id, title)
+QIcon NvRssItem::icon() const
 {
+    return icon_;
+}
 
+void NvRssItem::setIcon( const QIcon &v )
+{
+    icon_ = v;
+}
+
+QDateTime NvRssItem::date() const
+{
+    return date_;
+}
+
+void NvRssItem::setDate( const QDateTime &v )
+{
+    date_ = v;
+}
+
+bool NvRssItem::updated() const
+{
+    return updated_;
+}
+
+void NvRssItem::setUpdated( bool v )
+{
+    updated_ = v;
+}
+
+bool NvRssItem::promoted() const
+{
+    return promoted_;
+}
+
+void NvRssItem::setPromoted(bool v)
+{
+    promoted_ = v;
 }
 
 QString NvRssItem::termNames() const
@@ -42,45 +106,6 @@ QString NvRssItem::termNames() const
     ResourceManager *rm = ResourceManager::instance();
     foreach(int tid, terms())
         res += rm->tag(tid) + " ";
+
     return res;
-}
-
-
-void NvRemoteRssItem::setIconUrl(const QUrl &url)
-{
-    if( !url.isEmpty()) {
-        QNetworkRequest req(url);
-        QNetworkReply * repl = manager_->get(req);
-        connect(repl, SIGNAL(finished()),
-                this, SLOT(iconDownloaded()));
-        connect(repl, SIGNAL(finished()),
-                repl, SLOT(deleteLater()));
-   }
-}
-
-void NvRemoteRssItem::iconDownloaded()
-{
-    QNetworkReply * repl = qobject_cast<QNetworkReply *>(sender());
-    if( repl && repl->error() == QNetworkReply::NoError )
-    {
-            setIcon(QImage::fromData(repl->readAll()));
-            repl->close();
-            emit needUpdate();
-    }
-}
-
-void NvRemoteRssItem::setNetworkAccessManager(QNetworkAccessManager *manager)
-{
-    manager_ = manager;
-}
-
-QNetworkAccessManager *NvRemoteRssItem::networkAccessManager() const
-{
-    return manager_;
-}
-
-NvLocalRssItem::NvLocalRssItem(quint32 id, const QString &title)
-    : NvRssItem(id, title)
-{
-
 }

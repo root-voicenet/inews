@@ -42,7 +42,7 @@ bool RssImporter::import(const QVariant &in)
                 imageUrl = images.first().toString();
             }
 
-            NvRemoteRssItem *rss = new NvRemoteRssItem(rssId, rssTitle);
+            NvRssItem *rss = new NvRssItem(rssId, rssTitle);
 
             if(cdate) {
                 rss->setDate(QDateTime::fromTime_t( cdate ));

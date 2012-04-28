@@ -22,6 +22,7 @@ public:
     void SyncRss();
     void SyncNodes();
     void GetNode(int id);
+    void GetMedia();
 private:
     //To allow to return pointers to signals
     typedef void (Connector::*Signal)();
@@ -50,6 +51,7 @@ private:
     static const QString METHOD_SYNC_NODES;
     static const QString METHOD_NODE_GET;
     static const QString METHOD_RSS_FEEDS;
+    static const QString METHOD_MEDIA_FILES;
 
     //TODO: Remove later
     static const QString METHOD_NODE_CREATE;
@@ -70,6 +72,8 @@ signals:
 
     void syncRssComplete();
     void syncNodesComplete();
+
+    void mediaLoaded();
 
     void nodeGetComplete(Node *node);
 public slots:

@@ -127,9 +127,9 @@ int DBManager::rssCount()
     return res;
 }
 
-QList<NvLocalRssItem*> DBManager::listRss(int start, int count)
+QList<NvRssItem *> DBManager::listRss(int start, int count)
 {
-    QList<NvLocalRssItem*> res;
+    QList<NvRssItem*> res;
     QSqlQuery q;
 
     q.prepare("SELECT remote_id, title FROM rss_item LIMIT ? OFFSET ?") ;
@@ -140,7 +140,7 @@ QList<NvLocalRssItem*> DBManager::listRss(int start, int count)
         while( q.next() ) {
             int remote_id = q.value( 0 ).toInt();
 
-            NvLocalRssItem *item = new NvLocalRssItem( remote_id, q.value( 1 ).toString() );
+            NvRssItem *item = new NvRssItem( remote_id, q.value( 1 ).toString() );
             res.append( item );
         }
     }else{
@@ -151,7 +151,7 @@ QList<NvLocalRssItem*> DBManager::listRss(int start, int count)
     return res;
 }
 
-bool DBManager::storeRss(const NvRemoteRssItem *item)
+bool DBManager::storeRss(const NvRssItem *item)
 {
     QSqlQuery q;
     q.prepare("INSERT INTO rss_item (remote_id, title) VALUES(?, ?)") ;
