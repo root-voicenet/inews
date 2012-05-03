@@ -11,6 +11,10 @@
 
 #define DATABASE_DEFAULT_PATH "local.db"
 
+const QString DBManager::RSS_TABLE = "rss_items";
+const QString DBManager::FEEDS_TABLE = "feeds";
+const QString DBManager::TAGS_TABLE = "tags";
+
 DBManager *DBManager::m_instance = NULL;
 
 struct FeedCategoryInternal {
@@ -72,7 +76,7 @@ bool DBManager::createDB()
     QSqlQuery q;
 
     // Rss table
-    if(!q.exec("CREATE TABLE rss_item (id INTEGER PRIMARY KEY, remote_id INTEGER, title TEXT NOT NULL)")) {
+    if(!q.exec("CREATE TABLE " + RSS_TABLE + " (id INTEGER PRIMARY KEY, remote_id INTEGER, feed_id, title TEXT NOT NULL, description TEXT)")) {
         ret = false;
 
         m_lastError = q.lastQuery();

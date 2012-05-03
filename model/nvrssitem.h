@@ -20,7 +20,6 @@ class NvRssItem : public NvAbstractListItem
     NvFeedItem *m_feed;
 protected:
     bool updated_;
-    bool promoted_;
 public:
     NvRssItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
     virtual ~NvRssItem(){}
@@ -42,10 +41,6 @@ public:
 
     bool updated() const;
     void setUpdated(bool v);
-
-    bool promoted() const;
-    void setPromoted(bool v);
-
 
     QList<int> terms() const;
     void setTerms(const QList<int>& tids);

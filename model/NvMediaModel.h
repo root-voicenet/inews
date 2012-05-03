@@ -17,6 +17,7 @@ public:
     bool addFile(const QString& path);
     bool addRemoteFile(quint32 fid, const QString& title, const QString& thumbnailUrl);
     QList<NvMediaItem*> uploadFiles();
+    NvMediaItem *media(int id);
 protected:
     virtual QVariant itemData(int row, int role) const;
 private:

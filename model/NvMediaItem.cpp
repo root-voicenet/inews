@@ -15,6 +15,22 @@ quint32 NvMediaItem::id() const {
     return id_;
 }
 
+NvMediaItem& NvMediaItem::operator = (const NvMediaItem& other)
+{
+    id_ = other.id_;
+    filename_ = other.filename_;
+    icon_ = other.icon_;
+    localPath_ = other.localPath_;
+    is_remote = other.is_remote;
+    thumbnailUrl_ = other.is_remote;
+    manager_ = other.manager_;
+}
+
+NvMediaItem::NvMediaItem(const NvMediaItem &other)
+{
+    *this = other;
+}
+
 void NvMediaItem::setId(quint32 id)
 {
     id_ = id;

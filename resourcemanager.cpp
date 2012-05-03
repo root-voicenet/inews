@@ -6,6 +6,9 @@
 #include "connector.h"
 #include "loaders.h"
 #include "model/NvRssCachedModel.h"
+#include "model/NvMediaModel.h"
+#include "windowmanager.h"
+#include "mediawindow.h"
 
 #include <QNetworkAccessManager>
 #include <QUrl>
@@ -253,6 +256,8 @@ bool ResourceManager::parseNodes(QVariant *resp)
            node->setTids(res);
         }
 
+        node->setPromoted( tags.value("promoted").toInt() == 1 );
+
         if(!tags.value("iids").isNull()) {
             QList<QVariant> rss = tags.value("iids").toList();
             QListIterator<QVariant> i(rss);
@@ -305,12 +310,28 @@ NvRssItem *ResourceManager::searchRss(int id)
 Node *ResourceManager::parseNode(QVariant *resp)
 {
     QMap<QString, QVariant> elements(resp->toMap());
+    MediaWindow *media = WindowManager::instance()->mediaWindow();
+    NvMediaModel *model = media->getModel();
+
 
     int nid = elements.value("nid").toInt();
     Node *n = NULL;
     if(nid > 0 && (n = searchNode(nid)) != NULL) {
         n->setBody(elements.value("body").toString());
         n->setSummary(elements.value("summary").toString());
+
+        if(elements.contains("files")) {
+            QList<QVariant> files = elements.value("files").toList();
+
+            for(int i = 0; i < files.size(); ++i) {
+                QMap<QString, QVariant> tags = files[i].toMap();
+                NvMediaItem *item = model->media(tags.value("fid").toInt());
+                if(item) {
+                    n->attachMedia(*item, tags.value("title").toString(), tags.value("description").toString());
+                }
+            }
+        }
+
         return n;
     }
 

@@ -302,8 +302,6 @@ void Client::requestFinished(int id, bool error)
 
         Response response;
 
-        qDebug() << "data: " << buf;
-
         QString errorMessage;
         if ( response.setContent( buf, &errorMessage ) ) {
             Q_ASSERT( !response.isNull() );

@@ -44,6 +44,9 @@ INPUT(
 ./debug\NvRssItemDelegate.o
 ./debug\NvMediaItem.o
 ./debug\NvMediaModel.o
+./debug\mediatitledialog.o
+./debug\NvNodeMediaItem.o
+./debug\NvRssModel.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -70,5 +73,7 @@ INPUT(
 ./debug\moc_addiconimagethread.o
 ./debug\moc_NvMediaItem.o
 ./debug\moc_NvMediaModel.o
+./debug\moc_mediatitledialog.o
+./debug\moc_NvRssModel.o
 ./debug\qrc_resource.o
 );

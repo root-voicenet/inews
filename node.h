@@ -2,8 +2,8 @@
 #define NODE_H
 
 #include "nvbaseobject.h"
+#include "model/NvNodeMediaItem.h"
 
-class NvMediaItem;
 class NvRssItem;
 
 class Node : public NvBaseObject
@@ -23,11 +23,17 @@ public:
     bool isRemote() const { return m_isremote; }
     bool isUpdated() const { return m_updated; }
 
-    void attachMedia(NvMediaItem* file);
-    void removeMedia(NvMediaItem* file);
+    void attachMedia(const NvMediaItem &file, const QString& title = "", const QString& description = "");
+    void removeMedia(int id);
+    NvNodeMediaItem &findAttachedMedia(int id);
+    QList<NvNodeMediaItem> &attachedMedia();
+
     void setBody(const QString& body);
     void setUpdated(bool updated);
     void setSummary(const QString& summary);
+
+    bool promoted() const;
+    void setPromoted(bool v);
 
     NvRssItem *findAttachedRss(int id);
     void attachRss(NvRssItem* item);
@@ -36,10 +42,11 @@ public:
 protected:
     bool m_isremote;
     bool m_updated;
+    bool promoted_;
     QString m_body;
     QString m_summary;
 
-    QList<NvMediaItem*> m_attached;
+    QList<NvNodeMediaItem> m_attached;
     QList<NvRssItem*> m_attachedRss;
 
 };

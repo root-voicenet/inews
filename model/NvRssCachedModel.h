@@ -15,7 +15,6 @@ public:
         FeedRole = Qt::UserRole + 100,
         DateRole,
         DescriptionRole,
-        PromotedRole,
         TagRole,
         FeedIdRole
     };

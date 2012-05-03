@@ -31,7 +31,7 @@ void RssViewWidget::setupUI()
     titleLabel->setFont(font);
     textLabel->setWordWrap(true);
     taxonomy = new TaxonomyWidget(this);
-    checkPromoted = new QCheckBox(tr("Promoted"), this);
+
     attachLink = new QLabel("<a href=\"#\">Attach</a>", this);
     attachLink->hide();
     connect(attachLink, SIGNAL(linkActivated(QString)), this, SIGNAL(attachClicked()));
@@ -49,7 +49,6 @@ void RssViewWidget::setupUI()
     QGridLayout *grid = new QGridLayout;
     grid->setMargin(0);
     grid->addWidget(tabs, 0, 0, 1, 2, Qt::AlignTop);
-    grid->addWidget(checkPromoted, 1, 0, 1, 1);
     grid->addWidget(attachLink, 1, 1, 1, 1);
     grid->addWidget(taxonomy, 2, 0, 1, 2);
     connect(taxonomy, SIGNAL(selected()), this, SLOT(taxonomySelected()));
@@ -73,7 +72,6 @@ void RssViewWidget::loadRss(NvRssItem *rss)
 
     titleLabel->setText(rss->name());
     textLabel->setText(rss->description());
-    checkPromoted->setChecked( rss->promoted() );
 
     QUrl url = rss->link();
     if(url.isValid()) {
@@ -100,14 +98,11 @@ void RssViewWidget::updateTaxonomy()
 bool RssViewWidget::storeRss(NvRssItem *rss)
 {
     bool updated = taxonomy->selectedTaxonomy() != rss->terms();
-    if(!updated) {
-        updated = rss->promoted() != (checkPromoted->checkState() == Qt::Checked);
-    }
+
 
     if(updated) {
         rss->setTerms( taxonomy->selectedTaxonomy() );
         rss->setUpdated( true );
-        rss->setPromoted( checkPromoted->checkState() == Qt::Checked );
     }
 
     return true;

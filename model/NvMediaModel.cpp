@@ -204,3 +204,14 @@ QList<NvMediaItem*> NvMediaModel::uploadFiles()
 
     return res;
 }
+
+NvMediaItem *NvMediaModel::media(int id)
+{
+    for(int i = 0; i < items.size(); ++i) {
+         NvMediaItem *item = qobject_cast<NvMediaItem*>(items[i]);
+         if(item && item->id() == id)
+             return item;
+    }
+
+    return NULL;
+}

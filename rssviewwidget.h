@@ -8,7 +8,6 @@ class TaxonomyWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QWebView)
-QT_FORWARD_DECLARE_CLASS(QCheckBox)
 
 class RssViewWidget : public QWidget
 {
@@ -25,7 +24,6 @@ private: // widgets
     QLabel *textLabel;
     QLabel *attachLink;
     QWebView *m_browser;
-    QCheckBox *checkPromoted;
     NvRssItem *m_current;
 
     TaxonomyWidget* taxonomy;

@@ -17,9 +17,10 @@
 #include "widgetimage.h"
 #include "windowmanager.h"
 #include "connector.h"
+#include "node.h"
 
 MediaWindow::MediaWindow(WindowManager *wm, QWidget *parent) :
-    QMainWindow(parent), m_wm(wm),
+    QMainWindow(parent), m_wm(wm), currentNode(NULL),
     ui(new Ui::MediaWindow)
 {
     ui->setupUi(this);
@@ -67,16 +68,18 @@ void MediaWindow::changeEvent(QEvent *e)
 void MediaWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent( event );
+}
 
-    Connector* c = m_wm->connector();
-    c->GetMedia();
-
+void MediaWindow::hideEvent(QHideEvent *event)
+{
+    currentNode = NULL;
+    QMainWindow::hideEvent(event);
 }
 
 
 void MediaWindow::closeEvent(QCloseEvent *event)
 {
-
+    hide();
 }
 
 /*
@@ -223,14 +226,13 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
 
  void MediaWindow::listView_itemDoubleClicked(QModelIndex index)
  {
-     //QString strDirPath = item->data(Qt::WhatsThisRole).toString();
+     if(currentNode) {
+         NvMediaItem *item = qobject_cast<NvMediaItem*>(model.item(index));
+         Q_ASSERT(item);
+         currentNode->attachMedia(*item);
 
-     //WidgetImage *widget = new WidgetImage();
-     //widget->setGeometry(0, 0, ui->tabMain->width(), ui->tabMain->height());
-     //widget->SetImage(strDirPath, fileList_, this->statusBar(), ui->tabMain, ui->tabMain->count());
-
-    // ui->tabMain->addTab(widget, strDirPath);
-     //ui->tabMain->setCurrentWidget(widget);
+         emit fileSelected();
+     }
  }
 
  void MediaWindow::addFileClicked()
@@ -269,13 +271,14 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
 
  bool MediaWindow::parseRemoteFiles(QVariant *result)
  {
-     QList<QVariant> elements(result->toList());
+     QMap<QString, QVariant> media(result->toMap());
      model.clear();
 
+     QList<QVariant> files = media.value("files").toList();
 
-     for (int i = 0; i < elements.size(); ++i) {
+     for (int i = 0; i < files.size(); ++i) {
          // parse element
-         QMap<QString, QVariant> tags = elements[i].toMap();
+         QMap<QString, QVariant> tags = files[i].toMap();
          QString fileName, thumbnail;
          int fid = 0;
 
@@ -296,4 +299,15 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
      }
 
      return true;
+ }
+
+ void MediaWindow::selectFile(Node *n)
+ {
+    currentNode = n;
+    show();
+ }
+
+ NvMediaModel *MediaWindow::getModel()
+ {
+     return &model;
  }

@@ -60,8 +60,6 @@ QVariant NvRssCachedModel::itemData(int row, int role) const
         break;
     case DateRole:
         return item->date();
-    case PromotedRole:
-        return item->promoted();
     }
 
     return QVariant();

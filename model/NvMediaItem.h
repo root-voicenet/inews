@@ -8,6 +8,7 @@ class NvMediaItem : public NvAbstractListItem
 {
     Q_OBJECT
 
+ protected:
     QString filename_;
     quint32 id_;
     QIcon icon_;
@@ -18,6 +19,8 @@ class NvMediaItem : public NvAbstractListItem
 
 public:
     NvMediaItem(quint32 id, const QString & filename = QString(), bool isremote = false);
+    NvMediaItem(const NvMediaItem& other);
+    NvMediaItem& operator = (const NvMediaItem& item);
 
 
     quint32 id() const;

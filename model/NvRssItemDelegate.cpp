@@ -47,18 +47,9 @@ void NvRssItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
         QString subText = qvariant_cast<QString>(index.data(NvRssCachedModel::DescriptionRole));
         QDateTime date = qvariant_cast<QDateTime>(index.data(NvRssCachedModel::DateRole));
-        bool promoted = qvariant_cast<bool>(index.data(NvRssCachedModel::PromotedRole));
         QString dateText = date.toString("dd.MM hh:mm");
         QString tags = qvariant_cast<QString>(index.data(NvRssCachedModel::TagRole));
 
-        if(promoted) {
-            QIcon sicon(":/images/star.png");
-            QRect starRect = option.rect;
-            QSize ss = sicon.actualSize(option.decorationSize);
-
-            starRect.setRight(ss.width() + 10);
-            painter->drawPixmap(QPoint(starRect.left()+ss.width()/2+2,starRect.top()),sicon.pixmap(ss.width(),ss.height()));
-        }
 
         int dateWidth = 0;
         if(!dateText.isEmpty()) {

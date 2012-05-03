@@ -55,7 +55,10 @@ SOURCES += main.cpp\
     windowmanager.cpp \
     model/NvRssItemDelegate.cpp \
     model/NvMediaItem.cpp \
-    model/NvMediaModel.cpp
+    model/NvMediaModel.cpp \
+    mediatitledialog.cpp \
+    model/NvNodeMediaItem.cpp \
+    model/NvRssModel.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -106,7 +109,10 @@ HEADERS  += mainwindow.h \
     windowmanager.h \
     model/NvRssItemDelegate.h \
     model/NvMediaItem.h \
-    model/NvMediaModel.h
+    model/NvMediaModel.h \
+    mediatitledialog.h \
+    model/NvNodeMediaItem.h \
+    model/NvRssModel.h
 
 QT += core gui network xml webkit sql
 
@@ -115,4 +121,5 @@ RESOURCES += \
 
 FORMS += \
     dialogs/linkdialog.ui \
-    mediawindow.ui
+    mediawindow.ui \
+    mediatitledialog.ui

@@ -5,7 +5,7 @@
 #include <QDebug>
 
 NvRssItem::NvRssItem(quint32 id, const QString &name, const QString &desc)
-    : id_(id), name_(name), description_(desc)
+    : id_(id), name_(name), description_(desc), updated_(false)
 {
 
 }
@@ -88,16 +88,6 @@ bool NvRssItem::updated() const
 void NvRssItem::setUpdated( bool v )
 {
     updated_ = v;
-}
-
-bool NvRssItem::promoted() const
-{
-    return promoted_;
-}
-
-void NvRssItem::setPromoted(bool v)
-{
-    promoted_ = v;
 }
 
 QString NvRssItem::termNames() const

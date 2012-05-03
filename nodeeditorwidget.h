@@ -2,6 +2,7 @@
 #define NODEEDITORWIDGET_H
 
 #include <QWidget>
+#include <QModelIndex>
 
 class TextEdit;
 class Node;
@@ -11,6 +12,7 @@ class TaxonomyWidget;
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QListWidget)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
 
 class NodeEditorWidget : public QWidget
 {
@@ -27,6 +29,7 @@ private: //widgets
     QTextEdit *summaryEdit;
     QListWidget *attachedRssList;
     QListWidget *attachedMediaList;
+    QCheckBox *checkPromoted;
     TaxonomyWidget *m_taxonomy;
 
 private:
@@ -37,6 +40,10 @@ signals:
 
 public slots:
     void saveClicked();
+    void updateMedia();
+    void addMedia();
+    void delMedia();
+    void MediaList_doubleClicked(QModelIndex index);
 };
 
 #endif // NODEEDITORWIDGET_H

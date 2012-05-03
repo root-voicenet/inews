@@ -9,6 +9,19 @@ class NvFeedCategory;
 class DBManager
 {
 public:
+    static const QString RSS_TABLE;
+    static const QString FEEDS_TABLE;
+    static const QString TAGS_TABLE;
+
+    enum RssFields {
+        RSS_FIELD_ID = 0,
+        RSS_FIELD_REMOTE_ID,
+        RSS_FIELD_FEED_ID,
+        RSS_FIELD_TITLE,
+        RSS_FIELD_DESCRIPTION
+    };
+
+
     DBManager();
     ~DBManager();
 

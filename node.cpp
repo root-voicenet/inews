@@ -4,16 +4,13 @@
 #include "resourcemanager.h"
 
 Node::Node(int id, const QString& title, bool remote, bool created, const QString &body)
-    : NvBaseObject(id, title, created), m_body(body),  m_updated(false), m_isremote(remote)
+    : NvBaseObject(id, title, created), m_body(body),  m_updated(false), m_isremote(remote), promoted_(false)
 {
 
 }
 
 Node::~Node() {
-    ResourceManager *rm = ResourceManager::instance();
-    for(int i = 0; i < m_attached.size(); ++i) {
-        rm->removeFile(m_attached[i]);
-    }
+
 }
 
 void Node::setBody(const QString &body)
@@ -31,27 +28,33 @@ void Node::setUpdated(bool updated)
     m_updated = updated;
 }
 
-void Node::attachMedia(NvMediaItem *file)
+bool Node::promoted() const
 {
-    if(m_attached.indexOf(file) != -1)
-        return;
+    return promoted_;
+}
 
-    ResourceManager *rm = ResourceManager::instance();
-    if(!rm->lookupFile(*file)) {
-        rm->addFile(*file);
-    }
+void Node::setPromoted(bool v)
+{
+    promoted_ = v;
+}
+
+void Node::attachMedia(const NvMediaItem& file, const QString &title, const QString &description)
+{
+    for(int i = 0; i < m_attached.size(); ++i)
+        if(m_attached[i].id() == file.id()) {
+            return;
+        }
+
     m_attached.append(file);
 }
 
-void Node::removeMedia(NvMediaItem *file)
+void Node::removeMedia(int id)
 {
-    int pos = m_attached.indexOf(file);
-    if(pos != -1) {
-        m_attached.removeAt(pos);
-
-        ResourceManager *rm = ResourceManager::instance();
-        rm->removeFile(file);
-    }
+    for(int i = 0; i < m_attached.size(); ++i)
+        if(m_attached[i].id() == id) {
+            m_attached.removeAt(i);
+            break;
+        }
 }
 
 NvRssItem *Node::findAttachedRss(int id)
@@ -79,4 +82,18 @@ void Node::removeAttachedRss(NvRssItem *item)
 QList<NvRssItem*> Node::attachedRss()
 {
     return m_attachedRss;
+}
+
+QList<NvNodeMediaItem> &Node::attachedMedia()
+{
+    return m_attached;
+}
+
+NvNodeMediaItem &Node::findAttachedMedia(int id)
+{
+    for(int i = 0; i < m_attached.size(); ++i)
+        if(m_attached[i].id() == id) {
+            return m_attached[i];
+        }
+    return m_attached[0];
 }

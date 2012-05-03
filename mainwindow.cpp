@@ -177,6 +177,8 @@ void MainWindow::syncClicked()
     themesList->setEnabled(false);
     btnNew->setEnabled(false);
     c->SyncNodes();
+
+    c->GetMedia();
 }
 
 void MainWindow::itemClicked(QModelIndex index)

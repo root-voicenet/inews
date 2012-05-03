@@ -14,8 +14,10 @@ namespace Ui {
     class MediaWindow;
 }
 
+class Node;
 class WindowManager;
 class QPushButton;
+
 class MediaWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -23,10 +25,16 @@ public:
     ~MediaWindow();
 
     bool parseRemoteFiles(QVariant *result);
+    void selectFile(Node *n);
+    NvMediaModel *getModel();
 protected:
     void changeEvent(QEvent *e);
      void closeEvent(QCloseEvent *event);
      void showEvent (QShowEvent * event);
+     void hideEvent(QHideEvent *event);
+signals:
+     void fileSelected();
+
 private slots:
     //void treeWidget_itemExpanded(QTreeWidgetItem *item);
     //void treeWidget_itemClicked(QTreeWidgetItem *item, int column);
@@ -46,6 +54,7 @@ private:
 private:
     NvMediaModel model;
     WindowManager *m_wm;
+    Node *currentNode;
 };
 
 
