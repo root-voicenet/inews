@@ -358,3 +358,8 @@ bool ResourceManager::parseFeeds(QVariant *resp)
 {
     return m_feedModel.importFeeds(resp);
 }
+
+bool ResourceManager::parseEditFeed(QVariant *resp)
+{
+    return m_feedModel.importFeed(resp);
+}

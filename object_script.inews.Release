@@ -47,6 +47,7 @@ INPUT(
 ./release\mediatitledialog.o
 ./release\NvNodeMediaItem.o
 ./release\NvRssModel.o
+./release\feededitdialog.o
 ./release\moc_mainwindow.o
 ./release\moc_server_private.o
 ./release\moc_server.o
@@ -75,5 +76,6 @@ INPUT(
 ./release\moc_NvMediaModel.o
 ./release\moc_mediatitledialog.o
 ./release\moc_NvRssModel.o
+./release\moc_feededitdialog.o
 ./release\qrc_resource.o
 );

@@ -47,6 +47,7 @@ INPUT(
 ./debug\mediatitledialog.o
 ./debug\NvNodeMediaItem.o
 ./debug\NvRssModel.o
+./debug\feededitdialog.o
 ./debug\moc_mainwindow.o
 ./debug\moc_server_private.o
 ./debug\moc_server.o
@@ -75,5 +76,6 @@ INPUT(
 ./debug\moc_NvMediaModel.o
 ./debug\moc_mediatitledialog.o
 ./debug\moc_NvRssModel.o
+./debug\moc_feededitdialog.o
 ./debug\qrc_resource.o
 );

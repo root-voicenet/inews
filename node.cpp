@@ -45,7 +45,10 @@ void Node::attachMedia(const NvMediaItem& file, const QString &title, const QStr
             return;
         }
 
-    m_attached.append(file);
+    NvNodeMediaItem nv(file);
+    nv.setTitle(title);
+    nv.setDescription(description);
+    m_attached.append(nv);
 }
 
 void Node::removeMedia(int id)

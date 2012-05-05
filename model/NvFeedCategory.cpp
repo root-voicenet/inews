@@ -35,3 +35,11 @@ void NvFeedCategory::addFeed(int fid)
 {
     m_fids.append(fid);
 }
+
+void NvFeedCategory::removeFid(int fid)
+{
+    int n = m_fids.indexOf(fid);
+    if(n != -1) {
+        m_fids.removeAt(n);
+    }
+}

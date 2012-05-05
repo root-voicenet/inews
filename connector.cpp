@@ -20,6 +20,7 @@ const QString Connector::METHOD_SYNC_NODES = "sync.nodes";
 const QString Connector::METHOD_NODE_GET = "node.full";
 const QString Connector::METHOD_NODE_CREATE = "node.create";
 const QString Connector::METHOD_RSS_FEEDS = "rss.feeds";
+const QString Connector::METHOD_RSS_EDITFEED = "rss.editfeed";
 const QString Connector::METHOD_MEDIA_FILES = "media.files";
 
 Connector::Connector(const QString& url, QObject *parent):
@@ -63,6 +64,25 @@ void Connector::SyncNodes()
         int requestID = request(METHOD_SYNC_NODES, req);
         addRequest(requestID, METHOD_SYNC_NODES);
     }
+}
+
+void Connector::EditFeed(int action, const QString &name, const QString &url, int fid)
+{
+    QString saction;
+    switch(action) {
+        case FEED_UPDATE:       // Unimplemented
+            saction = "update";
+        break;
+        case FEED_DELETE:
+            saction = "delete";
+        break;
+        default:
+            saction = "create";
+        break;
+    }
+
+    int requestID = request(METHOD_RSS_EDITFEED, saction, name, url, fid);
+    addRequest(requestID, METHOD_RSS_EDITFEED);
 }
 
 void Connector::GetNode(int id)
@@ -164,6 +184,9 @@ void Connector::processResponse(int id, QVariant responce)
         }else if(method == METHOD_MEDIA_FILES) {
             WindowManager::instance()->mediaWindow()->parseRemoteFiles(&responce);
             signal = &Connector::mediaLoaded;
+        }else if(method == METHOD_RSS_EDITFEED) {
+            rm->parseEditFeed(&responce);
+            signal = &Connector::feedUpdated;
         }
     }
 

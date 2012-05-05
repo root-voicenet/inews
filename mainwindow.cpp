@@ -103,6 +103,8 @@ void MainWindow::setupActions()
     connect(a, SIGNAL(triggered()), this, SLOT(close()));
     fileMenu->addAction(a);
 
+    fileMenu->addAction(feedsTree->createFeedAction());
+
     QMenu* viewMenu = new QMenu(tr("&View"), this);
     menuBar()->addMenu(viewMenu);
     a = new QAction(tr("RSS List view"), this);

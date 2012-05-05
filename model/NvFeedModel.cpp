@@ -8,7 +8,7 @@
 #include <QMimeData>
 
 NvFeedModel::NvFeedModel(QObject *parent) :
-    QAbstractItemModel(parent), m_categoryIcon(":/images/baloon.png")
+    QAbstractItemModel(parent), m_categoryIcon(":/images/baloon.png"), m_pulledFeedName("")
 {
     rootItem = new NvFeedCategory(0, "Root");
     addCategory(new NvFeedCategory(CATEGORY_ALL, "All"), rootItem);
@@ -17,6 +17,16 @@ NvFeedModel::NvFeedModel(QObject *parent) :
 NvFeedModel::~NvFeedModel()
 {
     delete rootItem;
+}
+
+NvFeedCategory *NvFeedModel::rootCategory()
+{
+    return qobject_cast<NvFeedCategory*>(rootItem->child(0));
+}
+
+void NvFeedModel::setPulledFeed(const QString &name)
+{
+    m_pulledFeedName = name;
 }
 
 int NvFeedModel::columnCount(const QModelIndex &parent) const
@@ -348,6 +358,19 @@ bool NvFeedModel::importFeeds(QVariant *resp)
     return false;
 }
 
+bool NvFeedModel::importFeed(QVariant *resp)
+{
+    QMap<QString, QVariant> elements(resp->toMap());
+    NvFeedItem *newFeed = feed(NvFeedItem::NEW_FEED_ID);
+    if(elements.contains("fid") && newFeed) {
+        int fid = elements.value("fid").toInt();
+        newFeed->setId(fid);
+        return true;
+    }
+
+    return false;
+}
+
 void NvFeedModel::addFeed(NvFeedItem *item, NvFeedCategory *parent)
 {
     if(parent) {
@@ -372,4 +395,25 @@ NvFeedItem *NvFeedModel::feed(int id)
     }
 
     return NULL;
+}
+
+void NvFeedModel::deleteFeed(int id)
+{
+    /*
+    foreach(ItemsList s, m_feeds) {
+        for(int i = 0; i < s.size(); ++i) {
+            NvAbstractTreeItem *item = s[i];
+            if(item->id() == id ) {
+                s.remove(i);
+                delete item;
+            }
+        }
+    }
+
+    QMapIterator<int, NvFeedCategory*> i(m_categories);
+    while(i.hasNext()) {
+        NvFeedCategory *c = i.next().value();
+        c->removeFid(id);
+    }
+    */
 }

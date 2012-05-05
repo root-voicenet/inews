@@ -75,6 +75,7 @@ private:
     Node *parseNode(QVariant *resp);
     bool parseTaxonomy(QVariant *resp);
     bool parseFeeds(QVariant *resp);
+    bool parseEditFeed(QVariant *resp);
     bool parseMedia(QVariant *media);
 
     File *lookupFile(const File& file);

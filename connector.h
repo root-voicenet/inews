@@ -17,8 +17,16 @@ public:
     explicit Connector(const QString &url, QObject *parent = 0);
     ~Connector();
 
+    enum FeedAction {
+        FEED_CREATE = 0,
+        FEED_UPDATE,
+        FEED_DELETE
+    };
+
     void Login(const QString& username, const QString& password);
     void UploadFile(const QByteArray *postData, const QString &description, QList<int>& pointer_tids);
+    void EditFeed(int action, const QString& name, const QString& url, int fid = 0);
+
     void SyncRss();
     void SyncNodes();
     void GetNode(int id);
@@ -52,6 +60,7 @@ private:
     static const QString METHOD_NODE_GET;
     static const QString METHOD_RSS_FEEDS;
     static const QString METHOD_MEDIA_FILES;
+    static const QString METHOD_RSS_EDITFEED;
 
     //TODO: Remove later
     static const QString METHOD_NODE_CREATE;
@@ -74,6 +83,8 @@ signals:
     void syncNodesComplete();
 
     void mediaLoaded();
+
+    void feedUpdated();
 
     void nodeGetComplete(Node *node);
 public slots:

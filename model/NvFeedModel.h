@@ -47,10 +47,16 @@ public:
     bool saveCategory(NvFeedCategory* item);
     void addCategory(NvFeedCategory *item, NvFeedCategory *parent = 0);
     bool importFeeds(QVariant *resp);
+    bool importFeed(QVariant *resp);
+    void setPulledFeed(const QString& name);
+    void deleteFeed(int id);
+    NvFeedCategory *rootCategory();
+
 
     NvFeedItem* feed( int id );
     NvFeedCategory *category(int id);
     NvFeedCategory *addCategory(const QString& title, NvFeedCategory *parent);
+    void addFeed(NvFeedItem *item, NvFeedCategory *parent = NULL);
 private:   
 
     typedef QVector<NvAbstractTreeItemPtr> ItemsList;
@@ -59,8 +65,9 @@ private:
     QMap<int, ItemsList> m_feeds;
     QMap<int, NvFeedCategory*> m_categories;
     QIcon m_categoryIcon;
+    QString m_pulledFeedName;
 
-    void addFeed(NvFeedItem *item, NvFeedCategory *parent = NULL);
+
     inline int magickNum() const
     {
        return 16;

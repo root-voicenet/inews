@@ -58,7 +58,8 @@ SOURCES += main.cpp\
     model/NvMediaModel.cpp \
     mediatitledialog.cpp \
     model/NvNodeMediaItem.cpp \
-    model/NvRssModel.cpp
+    model/NvRssModel.cpp \
+    feededitdialog.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -112,7 +113,8 @@ HEADERS  += mainwindow.h \
     model/NvMediaModel.h \
     mediatitledialog.h \
     model/NvNodeMediaItem.h \
-    model/NvRssModel.h
+    model/NvRssModel.h \
+    feededitdialog.h
 
 QT += core gui network xml webkit sql
 
@@ -122,4 +124,5 @@ RESOURCES += \
 FORMS += \
     dialogs/linkdialog.ui \
     mediawindow.ui \
-    mediatitledialog.ui
+    mediatitledialog.ui \
+    feededitdialog.ui

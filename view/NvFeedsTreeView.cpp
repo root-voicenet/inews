@@ -3,6 +3,9 @@
 #include "../model/NvFeedModel.h"
 #include "../model/NvFeedCategory.h"
 #include "../model/NvFeedItem.h"
+#include "feededitdialog.h"
+#include "windowmanager.h"
+#include "connector.h"
 #include <QtGui>
 #include <QTreeView>
 
@@ -33,6 +36,12 @@ void NvFeedsTreeView::init()
     m_delAction = new QAction(tr("Del category"), this);
     connect(m_delAction, SIGNAL(triggered()), this, SLOT(deleteCategory()));
 
+    m_addFeedAction = new QAction(tr("Add Feed"), this);
+    connect(m_addFeedAction, SIGNAL(triggered()), this, SLOT(addFeed()));
+
+    m_delFeedAction = new QAction(tr("Del Feed"), this);
+    connect(m_delFeedAction, SIGNAL(triggered()), this, SLOT(delFeed()));
+
     // connect custome context menu
     connect(m_tree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
@@ -48,10 +57,10 @@ void NvFeedsTreeView::init()
     setLayout(vbox);
 }
 
-QString NvFeedsTreeView::askCategoryName(const QString& title)
+QString NvFeedsTreeView::askCategoryName(QWidget *parent, const QString &title)
 {
     bool ok;
-    QString categoryName = QInputDialog::getText(this, tr("Category"),
+    QString categoryName = QInputDialog::getText(parent, tr("Category"),
         tr("Category name:"), QLineEdit::Normal, title, &ok);
 
     return categoryName;
@@ -62,13 +71,23 @@ void NvFeedsTreeView::showContextMenu(QPoint point)
 {
     QList<QAction*> actions;
 
-    if(!m_tree->indexAt(point).isValid()) {
+    QModelIndex index = m_tree->indexAt(point);
+    if(!index.isValid()) {
         m_tree->setCurrentIndex(m_model->index(0, 0));
     }
 
+
+    NvAbstractTreeItem* item = m_model->item(index);
     actions.append(m_addAction);
     actions.append(m_renAction);
     actions.append(m_delAction);
+    actions.append(m_addFeedAction);
+
+    if(qobject_cast<NvFeedItem*>(item)) {
+        actions.append(m_delFeedAction);
+    }
+
+
 
     if(actions.count() > 0) {
          QMenu::exec(actions, mapToGlobal(point));
@@ -86,7 +105,7 @@ void NvFeedsTreeView::addCategory()
         NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
 
-            QString title = askCategoryName();
+            QString title = askCategoryName(this);
             if(!title.isEmpty()) {
                 m_model->addCategory(title, parent);
             }
@@ -104,7 +123,7 @@ void NvFeedsTreeView::renameCategory()
     if(qobject_cast<NvFeedCategory*>(item)) {
         NvFeedCategory *parent = qobject_cast<NvFeedCategory*>(item);
         if(m_model->categoryIsValid(parent)) {
-            QString title = askCategoryName();
+            QString title = askCategoryName(this);
             if(!title.isEmpty()) {
                 m_model->saveCategory( parent );
             }
@@ -143,4 +162,50 @@ void NvFeedsTreeView::clearFilter()
 {
     m_btnClear->hide();
     emit feedClicked( 0 );
+}
+
+void NvFeedsTreeView::addFeed()
+{
+    NvFeedCategory* selected = m_model->rootCategory();
+
+    QModelIndex index = m_tree->currentIndex();
+    NvAbstractTreeItem *item = m_model->item( index );
+    if(qobject_cast<NvFeedCategory*>(item)) {
+        selected = qobject_cast<NvFeedCategory*>(item);
+    }
+
+    FeedEditDialog dlg(m_model, selected);
+    if(dlg.exec() == QDialog::Accepted) {
+        QString name = dlg.name();
+        QString url = dlg.url();
+
+        if(name.isEmpty() || url.isEmpty()) {
+            QMessageBox::warning(this, tr("Type a text"), tr("Please fill all fields in the form"), QMessageBox::Ok, QMessageBox::NoButton);
+            return;
+        }
+
+        NvFeedItem *feed = new NvFeedItem(NvFeedItem::NEW_FEED_ID, name);
+        QList<NvFeedCategory*> categories = dlg.selectedCategories();
+        foreach(NvFeedCategory *cat, categories) {
+            m_model->addFeed(feed, cat);
+        }
+
+        Connector *c = WindowManager::instance()->connector();
+        c->EditFeed(Connector::FEED_CREATE, name, url);
+        m_model->setPulledFeed(name);
+
+    }
+}
+
+void NvFeedsTreeView::delFeed()
+{
+    QModelIndex index = m_tree->currentIndex();
+    NvAbstractTreeItem *item = m_model->item( index );
+    NvFeedItem *feed = qobject_cast<NvFeedItem*>(item);
+    if(feed && QMessageBox::Yes == QMessageBox::warning(this, tr("Delete Feed"), tr("Are you realy want delete this feed?"), QMessageBox::Yes, QMessageBox::No)) {
+        Connector *c = WindowManager::instance()->connector();
+        c->EditFeed(Connector::FEED_DELETE, "", "", feed->id());
+        m_model->deleteFeed(feed->id());
+    }
+
 }
