@@ -4,20 +4,38 @@
 #include <QNetworkReply>
 #include <QDebug>
 
+NvRssItem::NvRssItem()
+    : id_(0), name_(""), description_(""), updated_(false), _readed(false)
+{
+
+}
+
 NvRssItem::NvRssItem(quint32 id, const QString &name, const QString &desc)
-    : id_(id), name_(name), description_(desc), updated_(false)
+    : id_(id), name_(name), description_(desc), updated_(false), _readed(false)
 {
 
 }
 
-QList<int> NvRssItem::terms() const
+NvRssItem::NvRssItem(const NvRssItem &other)
 {
-    return tids_;
+    id_ = other.id_;
+    name_ = other.name_;
+    description_ = other.description_;
+    date_ = other.date_;
+    tags_ = other.tags_;
+    m_feed = other.m_feed;
+    m_link = other.m_link;
+    _readed = other._readed;
 }
 
-void NvRssItem::setTerms(const QList<int> &tids)
+QList<Tag> NvRssItem::tags() const
 {
-    tids_ = tids;
+    return tags_;
+}
+
+void NvRssItem::setTags(const QList<Tag> &tags)
+{
+    tags_ = tags;
 }
 
 void NvRssItem::setLink(const QString &link)
@@ -60,16 +78,6 @@ void NvRssItem::setDescription( const QString &v )
 }
 
 
-QIcon NvRssItem::icon() const
-{
-    return icon_;
-}
-
-void NvRssItem::setIcon( const QIcon &v )
-{
-    icon_ = v;
-}
-
 QDateTime NvRssItem::date() const
 {
     return date_;
@@ -93,9 +101,9 @@ void NvRssItem::setUpdated( bool v )
 QString NvRssItem::termNames() const
 {
     QString res;
-    ResourceManager *rm = ResourceManager::instance();
-    foreach(int tid, terms())
-        res += rm->tag(tid) + " ";
+
+    foreach(Tag tag, tags())
+        res += tag.name() + " ";
 
     return res;
 }

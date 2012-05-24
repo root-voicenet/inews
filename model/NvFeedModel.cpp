@@ -320,6 +320,7 @@ bool NvFeedModel::importFeeds(QVariant *resp)
 {
     QList<QVariant> elements(resp->toList());
     clearFeeds();
+    DBManager::instance()->clearFeeds();
 
     for (int i = 0; i < elements.size(); ++i) {
         // parse element
@@ -342,6 +343,9 @@ bool NvFeedModel::importFeeds(QVariant *resp)
         }
 
         NvFeedItem *feed = new NvFeedItem(fid, feedTitle);
+        if(!DBManager::instance()->addFeed( fid, feedTitle ))
+            break;
+
 
         QMapIterator<int, NvFeedCategory*> ci(m_categories);
         NvFeedCategory *parent = NULL;

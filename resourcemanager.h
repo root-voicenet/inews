@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include "model/NvRssCachedModel.h"
 #include "model/NvFeedModel.h"
+#include "model/NvNodeModel.h"
 
 
 class QNetworkAccessManager;
@@ -36,29 +37,23 @@ public:
     // manage rss items
     NvRssCachedModel *rssModel() { return &m_rssModel; }
     NvFeedModel *feedModel() { return &m_feedModel; }
-    QList<Node*> nodesModel() { return m_nodes; }
-    QStandardItemModel& getThemes() { return m_themes; }
+    NvNodeModel *nodesModel() { return &m_nodes; }
 
-    void addNode(Node *node, bool top = false);
-    void removeNode(Node *node);
-    void clearNodes();
-    Node* searchNode(int id);
+    QDateTime getRssLastUpdateTime();
 
     TaxonomyTerm *searchTaxonomy(int id);
     QTreeWidgetItem *getTaxonomy();
     NvRssItem *searchRss(int id);
-    QList<Node*> getUpdatedNodes();
     QNetworkAccessManager *getNAM() { return m_nam; }
 
     QString tag(int id) const;
 private:
     ResourceManager(QObject *parent = NULL);
     static ResourceManager* m_instance;
-    QStandardItemModel m_themes;
     QNetworkAccessManager *m_nam;
 
     // author content aka node
-    QList<Node*> m_nodes;
+    NvNodeModel m_nodes;
 
     // and attached files
     QList<File*> m_files;
@@ -72,7 +67,7 @@ private:
 
     bool parseFeed(QVariant *resp);
     bool parseNodes(QVariant *resp);
-    Node *parseNode(QVariant *resp);
+    Node parseNode(QVariant *resp);
     bool parseTaxonomy(QVariant *resp);
     bool parseFeeds(QVariant *resp);
     bool parseEditFeed(QVariant *resp);

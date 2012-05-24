@@ -10,8 +10,8 @@
 #include <QTreeView>
 
 
-NvFeedsTreeView::NvFeedsTreeView(QWidget *parent) :
-    QWidget(parent)
+NvFeedsTreeView::NvFeedsTreeView(NvRssCachedModel *sourceModel, QWidget *parent) :
+    _sourceModel(sourceModel), QWidget(parent)
 {
     init();
 }
@@ -46,13 +46,9 @@ void NvFeedsTreeView::init()
     connect(m_tree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
 
-    m_btnClear = new QPushButton(tr("Clear"), this);
-    m_btnClear->hide();
-    connect(m_btnClear, SIGNAL(clicked()), this, SLOT(clearFilter()));
 
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->setMargin( 0 );
-    vbox->addWidget(m_btnClear);
     vbox->addWidget(m_tree, 1);
     setLayout(vbox);
 }
@@ -153,14 +149,12 @@ void NvFeedsTreeView::itemClicked(QModelIndex index)
 
     NvFeedItem *item = qobject_cast<NvFeedItem*>(m_model->item(index));
     if(item) {
-        m_btnClear->show();
         emit feedClicked( item->id() );
     }
 }
 
 void NvFeedsTreeView::clearFilter()
 {
-    m_btnClear->hide();
     emit feedClicked( 0 );
 }
 

@@ -1,10 +1,11 @@
 #ifndef NVMEDIAITEM_H
 #define NVMEDIAITEM_H
 
-#include "NvAbstractListItem.h"
+#include <QObject>
+#include <QIcon>
 
 class QNetworkAccessManager;
-class NvMediaItem : public NvAbstractListItem
+class NvMediaItem : public QObject
 {
     Q_OBJECT
 

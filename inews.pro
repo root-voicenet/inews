@@ -28,15 +28,11 @@ SOURCES += main.cpp\
     centerlawidget.cpp \
     rssviewwidget.cpp \
     nodeeditorwidget.cpp \
-    taxonomywidget.cpp \
     rsslistitemdelegate.cpp \
-    nvbaseobject.cpp \
     text/htmlexporter.cpp \
     text/cssparser.cpp \
     text/htmlparser.cpp \
     text/texthtmlimporter.cpp \
-    model/NvSortFilterModel.cpp \
-    model/NvObjectModel.cpp \
     dbmanager.cpp \
     view/NvBaseListView.cpp \
     model/nvrssitem.cpp \
@@ -58,8 +54,14 @@ SOURCES += main.cpp\
     model/NvMediaModel.cpp \
     mediatitledialog.cpp \
     model/NvNodeMediaItem.cpp \
-    model/NvRssModel.cpp \
-    feededitdialog.cpp
+    feededitdialog.cpp \
+    view/TagsWidget.cpp \
+    model/Tag.cpp \
+    dialogs/DateFilterDialog.cpp \
+    model/NvNodeModel.cpp \
+    dialog.cpp \
+    view/FilterWidget.cpp \
+    view/FilterNodeView.cpp
 
 HEADERS  += mainwindow.h \
     qxmlrpc/xmlrpc/variant.h \
@@ -79,17 +81,12 @@ HEADERS  += mainwindow.h \
     centerlawidget.h \
     rssviewwidget.h \
     nodeeditorwidget.h \
-    taxonomywidget.h \
     rsslistitemdelegate.h \
-    nvbaseobject.h \
     text/htmlexporter.h \
     text/cssparser.h \
     text/textformat.h \
     text/texthtmlimporter.h \
     text/htmlparser.h \
-    model/NvSortFilterModel.h \
-    model/NvAbstractListItem.h \
-    model/NvObjectModel.h \
     dbmanager.h \
     view/NvBaseListView.h \
     model/nvrssitem.h \
@@ -113,8 +110,14 @@ HEADERS  += mainwindow.h \
     model/NvMediaModel.h \
     mediatitledialog.h \
     model/NvNodeMediaItem.h \
-    model/NvRssModel.h \
-    feededitdialog.h
+    feededitdialog.h \
+    view/TagsWidget.h \
+    model/Tag.h \
+    dialogs/DateFilterDialog.h \
+    model/NvNodeModel.h \
+    dialog.h \
+    view/FilterWidget.h \
+    view/FilterNodeView.h
 
 QT += core gui network xml webkit sql
 
@@ -125,4 +128,11 @@ FORMS += \
     dialogs/linkdialog.ui \
     mediawindow.ui \
     mediatitledialog.ui \
-    feededitdialog.ui
+    feededitdialog.ui \
+    dialogs/datefilterdialog.ui \
+    dialog.ui
+
+OTHER_FILES += \
+    debug/style.txt
+
+TRANSLATIONS = inews_ru.ts

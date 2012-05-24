@@ -1,12 +1,14 @@
 #ifndef NVRSSCACHEDMODEL_H
 #define NVRSSCACHEDMODEL_H
 
-#include "NvObjectModel.h"
+#include "nvrssitem.h".h"
+#include "Tag.h"
+#include <QSqlRelationalTableModel>
 
 class DBManager;
 class NvRssItem;
 
-class NvRssCachedModel : public NvObjectModel
+class NvRssCachedModel : public QSqlRelationalTableModel
 {
 public:
 
@@ -16,27 +18,39 @@ public:
         DateRole,
         DescriptionRole,
         TagRole,
-        FeedIdRole
+        FeedIdRole,
+        RssIdRole,
+        ReadedRole
+    };
+
+    enum RssImportOperation {
+        OP_UNKNOWN = 0,
+        OP_INSERT,
+        OP_UPDATE,
+        OP_DELETE
     };
 
     NvRssCachedModel(QObject *parent = 0);
-    bool store(const QModelIndex & index);
-    void clearRemote();
-    bool storeRemote();
-    void addRemote( NvRssItem *item );
-    QList<NvRssItem*> updatedRss() const;
 
-protected:
-    QVariant itemData(int row, int role ) const;
+    bool import(const QVariant *in);
+
+    NvRssItem item(const QModelIndex &index) const;
+    NvRssItem search(quint32 id) const;
+
+    bool save(const NvRssItem& item);
+    QList<Tag> populateTags(int id);
+    QList<NvRssItem> updatedItems() const;
+    void clearUpdated();
+
+public: // overwrited
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 private:
-    int m_buffersize, m_count, m_localCount;
-    DBManager *m_storage;
+    QList<Tag> parseTags(const QVariant *input);
+    int parseOperation(const QString& opstring ) const;
 
-    int localRssCount() const;
-    bool canFetchMore(const QModelIndex & index) const;
-    void fetchMore(const QModelIndex & /* index */);
-    void updateLocalCount();
+    DBManager *m_storage;
+    QList<NvRssItem> _updated;
 };
 
 #endif // NVRSSCACHEDMODEL_H

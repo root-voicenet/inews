@@ -2,8 +2,7 @@
 #include "../model/NvRssItemDelegate.h".h"
 #include <QAction>
 #include <QMenu>
-#include "../model/NvObjectModel.h"
-#include "../model/NvSortFilterModel.h"
+#include "../model/NvRssCachedModel.h"
 #include "../model/nvrssitem.h"
 
 NvBaseListView::NvBaseListView(QWidget *parent) :
@@ -16,6 +15,8 @@ NvBaseListView::NvBaseListView(QWidget *parent) :
 
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     setContextMenuPolicy(Qt::CustomContextMenu);
+    setEditTriggers(QAbstractItemView::DoubleClicked
+                                | QAbstractItemView::SelectedClicked);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
 
     setMinimumWidth(200);
@@ -59,20 +60,12 @@ void NvBaseListView::setModel(QAbstractItemModel *model)
 void NvBaseListView::attachRss()
 {
     QModelIndex index = currentIndex();
-    NvObjectModel *m;
-
-    if(qobject_cast<NvSortFilterModel*>(model())) {
-        NvSortFilterModel *sort = qobject_cast<NvSortFilterModel*>(model());
-        m = qobject_cast<NvObjectModel*>(sort->sourceModel());
-        index = sort->mapToSource(index);
-    }else{
-        m = qobject_cast<NvObjectModel*>(model());
-    }
+    NvRssCachedModel *m = dynamic_cast<NvRssCachedModel*>(model());
 
     if(m && index.isValid()) {
-        NvRssItem *item = dynamic_cast<NvRssItem*>(m->item(index));
-        if(item) {
-            emit attachSelected(item);
+        NvRssItem item = m->item(index);
+        if(item.id() != 0) {
+            emit attachSelected(item.id());
         }
     }
 }

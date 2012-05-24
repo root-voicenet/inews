@@ -1,14 +1,19 @@
 #include "NvMediaModel.h"
 #include "NvMediaItem.h"
 #include "resourcemanager.h"
+#include "dbmanager.h"
+#include "windowmanager.h"
+#include "connector.h"
+#include "NvNodeMediaItem.h"
 
 #include <QImage>
 #include <QIcon>
 #include <QPainter>
 #include <QtCore>
 #include <QMessageBox>
-
+#include <QSqlQuery>
 #include <QImageReader>
+#include <QSqlError>
 
 const int WIDTH_ICON = 100;
 const int HEIGHT_ICON = 90;
@@ -16,8 +21,11 @@ const int HEIGHT_ICON = 90;
 const int WIDTH_IMAGE = 90;
 const int HEIGHT_IMAGE = 65;
 
+NvMediaModel MediaManager::medias;
+QList<QString> MediaManager::_upload;
+
 NvMediaModel::NvMediaModel(QObject *parent)
-    : NvObjectModel(parent)
+    : QAbstractListModel(parent)
 {
     imagesShow_ = new QFutureWatcher<QImage>(this);
     connect(imagesShow_, SIGNAL(resultReadyAt(int)), SLOT(setItemInList(int)));
@@ -37,6 +45,12 @@ void  NvMediaModel::WaitFuture()
         imagesShow_->cancel();
         imagesShow_->waitForFinished();
     }
+}
+
+void NvMediaModel::clear()
+{
+    qDeleteAll( fileList_ );
+    fileList_.clear();
 }
 
 QImage prepareImage(NvMediaItem *item)
@@ -138,7 +152,7 @@ void NvMediaModel::setItemInList(int index)
         fileList_[index]->setIcon(QIcon(QPixmap::fromImage(imagesShow_->resultAt(index))));
     }
 
-    emit needUpdate(QModelIndex());
+    //emit needUpdate(QModelIndex());
 }
 
 void NvMediaModel::finished()
@@ -146,7 +160,8 @@ void NvMediaModel::finished()
     fileList_.clear();
 }
 
-bool NvMediaModel::addFile(const QString &path)
+/*
+bool NvMediaModel::a(const QString &path)
 {
     QFileInfo fi(path);
 
@@ -157,56 +172,89 @@ bool NvMediaModel::addFile(const QString &path)
     item->setIcon(prepareIcon(fi.fileName()));
     item->setLocalPath( path );
     //item->setData(Qt::WhatsThisRole, QString(fi.filePath()));
-    addItem(item);
+    //addItem(item);
     fileList_.append( item );
 
     imagesShow_->setFuture(QtConcurrent::mapped(fileList_, prepareImage));
 
     return true;
 }
+*/
 
-bool NvMediaModel::addRemoteFile(quint32 fid, const QString &title, const QString &thumbnailUrl)
+bool NvMediaModel::add(quint32 fid, const QString &title, const QString &thumbnailUrl)
 {
     NvMediaItem *item = new NvMediaItem(fid, title, true);
     item->setIcon(prepareIcon(title));
     item->setNetworkAccessManager( ResourceManager::instance()->getNAM() );
 
     item->setThumbnailUrl( thumbnailUrl );
+
+
    // bool bRet = connect(item, SIGNAL(needUpdate()), this, SIGNAL(needUpdate(QModelIndex)));
    // Q_ASSERT(bRet);
 
-    addItem(item);
+    //addItem(item);
     item->downloadThumbnail();
+    int row = rowCount();
+
+    fileList_.append(item);
+
+    return true;
 }
 
-QVariant NvMediaModel::itemData(int row, int role) const
+QVariant NvMediaModel::data(const QModelIndex &index, int role) const
 {
-    if(role == Qt::BackgroundRole) {
-        NvMediaItem *item = qobject_cast<NvMediaItem*>( items[row] );
-        if(item && !item->isRemote()) {
-            return Qt::gray;
-        }
+    if(!index.isValid())
+        return QVariant();
+
+    if (index.row() >= fileList_.size())
+        return QVariant();
+
+
+    if(role == Qt::DisplayRole) {
+        return fileList_[index.row()]->name();
+    }else if(role == Qt::DecorationRole) {
+        return fileList_[index.row()]->icon();
     }
 
-    return NvObjectModel::itemData( row, role );
+    return QVariant();
 }
+
+NvMediaItem *NvMediaModel::item(QModelIndex index)
+{
+    if(!index.isValid())
+        return NULL;
+
+    if (index.row() >= fileList_.size())
+        return NULL;
+
+    return fileList_[index.row()];
+}
+
+int NvMediaModel::rowCount(const QModelIndex &parent) const
+{
+    return fileList_.size();
+}
+
 
 QList<NvMediaItem*> NvMediaModel::uploadFiles()
 {
     QList<NvMediaItem*> res;
-
+/*
     for(int i = 0; i < items.size(); ++i) {
         NvMediaItem *item = qobject_cast<NvMediaItem*>(items[i]);
         if(item && !item->isRemote()) {
            res << item;
         }
     }
-
+*/
     return res;
 }
 
+/*
 NvMediaItem *NvMediaModel::media(int id)
 {
+    /*
     for(int i = 0; i < items.size(); ++i) {
          NvMediaItem *item = qobject_cast<NvMediaItem*>(items[i]);
          if(item && item->id() == id)
@@ -214,4 +262,172 @@ NvMediaItem *NvMediaModel::media(int id)
     }
 
     return NULL;
+}
+*/
+void MediaManager::init()
+{
+
+}
+
+void MediaManager::cleanup()
+{
+
+}
+
+NvMediaItem MediaManager::getMedia(quint32 id)
+{
+    return NvMediaItem(1);
+}
+
+bool MediaManager::select(int maxcount)
+{
+    medias.clear();
+    QSqlQuery query(DBManager::instance()->connection());
+
+    QString sql = "select * from " + DBManager::FILES_TABLE;
+    if(maxcount) {
+        sql = QString("select * from " + DBManager::FILES_TABLE + " limit %1").arg(maxcount);
+    }
+    if(!query.exec(sql)) {
+        qDebug() << "Can fetch files";
+        return false;
+    }
+
+    int row = medias.rowCount();
+    medias.beginInsertRows(QModelIndex(), row, row + query.numRowsAffected());
+    while (query.next()) {
+        medias.add( query.value(0).toUInt(), query.value(1).toString(), query.value(2).toString() );
+    }
+    medias.endInsertRows();
+
+    return true;
+ }
+
+bool MediaManager::addFile(const QString &path)
+{
+    _upload.append(path);
+    return true;
+}
+
+void MediaManager::upload()
+{
+    Connector *c = WindowManager::instance()->connector();
+    if(!_upload.isEmpty()) {
+        foreach(QString item, _upload) {
+            QFile file(item);
+            if(file.exists() && file.open(QFile::ReadOnly)) {
+                QList<int> tids;
+                QByteArray data = file.readAll();
+                QFileInfo fi(file);
+                c->UploadFile(&data, fi.completeBaseName(), tids);
+            }
+        }
+        _upload.clear();
+    }
+}
+
+void MediaManager::sync()
+{
+    Connector *c = WindowManager::instance()->connector();
+    c->GetMedia();
+}
+
+bool MediaManager::import(QVariant *resp)
+{
+    QSqlQuery query(DBManager::instance()->connection());
+    QMap<QString, QVariant> media(resp->toMap());
+
+    QList<QVariant> files = media.value("files").toList();
+    int op = 0;
+
+    for (int i = 0; i < files.size(); ++i) {
+        // parse element
+        QMap<QString, QVariant> tags = files[i].toMap();
+        QString fileName, thumbnail;
+        int fid = 0;
+
+
+        fileName = tags.value("filename").toString();
+        fid = tags.value("fid").toInt();
+        if(!fid) {
+            qDebug() << "File Id is empty";
+            return false;
+        }
+
+        if(!tags.value("style_url").isNull()) {
+            thumbnail = tags.value("style_url").toString();
+        }
+        if(tags.contains("op")) {
+            QString sop = tags.value("op").toString();
+            if(!sop.compare("insert")) {
+                op = 1;
+            }else if(!sop.compare("update")) {
+                op = 2;
+            }else if(!sop.compare("delete")) {
+                op = 3;
+            }
+        }
+
+        if(op > 0) {
+            if(op == 1) {
+                query.prepare("INSERT INTO " + DBManager::FILES_TABLE + " (id, name, url) VALUES(?, ?, ?)" );
+                query.addBindValue( fid );
+                query.addBindValue( fileName );
+                query.addBindValue( thumbnail );
+            }else if(op == 2) {
+                query.prepare("UPDATE " + DBManager::FILES_TABLE + " SET id=?, name=?, url=? WHERE " );
+                query.addBindValue( fid );
+                query.addBindValue( fileName );
+                query.addBindValue( thumbnail );
+            }
+
+            if(!query.exec()) {
+                qDebug() << "Cannot store file: ";
+                return false;
+            }
+        }
+   }
+
+   return true;
+}
+
+void MediaManager::setNodeMedia(quint32 node_id, QList<NvNodeMediaItem> items)
+{
+    QSqlQuery query(DBManager::instance()->connection());
+    query.exec(QString("delete from " + DBManager::NODES_FILES_TABLE + " where node_id = %1").arg(node_id));
+
+    for(int i = 0; i < items.size(); ++i) {
+        query.prepare("insert into " + DBManager::NODES_FILES_TABLE + " (file_id, node_id, title, description) VALUES(?, ?, ?, ?)");
+        query.addBindValue( items[i].id() );
+        query.addBindValue( node_id );
+        query.addBindValue( items[i].title() );
+        query.addBindValue( items[i].description() );
+
+        if(!query.exec()) {
+           qDebug() << "Error executing query: " << query.lastError().driverText();
+           break;
+        }
+    }
+}
+
+QList<NvNodeMediaItem> MediaManager::getNodeMedia(quint32 node_id)
+{
+    QList<NvNodeMediaItem> res;
+    QSqlQuery query(DBManager::instance()->connection());
+
+    if(!query.exec(QString("SELECT f.id, f.name, f.url, nf.title, nf.description FROM " + DBManager::NODES_FILES_TABLE + " nf INNER JOIN " + DBManager::FILES_TABLE + " f ON(f.id = nf.file_id) WHERE nf.node_id = %1").arg(node_id))) {
+        qDebug() << "Error executing query: " << query.lastError().driverText();
+        return res;
+    }
+    while (query.next()){
+
+        NvNodeMediaItem item(NvMediaItem(query.value(0).toUInt(), query.value(1).toString()));
+        item.setThumbnailUrl(query.value(2).toString());
+        item.setTitle(query.value(3).toString() );
+        item.setDescription(query.value(4).toString());
+
+        res << item;
+    }
+
+    return res;
 }

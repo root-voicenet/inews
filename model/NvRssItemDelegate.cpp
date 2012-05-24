@@ -5,15 +5,16 @@
 #include <QDebug>
 #include <QApplication>
 #include <QTextDocument>
+#include <QPushButton>
 
-#include "NvAbstractListItem.h"
 #include "NvRssCachedModel.h"
+#include "../view/TagsWidget.h"
 
 #define HEADER_OFFSET 15
 #define ITEM_HEIGHT 70;
 
 NvRssItemDelegate::NvRssItemDelegate(QObject *parent) :
-    QStyledItemDelegate(parent)
+    QItemDelegate(parent)
 {
 
 }
@@ -26,12 +27,14 @@ NvRssItemDelegate::~NvRssItemDelegate()
 void NvRssItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QFont font = option.font;
-    font.setBold( true );
+    bool readed = qvariant_cast<bool>(index.data(NvRssCachedModel::ReadedRole));
+
+    font.setBold( !readed );
     QStyleOptionViewItem opt = option;
     opt.displayAlignment = Qt::AlignTop | Qt::AlignLeft;
     opt.font = font;
 
-    QStyledItemDelegate::paint(painter,opt,index);
+    QItemDelegate::paint(painter,opt,index);
 
     painter->save();
     painter->translate(option.rect.topLeft());
@@ -47,8 +50,13 @@ void NvRssItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
         QString subText = qvariant_cast<QString>(index.data(NvRssCachedModel::DescriptionRole));
         QDateTime date = qvariant_cast<QDateTime>(index.data(NvRssCachedModel::DateRole));
+
+
+
+
+
         QString dateText = date.toString("dd.MM hh:mm");
-        QString tags = qvariant_cast<QString>(index.data(NvRssCachedModel::TagRole));
+        QStringList tags = qvariant_cast<QStringList>(index.data(NvRssCachedModel::TagRole));
 
 
         int dateWidth = 0;
@@ -85,11 +93,18 @@ void NvRssItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         }
 
         if(!tags.isEmpty()) {
-            tr = fm.boundingRect( tags );
+            QString res = "";
+
+            foreach(QString tag, tags) {
+                res.append(tag);
+                res.append(" ");
+            }
+
+            tr = fm.boundingRect( res );
             tr.moveTo( 0, offset);
             offset += tr.height() + 2;
             painter->setPen(QColor(210, 150, 0));
-            painter->drawText(tr, tags );
+            painter->drawText(tr, res );
         }
 
         painter->restore();
@@ -104,6 +119,61 @@ QSize NvRssItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QMod
     int height = ITEM_HEIGHT;
 
     return(QSize(0, height));
+}
+
+
+QWidget *NvRssItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    if(index.column() == 0) {
+        TagsWidget *widget = new TagsWidget(parent);
+        widget->setFocusPolicy(Qt::StrongFocus);
+        connect(widget, SIGNAL(editingFinished()), this, SLOT(beginCloseEditor()));
+        widget->installEventFilter( const_cast<NvRssItemDelegate*>(this) );
+        return widget;
+    }else{
+        return QItemDelegate::createEditor(parent, option, index);
+    }
+
+}
+
+void NvRssItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
+{
+    int h = editor->height();
+    QRect rect = option.rect;
+    editor->setGeometry(rect.x(), rect.y() + (rect.height() - h), rect.width(), h);
+}
+
+void NvRssItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
+                                const QModelIndex &index) const
+{
+    if(index.column() == 0) {
+        TagsWidget *widget = qobject_cast<TagsWidget *>(editor);
+        quint32 rss_id = index.data(NvRssCachedModel::RssIdRole).toUInt();
+        if(rss_id) {
+            TagsManager::setRssTags(rss_id, widget->selectedTags());
+        }
+    }else{
+         QItemDelegate::setModelData(editor, model, index);
+    }
+}
+
+void NvRssItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    if(index.column() == 0) {
+        const NvRssCachedModel* model = dynamic_cast<const NvRssCachedModel *>(index.model());
+        if(model) {
+            TagsWidget *widget = qobject_cast<TagsWidget *>(editor);
+            widget->loadTags(model->item(index).tags());
+        }
+    }else{
+        QItemDelegate::setEditorData( editor, index );
+    }
+}
+
+void NvRssItemDelegate::beginCloseEditor()
+{
+    TagsWidget *editor = qobject_cast<TagsWidget *>(sender());
+    commitData( editor );
 }
 
 /*

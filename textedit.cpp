@@ -29,23 +29,21 @@
 
 
 
-#ifdef Q_WS_MAC
-const QString rsrcPath = ":/images/mac";
-#else
-const QString rsrcPath = ":/images/win";
-#endif
+const QString rsrcPath = ":/images/text";
 
 TextEdit::TextEdit(QWidget *parent)
     : QWidget(parent)
 {
 
     vbox = new QVBoxLayout(this);
+    vbox->setMargin(0);
 
     setupEditActions();
     setupTextActions();
 
     textEdit = new QTextEdit(this);
-    vbox->addWidget(textEdit);
+    vbox->addWidget(textEdit, 1);
+    textEdit->adjustSize();
 
     connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
             this, SLOT(currentCharFormatChanged(QTextCharFormat)));
@@ -93,151 +91,52 @@ TextEdit::TextEdit(QWidget *parent)
 
 void TextEdit::setupEditActions()
 {
-    QToolBar *tb = new QToolBar(this);
-    tb->setWindowTitle(tr("Edit Actions"));
+   // QToolBar *tb = new QToolBar(this);
+   // tb->setWindowTitle(tr("Edit Actions"));
 
     //addToolBar(tb);
 
     QAction *a;
-    a = actionUndo = new QAction(QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png")),
-                                              tr("&Undo"), this);
+    a = actionUndo = new QAction(QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png")),  tr("&Undo"), this);
     a->setShortcut(QKeySequence::Undo);
-    tb->addAction(a);
-    a = actionRedo = new QAction(QIcon::fromTheme("edit-redo", QIcon(rsrcPath + "/editredo.png")),
-                                              tr("&Redo"), this);
+    //tb->addAction(a);
+    a = actionRedo = new QAction(QIcon::fromTheme("edit-redo", QIcon(rsrcPath + "/editredo.png")),  tr("&Redo"), this);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Redo);
-    tb->addAction(a);
+    //tb->addAction(a);
 
     a = actionCut = new QAction(QIcon::fromTheme("edit-cut", QIcon(rsrcPath + "/editcut.png")),
                                              tr("Cu&t"), this);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Cut);
-    tb->addAction(a);
+    //tb->addAction(a);
    // menu->addAction(a);
     a = actionCopy = new QAction(QIcon::fromTheme("edit-copy", QIcon(rsrcPath + "/editcopy.png")),
                                  tr("&Copy"), this);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Copy);
-    tb->addAction(a);
+    //tb->addAction(a);
     //menu->addAction(a);
     a = actionPaste = new QAction(QIcon::fromTheme("edit-paste", QIcon(rsrcPath + "/editpaste.png")),
                                   tr("&Paste"), this);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Paste);
-    tb->addAction(a);
+    //tb->addAction(a);
     //menu->addAction(a);
 #ifndef QT_NO_CLIPBOARD
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
         actionPaste->setEnabled(md->hasText());
 #endif
 
-    vbox->addWidget(tb);
+    //vbox->addWidget(tb);
 }
 
 void TextEdit::setupTextActions()
 {
     QToolBar *tb = new QToolBar(this);
     tb->setWindowTitle(tr("Format Actions"));
+    tb->setMovable(false);
     //addToolBar(tb);
-
-
-    actionTextBold = new QAction(QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png")),
-                                 tr("&Bold"), this);
-    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
-    actionTextBold->setPriority(QAction::LowPriority);
-        QFont bold;
-    bold.setBold(true);
-    actionTextBold->setFont(bold);
-    connect(actionTextBold, SIGNAL(triggered()), this, SLOT(textBold()));
-    tb->addAction(actionTextBold);
-    actionTextBold->setCheckable(true);
-
-    actionTextItalic = new QAction(QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png")),
-                                   tr("&Italic"), this);
-    actionTextItalic->setPriority(QAction::LowPriority);
-    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
-    QFont italic;
-    italic.setItalic(true);
-    actionTextItalic->setFont(italic);
-    connect(actionTextItalic, SIGNAL(triggered()), this, SLOT(textItalic()));
-    tb->addAction(actionTextItalic);
-    //menu->addAction(actionTextItalic);
-    actionTextItalic->setCheckable(true);
-
-    actionTextUnderline = new QAction(QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png")),
-                                      tr("&Underline"), this);
-    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
-    actionTextUnderline->setPriority(QAction::LowPriority);
-    QFont underline;
-    underline.setUnderline(true);
-    actionTextUnderline->setFont(underline);
-    connect(actionTextUnderline, SIGNAL(triggered()), this, SLOT(textUnderline()));
-    tb->addAction(actionTextUnderline);
-    actionTextUnderline->setCheckable(true);
-
-    QActionGroup *grpHeading = new QActionGroup(this);
-    actionH1 = new QAction(QIcon(rsrcPath + "/h1.png"), tr("&H1"), grpHeading);
-    actionH2 = new QAction(QIcon(rsrcPath + "/h2.png"), tr("&H2"), grpHeading);
-    actionH3 = new QAction(QIcon(rsrcPath + "/h3.png"), tr("&H3"), grpHeading);
-    actionH4 = new QAction(QIcon(rsrcPath + "/h4.png"), tr("&H4"), grpHeading);
-    connect(grpHeading, SIGNAL(triggered(QAction*)), this, SLOT(heading(QAction*)));
-    tb->addActions(grpHeading->actions());
-    tb->addSeparator();
-
-    // edit links
-    actionAddLink = new QAction( QIcon( rsrcPath + "/insert-link.png" ), tr("Add/Edit Link" ), this );
-    connect( actionAddLink, SIGNAL( triggered( bool ) ), this, SLOT( addEditLink()) );
-    tb->addAction( actionAddLink );
-    actionRemoveLink = new QAction( QIcon( rsrcPath + "/remove-link.png" ), tr("Remove Link"), this );
-    connect( actionRemoveLink, SIGNAL( triggered( bool ) ), this, SLOT( removeLink()) );
-    tb->addAction( actionRemoveLink );
-
-    QActionGroup *grp = new QActionGroup(this);
-    connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(textAlign(QAction*)));
-
-
-    // Make sure the alignLeft  is always left of the alignRight
-    if (QApplication::isLeftToRight()) {
-        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png")),
-                                      tr("&Left"), grp);
-        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png")), tr("C&enter"), grp);
-        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png")), tr("&Right"), grp);
-    } else {
-        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png")), tr("&Right"), grp);
-        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png")), tr("C&enter"), grp);
-        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png")), tr("&Left"), grp);
-    }
-    actionAlignJustify = new QAction(QIcon::fromTheme("format-justify-fill", QIcon(rsrcPath + "/textjustify.png")), tr("&Justify"), grp);
-
-    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
-    actionAlignLeft->setCheckable(true);
-    actionAlignLeft->setPriority(QAction::LowPriority);
-    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
-    actionAlignCenter->setCheckable(true);
-    actionAlignCenter->setPriority(QAction::LowPriority);
-    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
-    actionAlignRight->setCheckable(true);
-    actionAlignRight->setPriority(QAction::LowPriority);
-    actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
-    actionAlignJustify->setCheckable(true);
-    actionAlignJustify->setPriority(QAction::LowPriority);
-
-    tb->addActions(grp->actions());
-
-    QPixmap pix(16, 16);
-    pix.fill(Qt::black);
-    actionTextColor = new QAction(pix, tr("&Color..."), this);
-    connect(actionTextColor, SIGNAL(triggered()), this, SLOT(textColor()));
-    tb->addAction(actionTextColor);
-
-    vbox->addWidget(tb);
-
-    tb = new QToolBar(this);
-    tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
-    tb->setWindowTitle(tr("Format Actions"));
-    //addToolBarBreak(Qt::TopToolBarArea);
-   // addToolBar(tb);
 
     comboStyle = new QComboBox(tb);
     tb->addWidget(comboStyle);
@@ -271,6 +170,95 @@ void TextEdit::setupTextActions()
             this, SLOT(textSize(QString)));
     comboSize->setCurrentIndex(comboSize->findText(QString::number(QApplication::font()
                                                                    .pointSize())));
+
+
+    actionTextBold = new QAction(QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/bold.png")),
+                                 tr("&Bold"), this);
+    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    actionTextBold->setPriority(QAction::LowPriority);
+        QFont bold;
+    bold.setBold(true);
+    actionTextBold->setFont(bold);
+    connect(actionTextBold, SIGNAL(triggered()), this, SLOT(textBold()));
+    tb->addAction(actionTextBold);
+    actionTextBold->setCheckable(true);
+
+    actionTextItalic = new QAction(QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/italic.png")),
+                                   tr("&Italic"), this);
+    actionTextItalic->setPriority(QAction::LowPriority);
+    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    QFont italic;
+    italic.setItalic(true);
+    actionTextItalic->setFont(italic);
+    connect(actionTextItalic, SIGNAL(triggered()), this, SLOT(textItalic()));
+    tb->addAction(actionTextItalic);
+    //menu->addAction(actionTextItalic);
+    actionTextItalic->setCheckable(true);
+
+    actionTextUnderline = new QAction(QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/underline.png")),
+                                      tr("&Underline"), this);
+    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
+    actionTextUnderline->setPriority(QAction::LowPriority);
+    QFont underline;
+    underline.setUnderline(true);
+    actionTextUnderline->setFont(underline);
+    connect(actionTextUnderline, SIGNAL(triggered()), this, SLOT(textUnderline()));
+    tb->addAction(actionTextUnderline);
+    actionTextUnderline->setCheckable(true);
+
+    QActionGroup *grpHeading = new QActionGroup(this);
+    actionH1 = new QAction(QIcon(rsrcPath + "/h1.png"), tr("&H1"), grpHeading);
+    actionH2 = new QAction(QIcon(rsrcPath + "/h2.png"), tr("&H2"), grpHeading);
+    actionH3 = new QAction(QIcon(rsrcPath + "/h3.png"), tr("&H3"), grpHeading);
+    actionH4 = new QAction(QIcon(rsrcPath + "/h4.png"), tr("&H4"), grpHeading);
+    connect(grpHeading, SIGNAL(triggered(QAction*)), this, SLOT(heading(QAction*)));
+    tb->addActions(grpHeading->actions());
+    tb->addSeparator();
+
+    // edit links
+    actionAddLink = new QAction( QIcon( rsrcPath + "/insert-link.png" ), tr("Add/Edit Link" ), this );
+    connect( actionAddLink, SIGNAL( triggered( bool ) ), this, SLOT( addEditLink()) );
+    tb->addAction( actionAddLink );
+    actionRemoveLink = new QAction( QIcon( rsrcPath + "/remove-link.png" ), tr("Remove Link"), this );
+    connect( actionRemoveLink, SIGNAL( triggered( bool ) ), this, SLOT( removeLink()) );
+    tb->addAction( actionRemoveLink );
+
+    QActionGroup *grp = new QActionGroup(this);
+    connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(textAlign(QAction*)));
+
+
+    // Make sure the alignLeft  is always left of the alignRight
+    if (QApplication::isLeftToRight()) {
+        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/left.png")),
+                                      tr("&Left"), grp);
+        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/center.png")), tr("C&enter"), grp);
+        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/right.png")), tr("&Right"), grp);
+    } else {
+        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/right.png")), tr("&Right"), grp);
+        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/center.png")), tr("C&enter"), grp);
+        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/left.png")), tr("&Left"), grp);
+    }
+    actionAlignJustify = new QAction(QIcon::fromTheme("format-justify-fill", QIcon(rsrcPath + "/justify.png")), tr("&Justify"), grp);
+
+    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
+    actionAlignLeft->setCheckable(true);
+    actionAlignLeft->setPriority(QAction::LowPriority);
+    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionAlignCenter->setCheckable(true);
+    actionAlignCenter->setPriority(QAction::LowPriority);
+    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionAlignRight->setCheckable(true);
+    actionAlignRight->setPriority(QAction::LowPriority);
+    actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
+    actionAlignJustify->setCheckable(true);
+    actionAlignJustify->setPriority(QAction::LowPriority);
+
+    tb->addActions(grp->actions());
+
+    actionTextColor = new QAction(QIcon(rsrcPath + "/color.png"), tr("&Color..."), this);
+    connect(actionTextColor, SIGNAL(triggered()), this, SLOT(textColor()));
+    tb->addAction(actionTextColor);
+
     vbox->addWidget(tb);
 }
 

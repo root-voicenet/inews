@@ -6,22 +6,21 @@
 
 #include <qtextdocument.h>
 
-bool RequestBuilder::buildSyncRss(xmlrpc::Variant *request, NvRssCachedModel *model)
+bool RequestBuilder::buildSyncRss(xmlrpc::Variant *request, QList<NvRssItem> &rss)
 {
     Q_ASSERT(request);
 
-    QList<NvRssItem*> rss = model->updatedRss();
     QList<xmlrpc::Variant> items;
 
     for(int i = 0; i < rss.size(); ++i) {
       QMap<QString, xmlrpc::Variant> resItem;
-      resItem.insert("id", rss[i]->id());
+      resItem.insert("id", rss[i].id());
 
-      QList<int> tids = rss[i]->terms();
+      QList<Tag> tags = rss[i].tags();
       QList<xmlrpc::Variant> resTids;
 
-      for(int j = 0; j < tids.size(); ++j)
-          resTids.append(tids[j]);
+      for(int j = 0; j < tags.size(); ++j)
+          resTids.append(tags[j].id());
 
           resItem.insert("tids", resTids);
 
@@ -33,44 +32,41 @@ bool RequestBuilder::buildSyncRss(xmlrpc::Variant *request, NvRssCachedModel *mo
     return true;
 }
 
-bool RequestBuilder::buildSyncNodes(xmlrpc::Variant *request, QList<Node *> nodes)
+bool RequestBuilder::buildSyncNodes(xmlrpc::Variant *request, QList<Node> nodes)
 {
    QList<xmlrpc::Variant> res;
    for(int i = 0; i < nodes.size(); ++i) {
 
-       if(!nodes[i]->isUpdated())
-           continue;
-
        QMap<QString, xmlrpc::Variant> nodeItem;
        QString action = "update";
        QList<xmlrpc::Variant> rss;
-       if(nodes[i]->getId() == Node::NODEID_DEFAULT) {
+       if(nodes[i].id() == Node::NODEID_DEFAULT) {
            action = "create";
        }
        nodeItem.insert("action", action);
-       nodeItem.insert("id", nodes[i]->getId());
-       nodeItem.insert("title", nodes[i]->getTitle());
-       nodeItem.insert("summary", nodes[i]->getSummary());
-       nodeItem.insert("promoted", nodes[i]->promoted() ? 1 : 0);
+       nodeItem.insert("id", nodes[i].id());
+       nodeItem.insert("title", nodes[i].title());
+       nodeItem.insert("summary", nodes[i].getSummary());
+       nodeItem.insert("promoted", nodes[i].promoted() ? 1 : 0);
 
 
-       if(!nodes[i]->getBody().isEmpty()) {
-           nodeItem.insert("body", Qt::escape(nodes[i]->getBody()));
+       if(!nodes[i].getBody().isEmpty()) {
+           nodeItem.insert("body", Qt::escape(nodes[i].getBody()));
        }
 
        // attach tids
-       QList<int> tids = nodes[i]->getTids();
+       QList<Tag> tags = nodes[i].tags();
        QList<xmlrpc::Variant> nodeTids;
 
-       for(int j = 0; j < tids.size(); ++j)
-           nodeTids.append(tids[j]);
+       for(int j = 0; j < tags.size(); ++j)
+           nodeTids.append(tags[j].id());
 
        nodeItem.insert("tids", nodeTids);
 
        // attach rss ids
-       QList<NvRssItem*> attached = nodes[i]->attachedRss();
+       QList<quint32> attached = nodes[i].attachedRss();
        for(int j = 0; j < attached.size(); ++j)
-           rss << attached[j]->id();
+           rss << attached[j];
 
        if(rss.size() > 0) {
            nodeItem.insert("rss", rss);
@@ -78,7 +74,7 @@ bool RequestBuilder::buildSyncNodes(xmlrpc::Variant *request, QList<Node *> node
 
        // attach files
        QList<xmlrpc::Variant> files;
-       QList<NvNodeMediaItem> medias = nodes[i]->attachedMedia();
+       QList<NvNodeMediaItem> medias = nodes[i].attachedMedia();
        for(int j = 0; j < medias.size(); ++j) {
             QMap<QString, xmlrpc::Variant> fileData;
             fileData.insert("fid", medias[j].id());

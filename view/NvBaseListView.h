@@ -30,7 +30,7 @@ private:
     QAction* m_attachAction;
     //QPointer<NvLineItemDelegate> _lineDel;
 signals:
-    void attachSelected(NvRssItem *item);
+    void attachSelected(quint32 rss_id);
 
 private slots:
      void showContextMenu(QPoint point);

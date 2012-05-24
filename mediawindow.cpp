@@ -26,7 +26,7 @@ MediaWindow::MediaWindow(WindowManager *wm, QWidget *parent) :
     ui->setupUi(this);
 
     ui->tabMain->removeTab(1);
-    ui->listView->setModel(&model);
+    ui->listView->setModel(MediaManager::mediaModel());
 
 
     //QObject::connect(ui->treeWidgetFileSystem, SIGNAL(itemExpanded(QTreeWidgetItem*)), this, SLOT(treeWidget_itemExpanded(QTreeWidgetItem*)));
@@ -34,12 +34,15 @@ MediaWindow::MediaWindow(WindowManager *wm, QWidget *parent) :
     QObject::connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listView_itemDoubleClicked(QModelIndex)));
     QObject::connect(ui->tabMain, SIGNAL(tabCloseRequested(int)), this, SLOT(tabMain_tabCloseRequested(int)));
     QObject::connect(ui->tabMain, SIGNAL(currentChanged(int)), this, SLOT(tabMain_currentChanged(int)));
-    QObject::connect(&model, SIGNAL(needUpdate(QModelIndex)), ui->listView, SLOT(doItemsLayout()));
+    //QObject::connect(&model, SIGNAL(needUpdate(QModelIndex)), ui->listView, SLOT(doItemsLayout()));
     QObject::connect(ui->btnUpload, SIGNAL(clicked()), this, SLOT(btnUpload_clicked()));
     QObject::connect(ui->btnRefresh, SIGNAL(clicked()), this, SLOT(btnRefresh_clicked()));
 
 
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addFileClicked()));
+    connect(m_wm->connector(), SIGNAL(mediaLoaded()), this, SLOT(syncComplete()));
+
+    //MediaManager::sync();
 
     //AddItemToTreeWidgetFileSystem();
 
@@ -68,6 +71,7 @@ void MediaWindow::changeEvent(QEvent *e)
 void MediaWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent( event );
+    MediaManager::select();
 }
 
 void MediaWindow::hideEvent(QHideEvent *event)
@@ -80,6 +84,11 @@ void MediaWindow::hideEvent(QHideEvent *event)
 void MediaWindow::closeEvent(QCloseEvent *event)
 {
     hide();
+}
+
+void MediaWindow::syncComplete()
+{
+    MediaManager::select();
 }
 
 /*
@@ -227,9 +236,10 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
  void MediaWindow::listView_itemDoubleClicked(QModelIndex index)
  {
      if(currentNode) {
-         NvMediaItem *item = qobject_cast<NvMediaItem*>(model.item(index));
-         Q_ASSERT(item);
-         currentNode->attachMedia(*item);
+         NvMediaItem *item = MediaManager::mediaModel()->item(index);
+         if(item) {
+             currentNode->attachMedia(*item);
+         }
 
          emit fileSelected();
      }
@@ -240,7 +250,7 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
     QString fileName = QFileDialog::getOpenFileName(this, tr("Add Image"), QDir::homePath(),
                                                      tr("Image Files (*.png *.jpg *.bmp)"));
     if(!fileName.isEmpty()) {
-        bool bRet = model.addFile(fileName);
+        bool bRet = MediaManager::addFile(fileName);
         if( bRet ) {
             ui->btnUpload->setEnabled( true );
         }
@@ -249,65 +259,17 @@ void MediaWindow::tabMain_currentChanged(int index_tab)
 
  void MediaWindow::btnUpload_clicked()
  {
-    Connector *c = m_wm->connector();
-    QList<NvMediaItem*> files = model.uploadFiles();
-    if(!files.isEmpty()) {
-        foreach(NvMediaItem *item, files) {
-            QFile file(item->localPath());
-            if(file.exists() && file.open(QFile::ReadOnly)) {
-                QList<int> tids;
-                QByteArray data = file.readAll();
-                c->UploadFile(&data, item->name(), tids);
-            }
-        }
-    }
+     MediaManager::upload();
  }
 
  void MediaWindow::btnRefresh_clicked()
  {
-     Connector *c = m_wm->connector();
-     c->GetMedia();
+     MediaManager::select();
  }
 
- bool MediaWindow::parseRemoteFiles(QVariant *result)
- {
-     QMap<QString, QVariant> media(result->toMap());
-     model.clear();
-
-     QList<QVariant> files = media.value("files").toList();
-
-     for (int i = 0; i < files.size(); ++i) {
-         // parse element
-         QMap<QString, QVariant> tags = files[i].toMap();
-         QString fileName, thumbnail;
-         int fid = 0;
-
-
-         fileName = tags.value("filename").toString();
-         fid = tags.value("fid").toInt();
-         if(!fid) {
-             qDebug() << "File Id is empty";
-             model.clear();
-             return false;
-         }
-
-         if(!tags.value("style_url").isNull()) {
-             thumbnail = tags.value("style_url").toString();
-         }
-
-         model.addRemoteFile(fid, fileName, thumbnail);
-     }
-
-     return true;
- }
 
  void MediaWindow::selectFile(Node *n)
  {
     currentNode = n;
     show();
- }
-
- NvMediaModel *MediaWindow::getModel()
- {
-     return &model;
  }

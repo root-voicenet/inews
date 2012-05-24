@@ -3,10 +3,23 @@
 #include "model/nvrssitem.h"
 #include "resourcemanager.h"
 
-Node::Node(int id, const QString& title, bool remote, bool created, const QString &body)
-    : NvBaseObject(id, title, created), m_body(body),  m_updated(false), m_isremote(remote), promoted_(false)
+Node::Node(quint32 id, const QString& title, const QString &body)
+    :_id(id), _title(title), m_body(body), promoted_(false), _status(STATUS_COMPOSED)
 {
 
+}
+
+Node::Node(const Node &other)
+{
+    _id = other._id;
+    _title = other._title;
+    m_body = other.m_body;
+    promoted_ = other.promoted_;
+    _tags = other._tags;
+    _created = other._created;
+    m_attachedRss = other.m_attachedRss;
+    m_attached = other.m_attached;
+    _status = other._status;
 }
 
 Node::~Node() {
@@ -21,11 +34,6 @@ void Node::setBody(const QString &body)
 void Node::setSummary(const QString &summary)
 {
     m_summary = summary;
-}
-
-void Node::setUpdated(bool updated)
-{
-    m_updated = updated;
 }
 
 bool Node::promoted() const
@@ -60,36 +68,30 @@ void Node::removeMedia(int id)
         }
 }
 
-NvRssItem *Node::findAttachedRss(int id)
+void Node::attachRss(quint32 rss_id)
 {
-    QListIterator<NvRssItem*> i(m_attachedRss);
-    while(i.hasNext()) {
-        NvRssItem *item = i.next();
-        if(item->id() == id)
-            return item;
-    }
-
-    return NULL;
+    m_attachedRss.append(rss_id);
 }
 
-void Node::attachRss(NvRssItem *item)
+void Node::removeAttachedRss(quint32 rss_id)
 {
-    m_attachedRss.append(item);
+    m_attachedRss.removeOne(rss_id);
 }
 
-void Node::removeAttachedRss(NvRssItem *item)
-{
-    m_attachedRss.removeOne(item);
-}
-
-QList<NvRssItem*> Node::attachedRss()
+QList<quint32> Node::attachedRss() const
 {
     return m_attachedRss;
 }
 
-QList<NvNodeMediaItem> &Node::attachedMedia()
+QList<NvNodeMediaItem> Node::attachedMedia() const
 {
     return m_attached;
+}
+
+void Node::setAttached(const QList<NvNodeMediaItem> &items)
+{
+    m_attached = items;
+
 }
 
 NvNodeMediaItem &Node::findAttachedMedia(int id)

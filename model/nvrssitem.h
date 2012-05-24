@@ -1,7 +1,7 @@
 #ifndef NVRSSITEM_H
 #define NVRSSITEM_H
 
-#include "NvAbstractListItem.h"
+#include "Tag.h"
 #include <QPointer>
 #include <QUrl>
 #include <QList>
@@ -9,19 +9,22 @@
 class QNetworkAccessManager;
 
 class NvFeedItem;
-class NvRssItem : public NvAbstractListItem
+
+class NvRssItem
 {
     QString name_, description_, source_;
-    QIcon icon_;
     quint32 id_;
     QDateTime date_;
-    QList<int> tids_;
+    QList<Tag> tags_;
     QString m_link;
     NvFeedItem *m_feed;
+    bool _readed;
 protected:
     bool updated_;
 public:
+    NvRssItem();
     NvRssItem(quint32 id, const QString & name = QString(), const QString & desc = QString());
+    NvRssItem(const NvRssItem& other);
     virtual ~NvRssItem(){}
 
     QString name() const;
@@ -30,11 +33,8 @@ public:
     QString description() const;
     void setDescription(const QString &v);
 
-    quint32 id() const;
-    void setId(quint32 id);
-
-    QIcon icon() const;
-    void setIcon(const QIcon &v);
+    bool readed() const { return _readed; }
+    void setReaded(bool readed) { _readed = readed; }
 
     QDateTime date() const;
     void setDate(const QDateTime &v);
@@ -42,8 +42,11 @@ public:
     bool updated() const;
     void setUpdated(bool v);
 
-    QList<int> terms() const;
-    void setTerms(const QList<int>& tids);
+    quint32 id() const;
+    void setId(quint32 id);
+
+    QList<Tag> tags() const;
+    void setTags(const QList<Tag>& tags);
 
     QString link() const { return m_link; }
     void setLink(const QString &link);

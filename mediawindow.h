@@ -24,9 +24,7 @@ public:
     MediaWindow(WindowManager* wm, QWidget *parent = 0);
     ~MediaWindow();
 
-    bool parseRemoteFiles(QVariant *result);
     void selectFile(Node *n);
-    NvMediaModel *getModel();
 protected:
     void changeEvent(QEvent *e);
      void closeEvent(QCloseEvent *event);
@@ -44,6 +42,7 @@ private slots:
     void addFileClicked();
     void btnUpload_clicked();
     void btnRefresh_clicked();
+    void syncComplete();
 private:
     Ui::MediaWindow *ui;   
 
@@ -52,7 +51,6 @@ private:
     QFileInfoList getListFiles(QString dirPath) const;
 
 private:
-    NvMediaModel model;
     WindowManager *m_wm;
     Node *currentNode;
 };

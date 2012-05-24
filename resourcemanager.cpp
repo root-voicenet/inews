@@ -7,8 +7,10 @@
 #include "loaders.h"
 #include "model/NvRssCachedModel.h"
 #include "model/NvMediaModel.h"
+#include "model/Tag.h"
 #include "windowmanager.h"
 #include "mediawindow.h"
+#include "dbmanager.h"
 
 #include <QNetworkAccessManager>
 #include <QUrl>
@@ -67,6 +69,8 @@ void ResourceManager::clearTaxonomy()
 
 bool ResourceManager::parseTaxonomy(QVariant *resp)
 {
+    return TagsManager::import( resp );
+    /*
     QList<QVariant> elements(resp->toList());
     QList<TermInternal> items;
     QMap<int, TermInternal*> refs;
@@ -109,6 +113,7 @@ bool ResourceManager::parseTaxonomy(QVariant *resp)
 
         croot->addChild( items[i].treeItem );
     }
+    */
 }
 
 QString ResourceManager::tag(int id) const
@@ -146,15 +151,12 @@ TaxonomyTerm *ResourceManager::searchTaxonomy(int id)
 
 bool ResourceManager::parseFeed(QVariant *resp)
 {
-    RssImporter importer(&m_rssModel);
-    return importer.import(*resp);
+    return m_rssModel.import(resp);
 }
 
 void ResourceManager::cleanup()
 {
     // clear rss items
-    // cleanup nodes
-    clearNodes();
 
     // cleanup files
     qDeleteAll(m_files);
@@ -185,33 +187,6 @@ void ResourceManager::removeFile(File *file)
         m_files.removeAt(pos);
 }
 
-void ResourceManager::addNode(Node *node, bool top)
-{
-    m_nodes.append(node);
-
-    QStandardItem *newItem = new QStandardItem(node->getTitle());
-    newItem->setEditable(false);
-    newItem->setData((int)node);
-    if(top)
-        m_themes.insertRow(0, newItem);
-    else
-        m_themes.appendRow(newItem);
-}
-
-void ResourceManager::removeNode(Node *node)
-{
-    int pos = m_nodes.indexOf(node);
-    if(pos != -1)
-        m_nodes.removeAt(pos);
-}
-
-void ResourceManager::clearNodes()
-{
-    m_themes.clear();
-    qDeleteAll(m_nodes);
-    m_nodes.clear();
-}
-
 QTreeWidgetItem* ResourceManager::getTaxonomy()
 {
     return m_taxonomy;
@@ -220,61 +195,7 @@ QTreeWidgetItem* ResourceManager::getTaxonomy()
 
 bool ResourceManager::parseNodes(QVariant *resp)
 {
-    QList<QVariant> elements(resp->toList());
-    clearNodes();
-
-
-    for (int i = 0; i < elements.size(); ++i) {
-        // parse element
-        QMap<QString, QVariant> tags = elements[i].toMap();
-        QString nodeTitle;
-        int nid = 0;
-
-
-        nodeTitle = tags.value("title").toString();
-        nid = tags.value("nid").toInt();
-        if(!nid) {
-            qDebug() << "Node Id is empty";
-            clearNodes();
-            return false;
-        }
-
-        if(nodeTitle.isEmpty()) {
-            qDebug() << "Node Title is empty";
-            clearNodes();
-            return false;
-        }
-
-        Node *node = new Node(nid, nodeTitle, true);
-
-        if(!tags.value("tids").isNull()) {
-            QList<QVariant> tids = tags.value("tids").toList();
-            QList<int> res;
-            foreach(const QVariant& i, tids) {
-                res << qvariant_cast<int>(i);
-            }
-           node->setTids(res);
-        }
-
-        node->setPromoted( tags.value("promoted").toInt() == 1 );
-
-        if(!tags.value("iids").isNull()) {
-            QList<QVariant> rss = tags.value("iids").toList();
-            QListIterator<QVariant> i(rss);
-            while(i.hasNext()) {
-                int rss_id = i.next().toInt();
-                NvRssItem *rssItem;
-
-                if(rss_id && (rssItem = searchRss(rss_id)) != NULL) {
-                    node->attachRss(rssItem);
-                }
-            }
-        }
-
-        addNode(node);
-    }
-
-    return true;
+    return m_nodes.import( resp );
 }
 
 bool ResourceManager::parseMedia(QVariant *media)
@@ -289,69 +210,49 @@ bool ResourceManager::parseMedia(QVariant *media)
     return true;
 }
 
-Node *ResourceManager::searchNode(int id)
-{
-    QListIterator<Node*> i(m_nodes);
-    while(i.hasNext()) {
-        Node *n = i.next();
-
-        if(n->getId() == id)
-            return n;
-    }
-
-    return NULL;
-}
 
 NvRssItem *ResourceManager::searchRss(int id)
 {
-    return dynamic_cast<NvRssItem*>(m_rssModel.find(id));
+    //return dynamic_cast<NvRssItem*>(m_rssModel.find(id));
+    return NULL;
 }
 
-Node *ResourceManager::parseNode(QVariant *resp)
+Node ResourceManager::parseNode(QVariant *resp)
 {
+
+
     QMap<QString, QVariant> elements(resp->toMap());
     MediaWindow *media = WindowManager::instance()->mediaWindow();
-    NvMediaModel *model = media->getModel();
+    NvMediaModel *model = MediaManager::mediaModel();
 
 
     int nid = elements.value("nid").toInt();
-    Node *n = NULL;
-    if(nid > 0 && (n = searchNode(nid)) != NULL) {
-        n->setBody(elements.value("body").toString());
-        n->setSummary(elements.value("summary").toString());
+    Node n(0, "");
+    if(nid > 0 && (n = m_nodes.search(nid)).id() > 0) {
+        n.setBody(elements.value("body").toString());
+        n.setSummary(elements.value("summary").toString());
 
         if(elements.contains("files")) {
             QList<QVariant> files = elements.value("files").toList();
 
             for(int i = 0; i < files.size(); ++i) {
                 QMap<QString, QVariant> tags = files[i].toMap();
-                NvMediaItem *item = model->media(tags.value("fid").toInt());
-                if(item) {
-                    n->attachMedia(*item, tags.value("title").toString(), tags.value("description").toString());
-                }
+                //NvMediaItem *item = model->media(tags.value("fid").toInt());
+                //if(item) {
+                //    n.attachMedia(*item, tags.value("title").toString(), tags.value("description").toString());
+                //}
             }
         }
 
         return n;
     }
 
-    return NULL;
-}
-
-QList<Node*> ResourceManager::getUpdatedNodes()
-{
-    QList<Node*> res;
-    for(int i = 0; i < m_nodes.size(); ++i) {
-        if(m_nodes[i]->isUpdated())
-            res.append(m_nodes[i]);
-    }
-
-    return res;
+    return Node(0, "");
 }
 
 void ResourceManager::storeData()
 {
-    m_rssModel.storeRemote();
+    //m_rssModel.storeRemote();
 }
 
 bool ResourceManager::parseFeeds(QVariant *resp)
@@ -362,4 +263,10 @@ bool ResourceManager::parseFeeds(QVariant *resp)
 bool ResourceManager::parseEditFeed(QVariant *resp)
 {
     return m_feedModel.importFeed(resp);
+}
+
+
+QDateTime ResourceManager::getRssLastUpdateTime()
+{
+    return DBManager::instance()->getUpdateTime(DBManager::TYPE_RSS);
 }

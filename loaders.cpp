@@ -5,21 +5,21 @@
 #include "model/NvFeedModel.h"
 #include <QDebug>
 
-RssImporter::RssImporter(NvObjectModel *target)
-    : NvObjectImporter(target)
+RssImporter::RssImporter(NvRssCachedModel *target)
+    : _target(target)
 {
 
 }
 
 bool RssImporter::import(const QVariant &in)
 {
-    NvRssCachedModel *rssModel = dynamic_cast<NvRssCachedModel*>(m_target);
+    NvRssCachedModel *rssModel = _target;
     ResourceManager *rm = ResourceManager::instance();
 
     NvFeedModel *feeds = rm->feedModel();
 
     if(rssModel) {
-        rssModel->clearRemote();
+        //rssModel->clearRemote();
         QList<QVariant> elements(in.toList());
 
         for (int i = 0; i < elements.size(); ++i) {
@@ -59,11 +59,13 @@ bool RssImporter::import(const QVariant &in)
 
             if(!tags.value("tids").isNull()) {
                 QList<QVariant> tids = tags.value("tids").toList();
-                QList<int> res;
-                foreach(const QVariant& i, tids) {
-                    res << qvariant_cast<int>(i);
+                QList<Tag> res;
+                foreach(const QVariant& s, tids) {
+                    Tag tag = TagsManager::getTag( s.toUInt() );
+                    if(tag.isValid())
+                        res << tag;
                 }
-                rss->setTerms(res);
+                rss->setTags(res);
             }
 
             if(!tags.value("link").isNull()) {
@@ -75,7 +77,7 @@ bool RssImporter::import(const QVariant &in)
                 delete rss;
                 return false;
             }
-            rssModel->addRemote(rss);
+            //rssModel->addRemote(rss);
         }
 
         return true;

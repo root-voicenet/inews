@@ -1,26 +1,29 @@
 #ifndef NODEEDITORWIDGET_H
 #define NODEEDITORWIDGET_H
 
-#include <QWidget>
+#include <QFrame>
 #include <QModelIndex>
+#include "node.h"
 
 class TextEdit;
-class Node;
 class NvRssItem;
-class TaxonomyWidget;
+class TagsWidget;
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QListWidget)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QListWidget)
+QT_FORWARD_DECLARE_CLASS(QFrame)
 
-class NodeEditorWidget : public QWidget
+class NodeEditorWidget : public QFrame
 {
     Q_OBJECT
 public:
     explicit NodeEditorWidget(QWidget *parent = 0);
-    Node *loadNode(Node *node);
-    void attachRss(NvRssItem *node);
+    bool loadNode(const Node &node);
+    Node *currentNode();
+    void attachRss(quint32 rss_id);
     void clear();
     void updateTaxonomy();
 private: //widgets
@@ -30,12 +33,13 @@ private: //widgets
     QListWidget *attachedRssList;
     QListWidget *attachedMediaList;
     QCheckBox *checkPromoted;
-    TaxonomyWidget *m_taxonomy;
-
+    TagsWidget *tagsWidget;
+    QFrame *hidePanel;
 private:
-    Node *m_current;
+    Node m_current;
 
     void setupUI();
+    void initListView(QListWidget *view);
 signals:
 
 public slots:
@@ -43,7 +47,10 @@ public slots:
     void updateMedia();
     void addMedia();
     void delMedia();
+    void updateRss();
     void MediaList_doubleClicked(QModelIndex index);
+    void MediaList_Clicked(QModelIndex index);
+    void RssList_doubleClicked(QModelIndex index);
 };
 
 #endif // NODEEDITORWIDGET_H

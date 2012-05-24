@@ -5,11 +5,15 @@
 #include "resourcemanager.h"
 #include "centerlawidget.h"
 #include "windowmanager.h"
+#include "dbmanager.h"
 
 #include "model/nvrssitem.h"
-#include "model/NvSortFilterModel.h"
+#include "model/Tag.h"
+#include "model/NvMediaModel.h"
 #include "view/NvBaseListView.h"
 #include "view/NvFeedsTreeView.h"
+#include "view/FilterWidget.h"
+#include "view/FilterNodeView.h"
 #include <QtGui>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -17,7 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setupUI();
     setupActions();
+    initToolbar();
+
     initWidgets();
+    initStatusBar();
 }
 
 MainWindow::~MainWindow()
@@ -32,24 +39,35 @@ void MainWindow::setupUI()
 
     QSplitter*  split = new QSplitter(Qt::Horizontal, this);
     messageLabel = new QLabel(split);
+    messageLabel->hide();
 
+    left = new QSplitter(Qt::Horizontal, this);
 
-
-    QSplitter* left = new QSplitter(Qt::Horizontal, this);
-    feedsTree = new NvFeedsTreeView(left);
 
     // prepare filter model
-    m_rssFilterModel = new NvSortFilterModel(this);
-    m_rssFilterModel->setSourceModel( RM->rssModel() );
-    m_rssFilterModel->setDynamicSortFilter(true);
+    //m_rssFilterModel = new NvSortFilterModel(this);
+    //m_rssFilterModel->setSourceModel( RM->rssModel() );
+    //m_rssFilterModel->setDynamicSortFilter(true);
 
     rssList = new NvBaseListView(left);
     rssList->setViewMode(NvBaseListView::VIEW_LINE);
-    rssList->setModel( m_rssFilterModel );
-    connect(feedsTree, SIGNAL(feedClicked(int)), m_rssFilterModel, SLOT(setFeedId(int)));
+    rssList->setModelColumn(DBManager::RSS_FIELD_TITLE);
+    rssList->setModel( RM->rssModel() );
+    rssList->setEnabled( false );
 
-    left->addWidget(feedsTree);
-    left->addWidget(rssList);
+    RM->rssModel()->select();
+
+    //left->addWidget(feedsTree);
+    left->addWidget(new FilterWidget(rssList, RM->feedModel(), left));
+    leftSideBtn = new QPushButton(tr("<"), this);
+    rightSideBtn = new QPushButton(tr(">"), this);
+    leftSideBtn->setMaximumWidth(20);
+    rightSideBtn->setMaximumWidth(20);
+    leftSideBtn->hide();
+    rightSideBtn->hide();
+
+    connect(leftSideBtn, SIGNAL(clicked()), this, SLOT(collapseLeftPane()));
+    connect(rightSideBtn, SIGNAL(clicked()), this, SLOT(collapseRightPane()));
 
 
 
@@ -60,39 +78,49 @@ void MainWindow::setupUI()
     cv->addWidget(messageLabel);
     cv->addWidget(view);
     middle->setLayout(cv);
-    connect(rssList, SIGNAL(attachSelected(NvRssItem*)), view, SLOT(attachRss(NvRssItem*)));
+    connect(rssList, SIGNAL(attachSelected(quint32)), view, SLOT(attachRss(quint32)));
 
-    QWidget *right = new QWidget(split);
+    right = new QWidget(split);
     QGridLayout *gridRught = new QGridLayout();
     gridRught->setMargin(0);
+
     themesList = new QListView(right);
+    themesList->setModel(RM->nodesModel());
     themesList->setEnabled(false);
-    gridRught->addWidget(themesList, 0, 0, 1, 2);
-    btnNew = new QPushButton(tr("New Theme"), this);
-    btnNew->setEnabled(false);
-    gridRught->addWidget(btnNew, 1, 0, 1, 2);
-    connect(btnNew, SIGNAL(clicked()), this, SLOT(createNode()));
+    themesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    gridRught->addWidget(new QPushButton(right), 5, 1, 1, 1);
-
-    btnSync = new QPushButton(tr("Sync"), right);
-    btnSync->setMaximumSize(QSize(16777215, 50));
-    btnSync->setEnabled( false );
-    gridRught->addWidget(btnSync, 6, 0, 1, 2);
-    gridRught->addWidget(new QLabel(right), 2, 0, 1, 1);
+    gridRught->addWidget(new FilterNodeWiew(themesList, this), 0, 0, 1, 2);
     right->setLayout(gridRught);
-
     split->addWidget(left);
+    //split->addWidget(leftSideBtn);
     split->addWidget(middle);
+    //split->addWidget(rightSideBtn);
     split->addWidget(right);
 
 
     setCentralWidget(split);
 }
 
+void MainWindow::initToolbar()
+{
+    QToolBar *mainToolbar = addToolBar("main-toolbar");
+    mainToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    mainToolbar->setMovable(false);
+    mainToolbar->addAction(syncAction);
+    mainToolbar->addAction(galleryAction);
+    mainToolbar->addSeparator();
+    mainToolbar->addAction(themeAction);
+}
+
 void MainWindow::setupActions()
 {
     QAction *a;
+
+    syncAction = new QAction(QIcon(":/images/synchronize.png"), tr("Sync"), this);
+    galleryAction = new QAction(QIcon(":/images/gallery.png"), tr("Gallery"), this);
+    themeAction = new QAction(QIcon(":/images/new.png"), tr("New theme"), this);
+    connect(themeAction, SIGNAL(triggered()), this, SLOT(createNode()));
+    connect(syncAction, SIGNAL(triggered()), this, SLOT(syncClicked()));
 
     // set file menu actions
     QMenu *fileMenu = new QMenu(tr("&File"), this);
@@ -103,8 +131,6 @@ void MainWindow::setupActions()
     connect(a, SIGNAL(triggered()), this, SLOT(close()));
     fileMenu->addAction(a);
 
-    fileMenu->addAction(feedsTree->createFeedAction());
-
     QMenu* viewMenu = new QMenu(tr("&View"), this);
     menuBar()->addMenu(viewMenu);
     a = new QAction(tr("RSS List view"), this);
@@ -113,6 +139,10 @@ void MainWindow::setupActions()
 
     a = new QAction(tr("RSS Full view"), this);
     connect(a, SIGNAL(triggered()), this, SLOT(setFullViewMode()));
+    viewMenu->addAction(a);
+
+    a = new QAction(tr("Change Layout"), this);
+    connect(a, SIGNAL(triggered()), view, SLOT(changeViewMode()));
     viewMenu->addAction(a);
 
     QMenu* windowMenu = new QMenu(tr("&Window"), this);
@@ -132,7 +162,7 @@ void MainWindow::showError(const QString& str)
 
 void MainWindow::createNode()
 {
-    view->showNode(NULL);
+    view->showNode(Node(0, ""));
 }
 
 void MainWindow::initWidgets()
@@ -140,14 +170,14 @@ void MainWindow::initWidgets()
     ResourceManager *rm = ResourceManager::instance();
     Connector *c = WindowManager::instance()->connector();
 
+    TagsManager::init();
+
     connect(rssList, SIGNAL(clicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
     connect(rssList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemDoubleClicked(QModelIndex)));
 
-    themesList->setModel(&rm->getThemes());
+
     //rssList->setModel(&rm->getFeed());
 
-
-    connect(btnSync, SIGNAL(clicked()), this, SLOT(syncClicked()));
     connect(themesList, SIGNAL(clicked(QModelIndex)), this, SLOT(loadNode(QModelIndex)));
     connect(view, SIGNAL(actionLogin(QString, QString)), this, SLOT(actionLogin(QString, QString)));
     connect(c, SIGNAL(taxonomyLoaded()), view, SLOT(updateTaxonomy()));
@@ -161,9 +191,16 @@ void MainWindow::initWidgets()
     view->showLogin();
 }
 
+void MainWindow::initStatusBar()
+{
+    statusBar()->setSizeGripEnabled(false);
+    //statusBar()->addWidget(new QProgressBar(this));
+    statusBar()->addWidget(new QLabel(this));
+}
+
 void MainWindow::userLoged()
 {
-    btnSync->setEnabled( true );
+
 }
 
 
@@ -177,23 +214,23 @@ void MainWindow::syncClicked()
     c->SyncRss();
 
     themesList->setEnabled(false);
-    btnNew->setEnabled(false);
     c->SyncNodes();
 
-    c->GetMedia();
+    MediaManager::sync();
 }
 
 void MainWindow::itemClicked(QModelIndex index)
 {
-    NvRssItem* item;
+    NvRssItem item;
     ResourceManager* rm = ResourceManager::instance();
 
     if(view->currentView() == CenterlaWidget::WIDGET_NODE)
         return;
 
-    item = dynamic_cast<NvRssItem*>(rm->rssModel()->item(index));
 
-    if(item) {
+    item = rm->rssModel()->item(index);
+
+    if(item.id() != 0) {
         view->showRss(item);
     }
 }
@@ -203,25 +240,26 @@ void MainWindow::itemDoubleClicked(QModelIndex index)
     NvRssItem* item;
     ResourceManager* rm = ResourceManager::instance();
 
+    /*
     item = dynamic_cast<NvRssItem*>(rm->rssModel()->item(index));
 
     if(item) {
         view->showRss(item);
     }
+    */
 }
 
 void MainWindow::loadNode(QModelIndex index)
 {
     Connector *c = WindowManager::instance()->connector();
+    NvNodeModel *m = ResourceManager::instance()->nodesModel();
 
-    QStandardItemModel *model = static_cast<QStandardItemModel*>(themesList->model());
-    QStandardItem *item = model->itemFromIndex(index);
-    if(item && !item->data().isNull()) {
-        Node* node = reinterpret_cast<Node*>(item->data().toInt());
-        if(node->isRemote() && node->getBody().isEmpty()) {
-            c->GetNode(node->getId());
+    Node item = m->item(index);
+    if(item.id() > 0) {
+        if(item.getBody().isEmpty()) {
+            c->GetNode(item.id());
         }else{
-           view->showNode(node);
+           view->showNode(item);
         }
     }
 }
@@ -230,19 +268,18 @@ void MainWindow::loadNode(QModelIndex index)
 void MainWindow::nodesLoaded()
 {
     themesList->setEnabled(true);
-    btnNew->setEnabled(true);
 }
 
 void MainWindow::rssLoaded()
 {
     rssList->setEnabled(true);
-    m_rssFilterModel->invalidate();
+    //m_rssFilterModel->invalidate();
 }
 
 void MainWindow::nodeLoaded(Node *node)
 {
     if(node) {
-        view->showNode(node);
+        view->showNode(*node);
     }
 }
 
@@ -251,19 +288,15 @@ void MainWindow::networkError(QString msg)
 {
     showError(msg);
 
-
     view->showLogin();
     rssList->setEnabled(false);
     themesList->setEnabled(false);
-    btnNew->setEnabled(false);
-    btnSync->setEnabled(false);
 }
 
 void MainWindow::actionLogin(QString userLogin, QString userPassword)
 {
     Connector *c = WindowManager::instance()->connector();
     c->Login(userLogin, userPassword);
-    btnSync->setEnabled(true);
     view->showDummy();
 }
 
@@ -280,4 +313,26 @@ void MainWindow::setFullViewMode()
 void MainWindow::showMedia()
 {
     WindowManager::instance()->showMediaWindow();
+}
+
+void MainWindow::collapseLeftPane()
+{
+    if(left->isVisible()) {
+        left->hide();
+        leftSideBtn->setText(tr(">"));
+    }else{
+        leftSideBtn->setText(tr("<"));
+        left->show();
+    }
+}
+
+void MainWindow::collapseRightPane()
+{
+    if(right->isVisible()) {
+        right->hide();
+        rightSideBtn->setText(tr("<"));
+    }else{
+        rightSideBtn->setText(tr(">"));
+        right->show();
+    }
 }

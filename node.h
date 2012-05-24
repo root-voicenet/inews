@@ -1,12 +1,12 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "nvbaseobject.h"
 #include "model/NvNodeMediaItem.h"
+#include <QObject>
+#include "model/Tag.h"
 
-class NvRssItem;
 
-class Node : public NvBaseObject
+class Node
 {
     friend class Connector;
 public:
@@ -14,40 +14,61 @@ public:
         NODEID_DEFAULT = 0
     };
 
-    Node(int id, const QString& title, bool remote = false, bool created = 0, const QString& body = "");
+    enum NodeStatus {
+        STATUS_COMPOSED,
+        STATUS_OK
+    };
 
+    Node(quint32 id, const QString& title, const QString& body = "");
+    Node(const Node& other);
     virtual ~Node();
-    QString &getBody() { return m_body; }
+
+    quint32 id() const { return _id; }
+    void setId(quint32 id) { _id = id; }
+
+    QString title() const { return _title; }
+    void setTitle(const QString& title) { _title = title; }
+
+    QString getBody() const { return m_body; }
     QString getSummary() const { return m_summary; }
 
-    bool isRemote() const { return m_isremote; }
-    bool isUpdated() const { return m_updated; }
+    int status() const { return _status; }
+    void setStatus(int status) { _status = status; }
+
+    QDateTime date() const { return _created; }
+    void setDate(const QDateTime& d) { _created = d; }
+
+    QList<Tag> tags() const { return _tags; }
+    void setTags(QList<Tag> tags) { _tags = tags; }
 
     void attachMedia(const NvMediaItem &file, const QString& title = "", const QString& description = "");
     void removeMedia(int id);
+    void setAttached(const QList<NvNodeMediaItem>& items);
     NvNodeMediaItem &findAttachedMedia(int id);
-    QList<NvNodeMediaItem> &attachedMedia();
+    QList<NvNodeMediaItem> attachedMedia() const;
 
     void setBody(const QString& body);
-    void setUpdated(bool updated);
     void setSummary(const QString& summary);
 
     bool promoted() const;
     void setPromoted(bool v);
 
-    NvRssItem *findAttachedRss(int id);
-    void attachRss(NvRssItem* item);
-    void removeAttachedRss(NvRssItem *item);
-    QList<NvRssItem *> attachedRss();
+    void attachRss(quint32 rss_id);
+    void removeAttachedRss(quint32 rss_id);
+    QList<quint32> attachedRss() const;
 protected:
-    bool m_isremote;
-    bool m_updated;
     bool promoted_;
+    int _status;
+
     QString m_body;
     QString m_summary;
+    QString _title;
+    quint32 _id;
+    QList<Tag> _tags;
+    QDateTime _created;
 
     QList<NvNodeMediaItem> m_attached;
-    QList<NvRssItem*> m_attachedRss;
+    QList<quint32> m_attachedRss;
 
 };
 

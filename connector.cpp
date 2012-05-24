@@ -50,8 +50,16 @@ void Connector::SyncRss() {
     xmlrpc::Variant req;
     ResourceManager *rm = ResourceManager::instance();
 
-    if(RequestBuilder::buildSyncRss(&req, rm->rssModel())) {
-        int requestID = request(METHOD_SYNC_RSS, req);
+    QList<NvRssItem> items = rm->rssModel()->updatedItems();
+    if(items.size() > 0) {
+        rm->rssModel()->submitAll();
+    }
+    rm->rssModel()->clearUpdated();
+
+    QDateTime d = rm->getRssLastUpdateTime();
+
+    if(RequestBuilder::buildSyncRss(&req, items)) {
+        int requestID = request(METHOD_SYNC_RSS, d.toTime_t(), req);
         addRequest(requestID, METHOD_SYNC_RSS);
     }
 }
@@ -60,8 +68,17 @@ void Connector::SyncNodes()
 {
     xmlrpc::Variant req;
     ResourceManager *rm = ResourceManager::instance();
-    if(RequestBuilder::buildSyncNodes(&req, rm->nodesModel())) {
-        int requestID = request(METHOD_SYNC_NODES, req);
+
+    QList<Node> items = rm->nodesModel()->composedItems();
+    if(items.size() > 0) {
+        rm->nodesModel()->submitAll();
+    }
+
+    QDateTime d = rm->getRssLastUpdateTime();
+    qDebug() << d;
+
+    if(RequestBuilder::buildSyncNodes(&req, items)) {
+        int requestID = request(METHOD_SYNC_NODES, d.toTime_t(), req);
         addRequest(requestID, METHOD_SYNC_NODES);
     }
 }
@@ -93,7 +110,10 @@ void Connector::GetNode(int id)
 
 void Connector::GetMedia()
 {
-    int requestID = request(METHOD_MEDIA_FILES);
+    ResourceManager *rm = ResourceManager::instance();
+    QDateTime d = rm->getRssLastUpdateTime();
+
+    int requestID = request(METHOD_MEDIA_FILES, d.toTime_t());
     addRequest(requestID, METHOD_MEDIA_FILES);
 }
 
@@ -174,15 +194,15 @@ void Connector::processResponse(int id, QVariant responce)
                 signal = &Connector::syncNodesComplete;
             }
         }else if(method == METHOD_NODE_GET) {
-            Node *node = rm->parseNode(&responce);
-            if(node) {
-                emit Connector::nodeGetComplete( node );
+            Node node = rm->parseNode(&responce);
+            if(node.id() > 0) {
+                emit Connector::nodeGetComplete( &node );
             }
         }else if(method == METHOD_RSS_FEEDS) {
             rm->parseFeeds(&responce);
             signal = &Connector::feedsLoaded;
         }else if(method == METHOD_MEDIA_FILES) {
-            WindowManager::instance()->mediaWindow()->parseRemoteFiles(&responce);
+            MediaManager::import(&responce);
             signal = &Connector::mediaLoaded;
         }else if(method == METHOD_RSS_EDITFEED) {
             rm->parseEditFeed(&responce);
@@ -204,7 +224,7 @@ void Connector::sendPostRequest(const QString& method)
     int requestID;
 
     if(method == METHOD_USER_LOGIN) {
-        requestID = request(METHOD_TAXONOMY_GETTREE);
+        requestID = request(METHOD_TAXONOMY_GETTREE, 0);
         addRequest(requestID, METHOD_TAXONOMY_GETTREE);
 
         requestID = request(METHOD_RSS_FEEDS);

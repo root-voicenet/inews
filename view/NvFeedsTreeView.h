@@ -6,6 +6,7 @@
 
 class NvFeedModel;
 class NvFeedCategory;
+class NvRssCachedModel;
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QTreeView)
@@ -15,7 +16,7 @@ class NvFeedsTreeView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit NvFeedsTreeView(QWidget *parent = 0);
+    explicit NvFeedsTreeView(NvRssCachedModel *sourceModel, QWidget *parent = 0);
     QAction* createFeedAction() { return m_addFeedAction; }
 
      static QString askCategoryName(QWidget *parent, const QString &title = QString());
@@ -24,9 +25,9 @@ private:
 
 private:
     NvFeedModel *m_model;
+    NvRssCachedModel *_sourceModel;
     QTreeView *m_tree;
     QAction *m_addAction, *m_renAction, *m_delAction, *m_addFeedAction, *m_delFeedAction;
-    QPushButton *m_btnClear;
 signals:
     void feedClicked(int fid);
 private slots:

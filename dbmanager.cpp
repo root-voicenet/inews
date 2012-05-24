@@ -9,11 +9,22 @@
 #include "model/NvFeedCategory.h"
 #include "model/NvFeedModel.h"
 
+#include <sys/time.h>
+
 #define DATABASE_DEFAULT_PATH "local.db"
 
 const QString DBManager::RSS_TABLE = "rss_items";
+const QString DBManager::RSS_TAGS_TABLE = "rss_tags";
 const QString DBManager::FEEDS_TABLE = "feeds";
 const QString DBManager::TAGS_TABLE = "tags";
+const QString DBManager::TIME_TABLE = "updates";
+const QString DBManager::NODES_TABLE = "nodes";
+const QString DBManager::NODES_TAGS_TABLE = "nodes_tags";
+const QString DBManager::NODES_RSS_TABLE = "nodes_rss";
+const QString DBManager::NODES_FILES_TABLE = "nodes_files";
+const QString DBManager::FILES_TABLE = "files";
+
+QDateTime DBManager::cached_updates[10];
 
 DBManager *DBManager::m_instance = NULL;
 
@@ -76,9 +87,64 @@ bool DBManager::createDB()
     QSqlQuery q;
 
     // Rss table
-    if(!q.exec("CREATE TABLE " + RSS_TABLE + " (id INTEGER PRIMARY KEY, remote_id INTEGER, feed_id, title TEXT NOT NULL, description TEXT)")) {
+    if(!q.exec("CREATE TABLE " + RSS_TABLE + " (id INTEGER PRIMARY KEY, remote_id INTEGER, feed_id, title TEXT NOT NULL, description TEXT, created DATETIME NOT NULL, link TEXT, readed INTEGER)")) {
         ret = false;
 
+        m_lastError = q.lastQuery();
+    }
+
+    // time table. stores last updates
+    if(!q.exec("CREATE TABLE " + TIME_TABLE + " (id INTEGER PRIMARY KEY, type INTEGER NOT NULL, updated DATETIME NOT NULL)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // tags table
+    if(!q.exec("CREATE TABLE " + TAGS_TABLE + " (id INTEGER PRIMARY KEY, remote_id INTEGER NOT NULL, tag VARCHAR(140) NOT NULL, parent INTEGER)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // rss tags table
+    if(!q.exec("CREATE TABLE " + RSS_TAGS_TABLE + " (id INTEGER PRIMARY KEY, tid INTEGER NOT NULL, rss_id INTEGER NOT NULL)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // feeds table
+    if(!q.exec("CREATE TABLE " + FEEDS_TABLE + " (id INTEGER NOT NULL, title TEXT NOT NULL)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // nodes table
+    if(!q.exec("CREATE TABLE " + NODES_TABLE + " (id INTEGER NOT NULL, title TEXT NOT NULL, description TEXT, created DATETIME NOT NULL, promoted INTEGER NOT NULL, status INTEGER)")) {
+        ret = false;
+
+        m_lastError = q.lastQuery();
+    }
+
+    // nodes tags table
+    if(!q.exec("CREATE TABLE " + NODES_TAGS_TABLE + " (id INTEGER PRIMARY KEY, tid INTEGER NOT NULL, node_id INTEGER NOT NULL)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // attached rss to nodes table
+    if(!q.exec("CREATE TABLE " + NODES_RSS_TABLE + " (id INTEGER PRIMARY KEY, rss_id INTEGER NOT NULL, node_id INTEGER NOT NULL)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // attached files to nodes table
+    if(!q.exec("CREATE TABLE " + NODES_FILES_TABLE + " (id INTEGER PRIMARY KEY, file_id INTEGER NOT NULL, node_id INTEGER NOT NULL, title TEXT, description TEXT)")) {
+        ret = false;
+        m_lastError = q.lastQuery();
+    }
+
+    // files table
+    if(!q.exec("CREATE TABLE " + FILES_TABLE + " (id INTEGER NOT NULL, name TEXT NOT NULL, url TEXT, localpath TEXT)")) {
+        ret = false;
         m_lastError = q.lastQuery();
     }
 
@@ -172,6 +238,20 @@ bool DBManager::storeRss(const NvRssItem *item)
      return true;
 }
 
+quint32 DBManager::maxNodeId() const
+{
+    QSqlQuery q;
+    quint32 id = 0;
+
+    if( q.exec("SELECT MAX(id) FROM " + NODES_TABLE) ) {
+        q.next();
+
+        id = q.value( 0 ).toUInt();
+    }
+
+    return id;
+}
+
 bool DBManager::loadFeedTree(NvFeedModel *model, NvFeedCategory *root)
 {
     QSqlQuery q, fq;
@@ -254,6 +334,31 @@ bool DBManager::storeCategoryFids(int id, QList<int> fids)
    return false;
 }
 
+void DBManager::clearFeeds()
+{
+    QSqlQuery q;
+    if(!q.exec("DELETE FROM " + FEEDS_TABLE + " WHERE 1")) {
+        m_lastError = q.lastError().text();
+       qDebug() << "Error while deleting feeds from feeds table" << m_lastError;
+    }
+}
+
+bool DBManager::addFeed(quint32 id, const QString &title)
+{
+    QSqlQuery q;
+    q.prepare("INSERT INTO " + FEEDS_TABLE + " (id, title) VALUES(?, ?)");
+    q.addBindValue( id );
+    q.addBindValue( title );
+
+    if(!q.exec()) {
+        m_lastError = q.lastError().text();
+       qDebug() << "Error while inserting feed to table" << m_lastError;
+       return false;
+    }
+
+    return true;
+}
+
 int DBManager::storeFeedCategory(const QString& title, int parent_id, QList<int> fids, int id)
 {
     QSqlQuery q;
@@ -293,4 +398,51 @@ int DBManager::storeFeedCategory(const QString& title, int parent_id, QList<int>
     }
 
     return current_id;
+}
+
+void DBManager::setUpdateTime(DBManager::StoreTime type, QDateTime time)
+{
+    cached_updates[type]  = time;
+    QSqlQuery q;
+
+    q.prepare("UPDATE " + TIME_TABLE + " SET updated = ? WHERE type = ?");
+    q.addBindValue( time.toTime_t() );
+    q.addBindValue( type );
+    if(!q.exec()) {
+        m_lastError = q.lastError().text();
+        qDebug() << "Cannot store updated time " << m_lastError;
+    }else if( !q.numRowsAffected() ) {
+        q.prepare("INSERT INTO " + TIME_TABLE + " (type, updated) VALUES(?, ?)");
+        q.addBindValue( type );
+        q.addBindValue( time.toTime_t() );
+
+        if(!q.exec()) {
+            m_lastError = q.lastError().text();
+            qDebug() << "Cannot store updated time " << m_lastError;
+        }
+    }
+}
+
+QDateTime DBManager::getUpdateTime(DBManager::StoreTime type)
+{
+    if(cached_updates[type].isValid())
+        return cached_updates[type];
+
+     QSqlQuery q;
+     q.prepare("SELECT updated FROM " + TIME_TABLE + " WHERE type = ?");
+     q.addBindValue( type );
+     if(q.exec()) {
+         q.next();
+         return QDateTime::fromTime_t(q.value(0).toUInt());
+     }else{
+         m_lastError = q.lastError().text();
+         qDebug() << "Cannot get updated time " << m_lastError;
+     }
+
+     return QDateTime();
+}
+
+QSqlDatabase DBManager::connection()
+{
+    return m_db;
 }

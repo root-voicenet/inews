@@ -1,13 +1,17 @@
 #ifndef LOADERS_H
 #define LOADERS_H
 
-#include "model/NvObjectImporter.h"
+#include <QVariant>
 
-class RssImporter : public NvObjectImporter
+class NvRssCachedModel;
+class RssImporter
 {
 public:
-    RssImporter(NvObjectModel *target);
+    RssImporter(NvRssCachedModel *target);
     bool import(const QVariant &in);
+
+protected:
+    NvRssCachedModel *_target;
 };
 
 

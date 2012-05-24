@@ -100,7 +100,7 @@ void NvMediaItem::iconDownloaded()
     {
             setIcon(QPixmap::fromImage(QImage::fromData(repl->readAll())));
             repl->close();
-            emit needUpdate();
+            //emit needUpdate();
     }
 }
 

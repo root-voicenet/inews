@@ -16,6 +16,7 @@ QT_FORWARD_DECLARE_CLASS(QListView)
 QT_FORWARD_DECLARE_CLASS(QDockWidget)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QSplitter)
 
 class MainWindow : public QMainWindow
 {
@@ -31,6 +32,8 @@ private:
     void initWidgets();
     void setupUI();
     void setupActions();
+    void initStatusBar();
+    void initToolbar();
 
     void selectTids(QListWidget *widget, const QList<int> &tids);
     QList<int> getSelectedTids(QListWidget *widget);
@@ -40,11 +43,12 @@ private:
 private: //widgets
     QListView *themesList;
     QLabel *messageLabel;
-    QPushButton *btnSync, *btnNew;
+    QAction *syncAction, *galleryAction, *themeAction;
     CenterlaWidget *view;
     NvBaseListView *rssList;
-    NvFeedsTreeView *feedsTree;
-    NvSortFilterModel* m_rssFilterModel;
+    QPushButton *leftSideBtn, *rightSideBtn;
+    QSplitter* left;
+    QWidget *right;
 
 private slots:
     void nodesLoaded();
@@ -60,6 +64,8 @@ private slots:
     void actionLogin(QString userLogin, QString userPassword);
     void userLoged();
     void showMedia();
+    void collapseLeftPane();
+    void collapseRightPane();
 
     // actions
     void setListViewMode();
